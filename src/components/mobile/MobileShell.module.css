@@ -1,0 +1,27 @@
+/* Centers the mobile app on desktop screens and constrains width. */
+.wrapper {
+  min-height: 100dvh;
+  background: var(--color-bg);
+  display: flex;
+  justify-content: center;
+}
+
+.shell {
+  width: 100%;
+  max-width: var(--mobile-max-width);
+  min-height: 100dvh;
+  background: var(--color-bg);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  /* Show a subtle shadow on desktop to frame the mobile viewport */
+  box-shadow: var(--shadow-lg);
+}
+
+/* Content area: fills available space above the bottom nav */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  /* Reserve space for bottom nav + safe area */
+  padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom, 0px));
+}

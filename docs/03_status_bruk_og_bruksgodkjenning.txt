@@ -1,0 +1,385 @@
+# 03 — Status, bruk og bruksgodkjenning
+
+Prosjekt: Fordelsklubben / Flyttefordel MVP
+Dokumenttype: PRD-del 03
+Tema: Status, bruk, samtykke og bruksgodkjenning
+
+
+## 1. Hvorfor dette dokumentet finnes
+
+Appen skal håndtere flere typer brukere, fordeler og kommersielle handlinger. Derfor må det være tydelig når en bruker bare ser en fordel, når en bruker faktisk bruker en fordel, når data deles med annonsør, og hvilke statuser admin skal forholde seg til.
+
+Dette dokumentet definerer:
+
+- Brukerstatus
+- Fordelsstatus
+- Bruksstatus
+- Leadstatus
+- Kode- og QR-status
+- Samtykke og bruksgodkjenning
+- Regler for utløp, sletting og arkivering
+
+
+## 2. Brukerstatus
+
+Brukeren kan være anonym, kjent eller innlogget. Appen skal fungere også for anonyme brukere.
+
+### 2.1 Anonym bruker
+
+Kjennetegn:
+
+- Har åpnet appen uten innlogging
+- Kan se generelle fordeler
+- Kan se fordelsdetaljer
+- Kan bruke generelle rabattkoder dersom det ikke krever unik kode eller lagring
+- Kan bli spurt om postnummer
+
+Begrensninger:
+
+- Kan ikke hente unik kode dersom vi må forhindre dobbeltbruk
+- Kan ikke lagre fordeler på tvers av enheter uten konto/session
+- Kan ikke sende lead uten samtykke og nødvendige kontaktfelter
+
+
+### 2.2 Delvis kjent bruker
+
+Kjennetegn:
+
+- Har oppgitt postnummer, område eller flyttestatus
+- Er ikke nødvendigvis innlogget
+- Får mer relevante fordeler
+
+Eksempel:
+
+- Bruker legger inn postnummer for å se lokale fordeler
+- Bruker svarer «Jeg har nylig flyttet»
+
+
+### 2.3 Innlogget / identifisert bruker
+
+Kjennetegn:
+
+- Har logget inn eller verifisert seg
+- Kan hente unike koder
+- Kan lagre fordeler
+- Kan se Mine fordeler mer pålitelig
+- Kan sende leads med forhåndsutfylt informasjon hvis samtykke foreligger
+
+MVP trenger ikke komplisert kontofunksjonalitet, men må støtte en trygg måte å identifisere bruker på dersom unike koder eller sensitive handlinger krever det.
+
+
+## 3. Flyttestatus
+
+Flyttestatus skal brukes til relevans, ikke som adgangskrav til hele appen.
+
+Mulige verdier:
+
+- recently_moved: nylig flyttet, 0–60 dager
+- moved_past: flyttet for mer enn 60 dager siden
+- not_moving: ikke flyttet / ikke i flytteprosess
+- unknown: ukjent
+
+Regel:
+
+- recently_moved kan få flytterelaterte fordeler med høy prioritet
+- moved_past kan få bolig/hjem- og vedlikeholdsfordeler
+- not_moving kan få generelle fordeler
+- unknown skal få generelle fordeler og fallback
+
+Brukeren skal ikke straffes for ukjent status.
+
+
+## 4. Fordelsstatus
+
+Alle fordeler i admin må ha en tydelig status.
+
+### 4.1 Utkast
+
+Fordelen er opprettet, men ikke synlig i appen.
+
+### 4.2 Planlagt
+
+Fordelen er ferdig, men startdato er frem i tid.
+
+### 4.3 Aktiv
+
+Fordelen er publisert og synlig for kvalifiserte brukere.
+
+### 4.4 Pauset
+
+Fordelen er midlertidig skjult, selv om perioden ellers er aktiv.
+
+### 4.5 Utløpt
+
+Fordelen har passert sluttdato og skal ikke vises som aktiv.
+
+### 4.6 Arkivert
+
+Fordelen er tatt ut av ordinær drift, men beholdes for historikk.
+
+### 4.7 Slettet
+
+Soft delete anbefales. Hard delete bør kun brukes ved feilopprettelse eller lovpålagt sletting.
+
+
+## 5. Fordelens livsløp
+
+Anbefalt livsløp:
+
+1. Utkast
+2. Planlagt eller Aktiv
+3. Aktiv
+4. Utløpt eller Pauset
+5. Arkivert
+
+Regler:
+
+- Fordel med sluttdato skal automatisk gå til utløpt når sluttdato passeres
+- Utløpte fordeler skal ikke vises i hovedfeed
+- Utløpte fordeler kan vises under Mine fordeler dersom brukeren tidligere har lagret/brukt dem
+- Admin skal kunne arkivere fordeler manuelt
+- Admin skal kunne duplisere gamle fordeler for ny kampanjeperiode
+
+
+## 6. Bruksstatus for bruker
+
+Når en bruker interagerer med en fordel, bør systemet lagre en enkel brukshistorikk.
+
+Mulige statuser:
+
+- viewed: bruker har åpnet fordelen
+- saved: bruker har lagret fordelen
+- code_revealed: bruker har vist kode
+- code_copied: bruker har kopiert kode
+- qr_opened: bruker har åpnet QR-kode
+- external_clicked: bruker har klikket ekstern lenke
+- lead_submitted: bruker har sendt leadskjema
+- dismissed: bruker har skjult/avvist fordel, hvis funksjonen finnes
+
+Ikke bygg for komplisert «brukt»-logikk. Vi vet ofte ikke om brukeren faktisk fullførte kjøp hos annonsør.
+
+
+## 7. Rabattkoder og kodebruk
+
+### 7.1 Generell kode
+
+Samme kode kan brukes av alle.
+
+Felter:
+
+- code_value
+- valid_from
+- valid_to
+- usage_instruction
+
+Eksempel:
+
+Kode: FLYTTE20
+Instruksjon: «Bruk koden i nettbutikken for å få rabatten.»
+
+
+### 7.2 Unik kode
+
+Hver kode kan bare deles ut én gang eller et begrenset antall ganger.
+
+Kodepool-statuser:
+
+- available
+- reserved
+- assigned
+- used_external_unknown
+- expired
+- disabled
+
+MVP trenger ikke vite om koden faktisk er brukt hos annonsør. Når koden er vist/tildelt, kan den regnes som assigned.
+
+Regel:
+
+- Unik kode skal reserveres/tildeles atomisk for å unngå at to brukere får samme kode
+- Hvis bruker allerede har fått kode til samme fordel, skal samme kode vises igjen
+- Hvis kodepool er tom, vis melding: «Akkurat nå er alle kodene hentet. Prøv igjen senere eller se andre fordeler.»
+
+
+## 8. QR-koder
+
+QR-koder kan være:
+
+- Statisk QR per fordel
+- QR som representerer en kode
+- QR som peker til ekstern URL
+
+MVP bør støtte statisk QR og URL-basert QR.
+
+QR-status:
+
+- active
+- expired
+- disabled
+
+Tracking:
+
+- qr_opened
+- eventuelt qr_downloaded, hvis relevant
+
+
+## 9. Leadstatus
+
+Leadstatus skal kun beskrive vår håndtering, ikke annonsørens salgsprosess.
+
+Tillatte leadstatuser:
+
+- new: nytt lead mottatt
+- exported: lead er eksportert eller sendt til annonsør
+- failed: teknisk feil ved eksport/sending
+- deleted: lead er slettet
+
+Ikke bruk:
+
+- Kontaktet
+- Under behandling
+- Ikke svar
+- Fullført
+- Avvist
+
+Grunn:
+
+Vi ønsker ikke å vite eller registrere om annonsøren har kontaktet brukeren, eller hva som skjer i annonsørens videre prosess.
+
+
+## 10. Bruksgodkjenning og samtykke
+
+Appen må skille mellom:
+
+1. Nødvendig teknisk bruk
+2. Personalisering
+3. Markedsføring
+4. Deling med annonsør
+
+### 10.1 Når samtykke kreves
+
+Samtykke kreves når:
+
+- Bruker sender kontaktinformasjon til annonsør
+- Bruker ønsker å bli kontaktet
+- Data brukes til markedsføring utover nødvendig tjenesteleveranse
+- Data deles med tredjepart/annonsør
+
+### 10.2 Når samtykke ikke nødvendigvis kreves
+
+Samtykke er ikke nødvendigvis nødvendig for:
+
+- Å vise generelle fordeler
+- Å vise kategorier
+- Å vise en generell rabattkode
+- Å lagre teknisk nødvendig sessiondata
+
+Endelig juridisk vurdering må gjøres før lansering.
+
+
+## 11. Samtykketekster
+
+### 11.1 Lead til annonsør
+
+«Jeg samtykker til at opplysningene mine deles med [Annonsørnavn], slik at de kan kontakte meg om denne fordelen.»
+
+### 11.2 Personalisering
+
+«Jeg ønsker at Fordelsklubben kan bruke opplysninger som postnummer og flyttestatus til å vise mer relevante fordeler.»
+
+### 11.3 Markedsføring
+
+«Jeg ønsker å motta tips, fordeler og relevant informasjon fra Fordelsklubben.»
+
+
+## 12. Logging og eventer
+
+Minimumseventer:
+
+- app_opened
+- onboarding_completed
+- postcode_submitted
+- benefit_list_viewed
+- benefit_viewed
+- benefit_saved
+- benefit_unsaved
+- code_revealed
+- code_copied
+- qr_opened
+- external_link_clicked
+- lead_form_started
+- lead_submitted
+- hero_viewed
+- hero_clicked
+- category_viewed
+- pwa_install_prompt_shown
+- pwa_install_instruction_opened
+
+Tracking skal ikke lagre mer persondata enn nødvendig.
+
+
+## 13. Utløp, sletting og arkivering
+
+### 13.1 Fordeler
+
+- Sluttdato styrer automatisk utløp
+- Utløpte fordeler skjules fra hovedfeed
+- Admin kan arkivere
+- Soft delete som standard
+
+### 13.2 Koder
+
+- Koder kan ha utløpsdato
+- Koder kan deaktiveres
+- Tildelte koder bør beholdes i brukerhistorikk så lenge det er nødvendig for brukeropplevelse og dokumentasjon
+
+### 13.3 Leads
+
+- Leads bør ha sletterutine
+- Admin bør kunne slette enkeltlead
+- Automatisk sletting/anonymisering bør vurderes etter definert periode
+
+Forslag MVP:
+
+- Leads slettes eller anonymiseres automatisk etter 90 eller 180 dager, avhengig av juridisk vurdering og formål
+
+
+## 14. Feiltilstander
+
+### 14.1 Fordel ikke tilgjengelig
+
+«Denne fordelen er dessverre ikke tilgjengelig lenger.»
+CTA: «Se andre fordeler»
+
+### 14.2 Ikke kvalifisert
+
+«Denne fordelen gjelder ikke for ditt område akkurat nå.»
+CTA: «Se fordeler som gjelder for deg»
+
+### 14.3 Kodepool tom
+
+«Akkurat nå er alle kodene hentet.»
+CTA: «Se andre fordeler»
+
+### 14.4 Lead kunne ikke sendes
+
+«Noe gikk galt da vi skulle sende skjemaet. Prøv igjen om litt.»
+
+
+## 15. Admin-godkjenning før publisering
+
+Før en fordel kan publiseres, bør disse feltene være påkrevd:
+
+- Tittel
+- Kort beskrivelse
+- Annonsør
+- Kategori
+- Fordelstype/redemption type
+- Startdato
+- Sluttdato eller eksplisitt valg «ingen sluttdato»
+- Bilde eller fallbackbilde
+- CTA
+- Vilkår
+- Geografi eller «gjelder nasjonalt»
+- Segment eller «gjelder alle»
+
+Admin skal få tydelig feilmelding dersom noe mangler.

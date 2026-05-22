@@ -1,0 +1,389 @@
+# 02 — Informasjonsarkitektur og UX-flow
+
+Prosjekt: Fordelsklubben / Flyttefordel MVP
+Dokumenttype: PRD-del 02
+Tema: Informasjonsarkitektur og UX-flow
+Plattform: Mobil PWA for Android og iPhone
+
+
+## 1. Overordnet IA for app
+
+Appen skal ha en enkel, mobiltilpasset struktur med få hovedflater. Brukeren skal raskt kunne bla i fordeler, se anbefalte kampanjer, åpne en fordel og bruke den.
+
+Anbefalt hovednavigasjon:
+
+1. Hjem
+2. Fordeler
+3. Nær deg
+4. Mine fordeler
+5. Profil
+
+Hvis MVP må forenkles ytterligere, kan «Fordeler» og «Hjem» kombineres, og «Nær deg» kan vises som en seksjon på hjemskjermen i stedet for egen tab.
+
+
+## 2. Hjem
+
+Hjem er hovedinngangen til appen. Målet er å gi umiddelbar verdi.
+
+Innhold:
+
+- Heroområde med én eller flere heroer
+- Personlig eller segmentbasert intro
+- Utvalgte fordeler
+- Tidsbegrensede fordeler
+- Kategorier
+- Eventuelt «Nær deg» som sekundær seksjon
+- Fallback-innhold dersom brukeren ikke matcher spesifikke regler
+
+Prioritet:
+
+1. Hero
+2. Utvalgte fordeler
+3. Kategorier
+4. Nær deg
+5. Redaksjonelt/innhold
+
+Hero skal kunne brukes både kommersielt og redaksjonelt:
+
+- Selge inn appen
+- Vise generell kampanje
+- Vise flytterelatert kampanje
+- Vise annonsørfordel
+- Vise fallback dersom ingen spesifikke fordeler gjelder
+
+
+## 3. Fordeler
+
+Fordeler er en liste eller feed over tilgjengelige fordeler.
+
+Funksjoner:
+
+- Liste over fordeler
+- Filter på kategori
+- Filter på type, hvis hensiktsmessig
+- Visning av tidsbegrensede fordeler
+- Visning av anbefalte fordeler
+- Sortering etter prioritet fra admin
+
+MVP-filter:
+
+- Alle
+- Populært / anbefalt
+- Flytting og bolig
+- Strøm og energi
+- Forsikring
+- Mat og dagligvarer
+- Interiør og hjem
+- Trening og helse
+- Underholdning
+- Lokalt / nær deg
+- Diverse
+
+Det er viktig at kategoriene kan endres i admin eller database, og ikke hardkodes unødvendig.
+
+
+## 4. Nær deg
+
+«Nær deg» er en sekundær, enkel funksjon. Den skal ikke kreve dyrt kart-API i MVP.
+
+MVP-løsning:
+
+- Bruker kan oppgi postnummer, kommune eller by
+- Appen viser fordeler som matcher postnummer, postnummerområde, kommune, fylke eller nasjonalt fallback
+- Visningen er primært listebasert
+- Kart kan eventuelt være en senere fase
+
+UX-prinsipp:
+
+Dette skal oppleves som en hyggelig ekstra verdi, ikke hovedpoenget med appen.
+
+Mulig tekst:
+
+- «Fordeler i nærheten»
+- «Se hva som finnes nær deg»
+- «Lokale fordeler og relevante tilbud»
+
+Hvis bruker ikke har oppgitt område:
+
+- Vis nasjonale fordeler
+- Spør lavterskel om postnummer: «Vil du se om det finnes fordeler nær deg?»
+
+
+## 5. Mine fordeler
+
+Mine fordeler samler fordeler brukeren har lagret, åpnet eller brukt.
+
+MVP kan støtte:
+
+- Lagrede fordeler
+- Brukte fordeler
+- Rabattkoder som er hentet
+- QR-koder som er åpnet
+- Påbegynte leadskjemaer, hvis relevant
+
+Ikke vis «du har spart», fordi vi ikke har pålitelig data på faktisk besparelse.
+
+Forslag til seksjoner:
+
+- Lagret
+- Brukt
+- Utløpt
+
+Hvis MVP skal forenkles:
+
+- Kun «Lagrede fordeler» og «Nylig åpnet»
+
+
+## 6. Profil
+
+Profil skal være enkel. Den skal ikke føles som en tung konto-opplevelse.
+
+Mulig innhold:
+
+- Navn, hvis innlogget
+- E-post eller telefon, hvis innlogget
+- Postnummer / område
+- Flyttestatus, hvis kjent
+- Samtykker
+- Installer app-instruksjon
+- Logg ut
+
+Flyttestatus bør kunne være:
+
+- Nylig flyttet
+- Flyttet tidligere
+- Ikke flyttet
+- Ukjent
+
+Brukeren skal kunne bruke appen selv om flyttestatus er ukjent.
+
+
+## 7. Onboarding
+
+Onboarding skal være kort og verdiorientert.
+
+Anbefalt MVP:
+
+Skjerm 1:
+Tittel: «Velkommen til Fordelsklubben»
+Tekst: «Finn gode fordeler, rabattkoder og nyttige tilbud – enten du har flyttet, skal flytte eller bare vil gjøre en god deal.»
+CTA: «Se fordeler»
+Sekundær CTA: «Legg inn postnummer»
+
+Skjerm 2 kan droppes i første versjon. Ikke lag en lang onboarding.
+
+Gradvis profilering:
+
+- Be om postnummer når det trengs for lokale fordeler
+- Be om innlogging når bruker vil lagre, hente unik kode eller sende lead
+- Be om samtykke når data skal brukes eller deles
+
+
+## 8. Bruk av fordel — hovedflow
+
+En fordel kan ha ulike bruksmåter.
+
+Støttede benefit redemption types:
+
+1. Rabattkode
+2. Unik kode
+3. QR-kode
+4. Ekstern lenke
+5. Leadskjema
+6. Informasjonsfordel / redaksjonelt innhold
+7. Kombinasjon, eksempelvis kode + ekstern lenke
+
+### 8.1 Rabattkode
+
+Flow:
+
+1. Bruker åpner fordelskort
+2. Bruker ser detaljer, vilkår og CTA
+3. Bruker trykker «Vis kode»
+4. Kode vises tydelig
+5. Bruker kan kopiere kode
+6. Bruker kan gå til annonsørens side
+
+Må logges:
+
+- benefit_viewed
+- code_revealed
+- code_copied
+- external_link_clicked
+
+
+### 8.2 Unik kode
+
+Flow:
+
+1. Bruker åpner fordel
+2. Bruker trykker «Hent kode»
+3. Systemet reserverer eller tildeler én ubrukt kode
+4. Koden knyttes til bruker/session
+5. Koden vises og lagres under Mine fordeler
+
+Viktig:
+
+- Kode skal ikke deles ut til flere brukere dersom unik kode er aktivert
+- Hvis kodepool er tom, vis fallbackmelding
+- Admin skal kunne laste opp koder via CSV/Excel eller lime inn liste
+
+
+### 8.3 QR-kode
+
+Flow:
+
+1. Bruker åpner fordel
+2. Bruker trykker «Vis QR-kode»
+3. QR-kode vises med tydelig instruksjon
+4. Bruker kan vise QR-koden i butikk
+
+Må støtte:
+
+- Statisk QR-kode per fordel
+- Eventuelt unik QR basert på kode eller token senere
+
+
+### 8.4 Ekstern lenke
+
+Flow:
+
+1. Bruker åpner fordel
+2. Bruker trykker CTA, f.eks. «Gå til tilbudet»
+3. Appen åpner ekstern URL
+
+Må støtte UTM-parametere.
+
+
+### 8.5 Leadskjema
+
+Flow:
+
+1. Bruker åpner fordel
+2. Bruker leser hva som skjer ved innsending
+3. Bruker fyller ut nødvendige felter
+4. Bruker huker av for samtykke der det er nødvendig
+5. Bruker sender skjema
+6. Systemet lagrer lead
+7. Admin kan eksportere eller videresende lead til annonsør
+
+Viktig:
+
+Systemet skal ikke ha statuser som «Kontaktet», «Ikke svar» eller «Fullført», fordi vi ikke skal vite om annonsøren har kontaktet brukeren. Admin kan ha statuser knyttet til teknisk håndtering, f.eks.:
+
+- Ny
+- Eksportert
+- Feilet
+- Slettet
+
+
+## 9. Fallback-flow
+
+Hvis bruker ikke matcher spesifikke fordeler:
+
+1. Vis generisk hero
+2. Vis nasjonale fordeler
+3. Vis populære fordeler
+4. Spør eventuelt om postnummer for å forbedre relevans
+
+Brukeren skal aldri møte en tom forside.
+
+Tomtilstand bør unngås. Hvis det likevel skjer:
+
+Tittel: «Vi fant ingen fordeler akkurat her ennå»
+Tekst: «Du kan fortsatt se nasjonale fordeler og kampanjer som gjelder for alle.»
+CTA: «Se alle fordeler»
+
+
+## 10. Admin IA
+
+Admin skal ha følgende hovedseksjoner:
+
+1. Dashboard
+2. Fordeler
+3. Annonsører
+4. Heroer / kampanjer
+5. Kategorier
+6. Koder
+7. Leads
+8. Brukersegmenter / regler
+9. Media / bilder
+10. Innstillinger
+
+MVP kan starte med:
+
+- Dashboard
+- Fordeler
+- Annonsører
+- Heroer
+- Koder
+- Leads
+
+
+## 11. Admin hovedflow — opprette fordel
+
+1. Admin velger «Ny fordel»
+2. Fyller inn basisinfo
+3. Velger annonsør
+4. Velger kategori
+5. Velger redemption type
+6. Legger inn kode/QR/URL/skjemaoppsett
+7. Setter målgruppe/segment
+8. Setter geografi
+9. Setter start- og sluttdato
+10. Laster opp bilde
+11. Ser forhåndsvisning mobil
+12. Lagrer som utkast eller publiserer
+
+Status:
+
+- Utkast
+- Planlagt
+- Aktiv
+- Pauset
+- Utløpt
+- Arkivert
+
+
+## 12. Admin hovedflow — hero
+
+1. Admin velger «Ny hero»
+2. Legger inn tittel, tekst, bilde og CTA
+3. Velger målgruppe
+4. Velger fallback-prioritet
+5. Setter aktiv periode
+6. Publiserer
+
+Hero skal kunne lenke til:
+
+- Fordel
+- Kategori
+- Ekstern URL
+- Informasjonsside
+- Ingen lenke
+
+
+## 13. Mobil UX-krav
+
+- Alt skal kunne brukes med én hånd
+- Primær CTA nederst eller tydelig i viewport
+- Fordelskort må være enkle å skanne
+- Ikke for tettpakket design
+- God luft og tydelige hierarkier
+- Store nok trykkflater
+- Sticky bunnnavigasjon
+- Ingen hover-avhengighet
+- Ingen viktige funksjoner kun via desktopmønstre
+
+
+## 14. PWA UX-krav
+
+- Appen skal ha manifest
+- Appen skal ha ikonsett
+- Appen skal kunne installeres på hjemskjerm
+- Appen skal ha enkel offline/poor connection-opplevelse
+- Installeringsinstruksjoner må være tilpasset iPhone og Android
+
+Eksempeltekst:
+
+«Vil du ha Fordelsklubben på hjemskjermen? Legg den til som app – så har du fordelene lett tilgjengelig.»

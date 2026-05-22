@@ -4,7 +4,7 @@
 
 ## Format
 ```
-DATE: YYYY-MM-DD
+DATE: YYYY-MM-DD (replace with actual date)
 DECISION: [short title]
 CONTEXT: [why was this needed]
 DECISION: [what was decided]
@@ -16,7 +16,25 @@ DECIDED BY: human | Claude | both
 
 ## Decisions
 
-DATE: YYYY-MM-DD
+DATE: 2026-05-22
+DECISION: Tech stack valgt for demo-fase
+CONTEXT: Prosjektet er i demo-fase. Stack må støtte rask utvikling, gratis hosting, og enkel migrering til Bas/Postens infrastruktur for MVP og produksjon.
+DECISION: Next.js 14 + TypeScript (app router), Supabase (PostgreSQL + Auth + Storage), Prisma ORM, Vercel (Hobby).
+ALTERNATIVES CONSIDERED: Neon (DB uten pausing) + separat auth; lokal PostgreSQL + Docker; Firebase.
+RATIONALE: Supabase gir database + auth + storage i én gratis tjeneste. Prisma abstraherer DB-laget slik at bytte til annen PostgreSQL-leverandør kun krever ny connection string. Next.js + Vercel er industristandard for slik PWA-arkitektur. Free tier er tilstrekkelig for demo.
+CONSEQUENCES: Supabase-prosjekt pauser etter 1 uke uten aktivitet på gratis plan — håndteres med wake-on-visit pattern (fjernes til MVP). All forretningslogikk er DB-agnostisk via Prisma. Migrering til annen infrastruktur krever kun nye miljøvariabler og Prisma-konfigurasjonsendring.
+DECIDED BY: human + Claude
+
+DATE: 2026-05-22
+DECISION: Demo bygges migrasjonsvennlig med kommentarer
+CONTEXT: Kodebasen skal porteres fra free-tier demo til Bas/Postens infrastruktur (MVP) og videre til fullskala produksjon.
+DECISION: Kode kommenteres eksplisitt der infrastrukturvalg (Supabase-spesifikke features, free-tier workarounds) påvirker implementasjonen. Repository pattern brukes for all DB-tilgang. Ingen vendor lock-in i forretningslogikk.
+ALTERNATIVES CONSIDERED: Bygge uten migrasjonstanke, refaktorere senere.
+RATIONALE: Eksplisitt dokumentasjon og løse koblinger reduserer migreringskostnad betydelig. Kommentarer gjør det enkelt for mennesker å verifisere og porte kode.
+CONSEQUENCES: Noe ekstra kommentararbeid under utvikling. Betaler seg ved migrering.
+DECIDED BY: human
+
+DATE: 2026-05-20
 DECISION: Adopt governed AI-native repository structure
 CONTEXT: AI-assisted development across multiple sessions requires explicit session continuity, change traceability, and governance to prevent architectural drift.
 DECISION: Implement full governance structure with CLAUDE.md, session orchestration, CR system, review system, and agent roles.

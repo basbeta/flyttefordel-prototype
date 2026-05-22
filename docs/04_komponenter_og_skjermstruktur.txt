@@ -1,0 +1,644 @@
+# 04 — Komponenter og skjermstruktur
+
+Prosjekt: Fordelsklubben / Flyttefordel MVP
+Dokumenttype: PRD-del 04
+Tema: Komponenter og skjermstruktur
+Plattform: Mobil PWA for Android og iPhone
+
+
+## 1. Generelt
+
+Dette dokumentet beskriver skjermene og komponentene som trengs for app og admin. Det er skrevet implementasjonsvennlig slik at Claude Code kan bruke det til å bygge komponenter, routes og UI-struktur.
+
+Appen skal bygges mobil først. Ikke bruk tid på desktop- eller nettbrettoptimalisering for sluttbrukerappen.
+
+Admin kan være desktoporientert, fordi den brukes internt.
+
+
+## 2. App routes
+
+Anbefalte app-routes:
+
+- / eller /home
+- /benefits
+- /benefits/[benefitId]
+- /categories/[categorySlug]
+- /nearby
+- /saved
+- /profile
+- /onboarding
+- /install
+- /consent
+- /lead/[benefitId]
+- /not-found
+
+Hvis appen bygges med Next.js App Router, kan routes ligge under app/(mobile)/.
+
+
+## 3. Admin routes
+
+Anbefalte admin-routes:
+
+- /admin
+- /admin/login
+- /admin/dashboard
+- /admin/benefits
+- /admin/benefits/new
+- /admin/benefits/[benefitId]
+- /admin/advertisers
+- /admin/advertisers/new
+- /admin/advertisers/[advertiserId]
+- /admin/heroes
+- /admin/heroes/new
+- /admin/heroes/[heroId]
+- /admin/codes
+- /admin/codes/upload
+- /admin/leads
+- /admin/categories
+- /admin/settings
+
+
+## 4. App layout
+
+### 4.1 MobileShell
+
+Wrapper for hele mobilappen.
+
+Ansvar:
+
+- Setter mobil maks-/min-bredde
+- Håndterer safe-area på iPhone
+- Inneholder bunnnavigasjon
+- Håndterer global loading/error
+- Håndterer PWA install prompt/instruksjon
+
+Props:
+
+- children
+- activeTab
+- showBottomNav
+
+
+### 4.2 BottomNavigation
+
+Fast bunnnavigasjon.
+
+Elementer:
+
+- Hjem
+- Fordeler
+- Nær deg
+- Mine
+- Profil
+
+Krav:
+
+- Store trykkflater
+- Tydelig aktiv state
+- Må ta hensyn til iOS safe-area
+- Ikke mer enn fem valg
+
+
+### 4.3 TopBar
+
+Enkel toppseksjon.
+
+Varianter:
+
+- Standard med logo/navn
+- Back button på detaljsider
+- Tittelvariant
+- Eventuelt profil/innstillinger-ikon
+
+
+## 5. Hjemskjerm
+
+Komponenter:
+
+- HomeScreen
+- HeroCarousel
+- HeroCard
+- SegmentGreeting
+- FeaturedBenefitsSection
+- CategoryShortcutGrid
+- TimeLimitedBenefitsSection
+- NearbyPreviewSection
+- EmptyFallbackSection
+
+### 5.1 HomeScreen
+
+Ansvar:
+
+- Henter aktive heroer basert på segment og geografi
+- Henter utvalgte fordeler
+- Henter kategorier
+- Henter eventuelle lokale fordeler
+- Viser fallback hvis ingen spesifikke treff
+
+### 5.2 HeroCarousel
+
+Krav:
+
+- Kan vise 1–5 heroer
+- Støtter bilde, tittel, undertittel og CTA
+- Må ikke være for høy på små skjermer
+- Skal kunne vise fallback-hero
+
+HeroCard-felter:
+
+- imageUrl
+- title
+- description
+- ctaLabel
+- ctaTargetType
+- ctaTargetValue
+- advertiserLogo optional
+- badge optional
+
+### 5.3 SegmentGreeting
+
+Eksempeltekster:
+
+- Nylig flyttet: «Gjør det litt enklere å komme på plass.»
+- Flyttet tidligere: «Fordeler for hjemmet, hverdagen og alt imellom.»
+- Ikke flyttet: «Gode fordeler samlet på ett sted.»
+- Ukjent: «Finn fordeler som passer deg.»
+
+
+## 6. Fordelsliste
+
+Komponenter:
+
+- BenefitsScreen
+- BenefitList
+- BenefitCard
+- CategoryFilterChips
+- BenefitTypeBadge
+- BenefitStatusBadge
+- BenefitExpiryLabel
+- BenefitSkeleton
+- BenefitEmptyState
+
+### 6.1 BenefitCard
+
+Må vise:
+
+- Bilde
+- Annonsørnavn eller logo
+- Tittel
+- Kort beskrivelse
+- Kategori
+- Badge, f.eks. «Tidsbegrenset», «Nær deg», «Ny»
+- Utløpsdato hvis relevant
+- CTA, f.eks. «Se fordel»
+
+Unngå:
+
+- For mye tekst
+- Små knapper
+- Tett layout
+- «Du har spart»
+
+### 6.2 CategoryFilterChips
+
+- Horisontal scroll
+- «Alle» først
+- Aktiv chip tydelig
+- Må kunne filtrere uten reload hvis mulig
+
+
+## 7. Fordelsdetalj
+
+Komponenter:
+
+- BenefitDetailScreen
+- BenefitHeader
+- BenefitImage
+- AdvertiserBlock
+- BenefitDescription
+- BenefitTerms
+- RedemptionPanel
+- SaveBenefitButton
+- ShareBenefitButton optional
+- RelatedBenefits
+
+### 7.1 BenefitDetailScreen
+
+Må svare på:
+
+- Hva får jeg?
+- Hvem står bak?
+- Hvordan bruker jeg fordelen?
+- Hva er vilkårene?
+- Hvor lenge gjelder den?
+
+### 7.2 RedemptionPanel
+
+Varianter:
+
+- CodeRedemption
+- UniqueCodeRedemption
+- QRRedemption
+- ExternalLinkRedemption
+- LeadFormRedemption
+- InfoOnlyRedemption
+
+
+## 8. Redemption-komponenter
+
+### 8.1 CodeRedemption
+
+Elementer:
+
+- Knapp: «Vis kode»
+- Kodeboks etter reveal
+- Kopier-knapp
+- Lenke til annonsør, hvis finnes
+- Instruksjonstekst
+
+States:
+
+- hidden
+- revealed
+- copied
+- expired
+
+
+### 8.2 UniqueCodeRedemption
+
+Elementer:
+
+- Knapp: «Hent kode»
+- Loading state mens kode tildeles
+- Kodeboks
+- Feil ved tom kodepool
+
+Må kalle API som atomisk tildeler kode.
+
+
+### 8.3 QRRedemption
+
+Elementer:
+
+- Knapp: «Vis QR-kode»
+- QR-modal eller inline QR
+- Instruksjon: «Vis denne i butikk»
+- Utløpsinfo
+
+
+### 8.4 ExternalLinkRedemption
+
+Elementer:
+
+- Primær CTA
+- Ekstern lenke-indikator
+- Eventuell info om at man forlater appen
+
+
+### 8.5 LeadFormRedemption
+
+Elementer:
+
+- Felter definert av admin
+- Samtykketekst
+- Send-knapp
+- Kvittering
+
+MVP-felter som må støttes:
+
+- Navn
+- E-post
+- Telefon
+- Postnummer
+- Fritekst
+- Checkbox samtykke
+
+
+## 9. Nær deg-skjerm
+
+Komponenter:
+
+- NearbyScreen
+- PostcodePrompt
+- NearbyBenefitList
+- LocationSummary
+- ChangeLocationButton
+- NearbyEmptyState
+
+Flow:
+
+1. Hvis postnummer finnes: vis lokale fordeler
+2. Hvis ikke: vis prompt
+3. Hvis ingen lokale fordeler: vis nasjonale fordeler og hyggelig tomtilstand
+
+Ikke bygg kart som avhengighet i MVP.
+
+
+## 10. Mine fordeler
+
+Komponenter:
+
+- SavedBenefitsScreen
+- SavedBenefitList
+- UsedBenefitsList
+- ExpiredBenefitsList
+- SavedEmptyState
+
+MVP kan starte med lagrede fordeler og nylig viste/brukte fordeler.
+
+
+## 11. Profil
+
+Komponenter:
+
+- ProfileScreen
+- ProfileInfoCard
+- PostcodeSettings
+- MovingStatusSettings
+- ConsentSettings
+- InstallAppCard
+- LogoutButton
+
+Profil skal være praktisk og enkel, ikke sosial.
+
+
+## 12. Onboarding og installasjon
+
+Komponenter:
+
+- OnboardingScreen
+- InstallPWAScreen
+- IOSInstallInstructions
+- AndroidInstallInstructions
+
+Installasjonstekster må være enkle:
+
+- iPhone: «Trykk delingsikonet i Safari og velg ‘Legg til på Hjem-skjerm’.»
+- Android: «Trykk menyen i Chrome og velg ‘Installer app’ eller ‘Legg til på startskjermen’.»
+
+
+## 13. Admin layout
+
+Komponenter:
+
+- AdminShell
+- AdminSidebar
+- AdminTopBar
+- AdminTable
+- AdminFormPage
+- AdminStatusBadge
+- AdminPreviewPanel
+- AdminConfirmDialog
+- AdminToast
+
+Admin skal prioritere tydelighet og hastighet.
+
+
+## 14. Admin dashboard
+
+Komponenter:
+
+- DashboardStats
+- ActiveBenefitsWidget
+- ExpiringSoonWidget
+- RecentLeadsWidget
+- CodePoolWarningWidget
+- DraftsWidget
+
+Statistikk i MVP:
+
+- Antall aktive fordeler
+- Antall planlagte fordeler
+- Antall utløper snart
+- Antall nye leads
+- Antall kodepooler med lav beholdning
+
+
+## 15. Admin fordeler
+
+Komponenter:
+
+- BenefitAdminList
+- BenefitAdminFilters
+- BenefitAdminTable
+- BenefitEditor
+- BenefitPreviewMobile
+- BenefitStatusControl
+- BenefitTargetingEditor
+- BenefitRedemptionEditor
+- BenefitMediaUploader
+
+Filter:
+
+- Status
+- Annonsør
+- Kategori
+- Segment
+- Geografi
+- Aktiv periode
+
+Tabellkolonner:
+
+- Tittel
+- Annonsør
+- Kategori
+- Status
+- Startdato
+- Sluttdato
+- Type
+- Prioritet
+- Sist endret
+
+
+## 16. Admin benefit editor
+
+Felter:
+
+Basis:
+
+- Tittel
+- Slug
+- Kort beskrivelse
+- Lang beskrivelse
+- Annonsør
+- Kategori
+- Tags
+- Prioritet
+
+Medier:
+
+- Hovedbilde
+- Logo override optional
+- Alt-tekst
+
+Periode/status:
+
+- Status
+- Startdato
+- Sluttdato
+- Automatisk utløp true/false
+
+Redemption:
+
+- Type
+- Generell kode
+- Kodepool
+- QR data
+- Ekstern URL
+- Leadskjema
+- Instruksjonstekst
+
+Målgruppe:
+
+- Segmenter
+- Postnummer
+- Postnummerområder
+- Kommune
+- Fylke
+- Nasjonal
+
+Juridisk:
+
+- Vilkår
+- Samtykketekst ved lead
+- Personverntekst optional
+
+
+## 17. Admin annonsører
+
+Komponenter:
+
+- AdvertiserList
+- AdvertiserEditor
+- AdvertiserContactInfo
+- AdvertiserAssets
+
+Felter:
+
+- Navn
+- Organisasjonsnummer optional
+- Kontaktperson
+- E-post
+- Telefon
+- Logo
+- Nettside
+- Notater internt
+- Aktiv/inaktiv
+
+
+## 18. Admin heroer
+
+Komponenter:
+
+- HeroList
+- HeroEditor
+- HeroPreviewMobile
+
+Felter:
+
+- Tittel
+- Undertittel
+- Bilde
+- CTA-label
+- CTA-type
+- CTA-target
+- Segmentregler
+- Geografiregler
+- Prioritet
+- Startdato
+- Sluttdato
+- Fallback true/false
+- Status
+
+
+## 19. Admin koder
+
+Komponenter:
+
+- CodePoolList
+- CodePoolDetail
+- CodeUpload
+- CodeStats
+
+Funksjoner:
+
+- Opprette kodepool
+- Laste opp CSV/Excel med koder
+- Lime inn koder manuelt
+- Se antall tilgjengelige/tildelte
+- Deaktivere kodepool
+- Eksportere koder ved behov
+
+
+## 20. Admin leads
+
+Komponenter:
+
+- LeadList
+- LeadDetail
+- LeadExportButton
+- LeadDeleteButton
+
+Leadfelter:
+
+- Fordel
+- Annonsør
+- Navn
+- E-post
+- Telefon
+- Postnummer
+- Samtykke timestamp
+- Status: new/exported/failed/deleted
+- Opprettet dato
+
+Ikke bygg salgsstatuser for annonsørens videre arbeid.
+
+
+## 21. Felles komponenter
+
+- Button
+- IconButton
+- Card
+- Badge
+- Chip
+- Input
+- Textarea
+- Select
+- Checkbox
+- DatePicker
+- Modal
+- Drawer
+- Toast
+- Skeleton
+- EmptyState
+- ErrorState
+- ConfirmDialog
+- ImageUploader
+- RichTextEditor eller enkel Markdown editor
+
+
+## 22. Tilgjengelighet
+
+MVP skal minst støtte:
+
+- Semantiske knapper og lenker
+- Label på inputfelter
+- God kontrast
+- Fokusmarkering
+- Alt-tekst på bilder der relevant
+- Ikke bare farge for status
+- Store nok trykkflater
+
+
+## 23. Responsivitet
+
+Sluttbrukerapp:
+
+- Optimaliseres for mobilbredder ca. 320–430 px
+- Ikke bruk energi på desktop/tablet
+- Desktop kan vise enkel container eller melding
+
+Admin:
+
+- Kan være desktop-first
+- Må fungere godt for intern drift

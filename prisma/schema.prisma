@@ -1,0 +1,454 @@
+// ============================================================
+// FORDELSKLUBBEN — Prisma Schema
+// CR-001: Fase 1 Grunnmur
+//
+// MIGRATION NOTE:
+//   To migrate to a different PostgreSQL provider:
+//   1. Update DATABASE_URL and DIRECT_URL in environment variables.
+//   2. Run: npx prisma migrate deploy
+//   3. No code changes required — Prisma abstracts all DB access.
+//
+//   directUrl is required for Supabase (PgBouncer pooling).
+//   Remove directUrl if your provider does not use connection pooling.
+// ============================================================
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserMovingStatus {
+  recently_moved
+  moved_past
+  not_moving
+  unknown
+}
+
+enum BenefitStatus {
+  draft
+  scheduled
+  active
+  paused
+  expired
+  archived
+  deleted
+}
+
+enum BenefitRedemptionType {
+  generic_code
+  unique_code
+  qr_code
+  external_link
+  lead_form
+  info_only
+  mixed
+}
+
+enum BenefitVisibility {
+  public
+  targeted
+  hidden
+}
+
+enum LeadStatus {
+  new
+  exported
+  failed
+  deleted
+}
+
+enum CodeStatus {
+  available
+  reserved
+  assigned
+  expired
+  disabled
+}
+
+enum HeroStatus {
+  draft
+  scheduled
+  active
+  paused
+  expired
+  archived
+}
+
+enum CTAType {
+  benefit
+  category
+  external_url
+  internal_page
+  none
+}
+
+enum AdminRole {
+  admin
+  editor
+  viewer
+}
+
+// ============================================================
+// MODELS
+// ============================================================
+
+// --- Users ---
+
+model User {
+  id             String           @id @default(uuid()) @db.Uuid
+  // MIGRATION NOTE: externalAuthId links to Supabase Auth.
+  // When migrating auth provider, this field maps to the new provider's user ID.
+  externalAuthId String?          @map("external_auth_id")
+  email          String?
+  phone          String?
+  name           String?
+  postcode       String?
+  municipality   String?
+  county         String?
+  movingStatus   UserMovingStatus @default(unknown) @map("moving_status")
+  movedAt        DateTime?        @map("moved_at") @db.Date
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+  deletedAt      DateTime?        @map("deleted_at")
+
+  sessions      UserSession[]
+  savedBenefits SavedBenefit[]
+  events        BenefitEvent[]
+  assignedCodes Code[]
+
+  @@map("users")
+}
+
+model UserSession {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String?  @map("user_id") @db.Uuid
+  // anonymousId is set in a cookie/localStorage for anonymous tracking.
+  anonymousId String   @map("anonymous_id")
+  deviceType  String?  @map("device_type")
+  platform    String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  lastSeenAt  DateTime @default(now()) @map("last_seen_at")
+
+  user          User?          @relation(fields: [userId], references: [id])
+  savedBenefits SavedBenefit[]
+  events        BenefitEvent[]
+  assignedCodes Code[]
+
+  @@map("user_sessions")
+}
+
+// --- Advertisers ---
+
+model Advertiser {
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String
+  slug          String    @unique
+  orgNumber     String?   @map("org_number")
+  // MIGRATION NOTE: logoUrl points to Supabase Storage.
+  // Update to your CDN URL when migrating storage.
+  logoUrl       String?   @map("logo_url")
+  websiteUrl    String?   @map("website_url")
+  contactName   String?   @map("contact_name")
+  contactEmail  String?   @map("contact_email")
+  contactPhone  String?   @map("contact_phone")
+  internalNotes String?   @map("internal_notes") // Never exposed in app API responses.
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  benefits Benefit[]
+  leads    Lead[]
+
+  @@map("advertisers")
+}
+
+// --- Categories ---
+
+model Category {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  slug        String   @unique
+  description String?
+  icon        String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  benefits Benefit[]
+
+  @@map("categories")
+}
+
+// --- Benefits ---
+
+model Benefit {
+  id               String                @id @default(uuid()) @db.Uuid
+  advertiserId     String                @map("advertiser_id") @db.Uuid
+  categoryId       String                @map("category_id") @db.Uuid
+  title            String
+  slug             String                @unique
+  shortDescription String                @map("short_description")
+  longDescription  String                @map("long_description")
+  imageUrl         String?               @map("image_url")
+  imageAlt         String?               @map("image_alt")
+  badgeText        String?               @map("badge_text")
+  status           BenefitStatus
+  visibility       BenefitVisibility     @default(public)
+  redemptionType   BenefitRedemptionType @map("redemption_type")
+  priority         Int                   @default(0)
+  startsAt         DateTime?             @map("starts_at")
+  endsAt           DateTime?             @map("ends_at")
+  autoExpire       Boolean               @default(true) @map("auto_expire")
+  termsText        String?               @map("terms_text")
+  usageInstruction String?               @map("usage_instruction")
+  consentText      String?               @map("consent_text")
+  isFeatured       Boolean               @default(false) @map("is_featured")
+  isTimeLimited    Boolean               @default(false) @map("is_time_limited")
+  createdBy        String?               @map("created_by") @db.Uuid
+  updatedBy        String?               @map("updated_by") @db.Uuid
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+  deletedAt        DateTime?             @map("deleted_at")
+
+  advertiser Advertiser         @relation(fields: [advertiserId], references: [id])
+  category   Category           @relation(fields: [categoryId], references: [id])
+  redemption BenefitRedemption?
+  targeting  TargetingRule?     @relation("BenefitTargeting")
+  events     BenefitEvent[]
+  savedBy    SavedBenefit[]
+
+  @@map("benefits")
+}
+
+model BenefitRedemption {
+  id           String                @id @default(uuid()) @db.Uuid
+  benefitId    String                @unique @map("benefit_id") @db.Uuid
+  type         BenefitRedemptionType
+  genericCode  String?               @map("generic_code")
+  externalUrl  String?               @map("external_url")
+  qrValue      String?               @map("qr_value")
+  qrImageUrl   String?               @map("qr_image_url")
+  codePoolId   String?               @map("code_pool_id") @db.Uuid
+  leadFormId   String?               @map("lead_form_id") @db.Uuid
+  ctaLabel     String?               @map("cta_label")
+  opensInNewTab Boolean              @default(true) @map("opens_in_new_tab")
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+
+  benefit  Benefit    @relation(fields: [benefitId], references: [id])
+  codePool CodePool?  @relation(fields: [codePoolId], references: [id])
+  leadForm LeadForm?  @relation(fields: [leadFormId], references: [id])
+
+  @@map("benefit_redemptions")
+}
+
+// --- Codes ---
+
+model CodePool {
+  id                String    @id @default(uuid()) @db.Uuid
+  benefitId         String    @map("benefit_id") @db.Uuid
+  name              String
+  description       String?
+  totalCodes        Int       @default(0) @map("total_codes")
+  availableCodes    Int       @default(0) @map("available_codes")
+  lowStockThreshold Int       @default(10) @map("low_stock_threshold")
+  isActive          Boolean   @default(true) @map("is_active")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  codes      Code[]
+  redemption BenefitRedemption[]
+
+  @@map("code_pools")
+}
+
+model Code {
+  id                String      @id @default(uuid()) @db.Uuid
+  codePoolId        String      @map("code_pool_id") @db.Uuid
+  benefitId         String      @map("benefit_id") @db.Uuid
+  codeValue         String      @map("code_value")
+  status            CodeStatus  @default(available)
+  assignedUserId    String?     @map("assigned_user_id") @db.Uuid
+  assignedSessionId String?     @map("assigned_session_id") @db.Uuid
+  assignedAt        DateTime?   @map("assigned_at")
+  reservedUntil     DateTime?   @map("reserved_until")
+  expiresAt         DateTime?   @map("expires_at")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  codePool        CodePool     @relation(fields: [codePoolId], references: [id])
+  assignedUser    User?        @relation(fields: [assignedUserId], references: [id])
+  assignedSession UserSession? @relation(fields: [assignedSessionId], references: [id])
+
+  @@map("codes")
+}
+
+// --- Heroes ---
+
+model Hero {
+  id          String     @id @default(uuid()) @db.Uuid
+  title       String
+  description String?
+  imageUrl    String?    @map("image_url")
+  imageAlt    String?    @map("image_alt")
+  ctaLabel    String?    @map("cta_label")
+  ctaType     CTAType    @map("cta_type")
+  ctaTarget   String?    @map("cta_target")
+  status      HeroStatus
+  priority    Int        @default(0)
+  // isFallback: shown when no targeted hero matches the current user.
+  isFallback  Boolean    @default(false) @map("is_fallback")
+  startsAt    DateTime?  @map("starts_at")
+  endsAt      DateTime?  @map("ends_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  deletedAt   DateTime?  @map("deleted_at")
+
+  targeting TargetingRule? @relation("HeroTargeting")
+
+  @@map("heroes")
+}
+
+// --- Targeting ---
+
+// TargetingRule can belong to either a Benefit or a Hero (never both).
+// Exactly one of benefitId / heroId will be set. Enforced at application level.
+model TargetingRule {
+  id                     String   @id @default(uuid()) @db.Uuid
+  benefitId              String?  @unique @map("benefit_id") @db.Uuid
+  heroId                 String?  @unique @map("hero_id") @db.Uuid
+  // movingStatuses: JSON array of UserMovingStatus values. null = all statuses.
+  movingStatuses         Json?    @map("moving_statuses")
+  // postcodes: JSON array of 4-digit Norwegian postcodes.
+  postcodes              Json?
+  // postcodeRanges: JSON array of {from: "0001", to: "1299"} objects.
+  postcodeRanges         Json?    @map("postcode_ranges")
+  municipalities         Json?
+  counties               Json?
+  includeUnknownLocation Boolean  @default(true) @map("include_unknown_location")
+  // appliesNationally: true = visible to all users regardless of location.
+  appliesNationally      Boolean  @default(false) @map("applies_nationally")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  benefit Benefit? @relation("BenefitTargeting", fields: [benefitId], references: [id])
+  hero    Hero?    @relation("HeroTargeting", fields: [heroId], references: [id])
+
+  @@map("targeting_rules")
+}
+
+// --- Events & Saved Benefits ---
+
+model BenefitEvent {
+  id        String       @id @default(uuid()) @db.Uuid
+  userId    String?      @map("user_id") @db.Uuid
+  sessionId String?      @map("session_id") @db.Uuid
+  benefitId String?      @map("benefit_id") @db.Uuid
+  eventType String       @map("event_type")
+  metadata  Json?
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  user    User?        @relation(fields: [userId], references: [id])
+  session UserSession? @relation(fields: [sessionId], references: [id])
+  benefit Benefit?     @relation(fields: [benefitId], references: [id])
+
+  @@map("benefit_events")
+}
+
+model SavedBenefit {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String?   @map("user_id") @db.Uuid
+  sessionId String?   @map("session_id") @db.Uuid
+  benefitId String    @map("benefit_id") @db.Uuid
+  createdAt DateTime  @default(now()) @map("created_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  user    User?        @relation(fields: [userId], references: [id])
+  session UserSession? @relation(fields: [sessionId], references: [id])
+  benefit Benefit      @relation(fields: [benefitId], references: [id])
+
+  @@map("saved_benefits")
+}
+
+// --- Leads ---
+
+model LeadForm {
+  id              String    @id @default(uuid()) @db.Uuid
+  // benefitId stored for convenience — also accessible via BenefitRedemption.
+  benefitId       String    @map("benefit_id") @db.Uuid
+  name            String
+  // fields: JSON array of field definitions.
+  // Example: [{"name":"email","label":"E-post","type":"email","required":true}]
+  fields          Json
+  consentRequired Boolean   @default(true) @map("consent_required")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  redemptions BenefitRedemption[]
+
+  @@map("lead_forms")
+}
+
+model Lead {
+  id                String     @id @default(uuid()) @db.Uuid
+  benefitId         String     @map("benefit_id") @db.Uuid
+  advertiserId      String     @map("advertiser_id") @db.Uuid
+  userId            String?    @map("user_id") @db.Uuid
+  sessionId         String?    @map("session_id") @db.Uuid
+  // formData is personal data — never log in plaintext.
+  formData          Json       @map("form_data")
+  consentText       String     @map("consent_text")
+  consentAcceptedAt DateTime   @map("consent_accepted_at")
+  // Status reflects our handling only — not the advertiser's follow-up process.
+  status            LeadStatus @default(new)
+  exportedAt        DateTime?  @map("exported_at")
+  deletedAt         DateTime?  @map("deleted_at")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @updatedAt @map("updated_at")
+
+  advertiser Advertiser @relation(fields: [advertiserId], references: [id])
+
+  @@map("leads")
+}
+
+// --- Admin ---
+
+model AdminUser {
+  id        String    @id @default(uuid()) @db.Uuid
+  email     String    @unique
+  name      String
+  role      AdminRole
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  auditLogs AuditLog[]
+
+  @@map("admin_users")
+}
+
+model AuditLog {
+  id          String     @id @default(uuid()) @db.Uuid
+  adminUserId String?    @map("admin_user_id") @db.Uuid
+  action      String
+  entityType  String     @map("entity_type")
+  entityId    String     @map("entity_id") @db.Uuid
+  before      Json?
+  after       Json?
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  adminUser AdminUser? @relation(fields: [adminUserId], references: [id])
+
+  @@map("audit_log")
+}

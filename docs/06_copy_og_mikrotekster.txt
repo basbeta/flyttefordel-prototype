@@ -1,0 +1,550 @@
+# 06 — Copy og mikrotekster
+
+Prosjekt: Fordelsklubben / Flyttefordel MVP
+Dokumenttype: PRD-del 06
+Tema: Copy, mikrotekster og tone of voice
+
+
+## 1. Tone of voice
+
+Fordelsklubben skal føles enkel, trygg, nyttig og litt inspirerende. Språket skal være menneskelig og lavterskel, ikke aggressivt salgsorientert.
+
+Appen skal ikke rope «KJØP NÅ» eller oppleves som en katalog med tilfeldige annonser. Den skal føles som et kuratert sted for relevante fordeler.
+
+Tone:
+
+- Kort
+- Konkret
+- Vennlig
+- Seriøs
+- Hjelpsom
+- Ikke masete
+- Ikke for mye emoji
+- Ikke for teknisk
+
+
+## 2. Overordnet posisjonering
+
+Mulige formuleringer:
+
+- «Gode fordeler samlet på ett sted.»
+- «Fordeler for hjemmet, hverdagen og alt imellom.»
+- «Enten du har flyttet eller bare vil gjøre en god deal.»
+- «Rabatter, tilbud og nyttige fordeler – lett tilgjengelig på mobilen.»
+- «En enklere måte å finne relevante fordeler på.»
+
+
+## 3. Onboarding
+
+### Skjerm 1
+
+Tittel:
+«Velkommen til Fordelsklubben»
+
+Tekst:
+«Her finner du gode fordeler, rabattkoder og nyttige tilbud – enten du har flyttet, skal flytte eller bare vil gjøre en god deal.»
+
+Primær CTA:
+«Se fordeler»
+
+Sekundær CTA:
+«Legg inn postnummer»
+
+
+### Alternativ kortversjon
+
+Tittel:
+«Finn fordeler som passer deg»
+
+Tekst:
+«Se utvalgte tilbud og kampanjer fra kjente aktører – samlet på ett sted.»
+
+CTA:
+«Kom i gang»
+
+
+## 4. Hjemskjerm
+
+### Generell greeting
+
+«Hei! Her er noen fordeler du kan bruke nå.»
+
+### Ukjent bruker
+
+«Finn gode fordeler – uansett om du har flyttet eller ikke.»
+
+### Nylig flyttet
+
+«Gjør det litt enklere å komme på plass.»
+
+### Flyttet for mer enn 60 dager siden
+
+«Fordeler for hjemmet, hverdagen og alt som kommer etter flyttingen.»
+
+### Ikke flyttet
+
+«Gode fordeler for hverdagen – samlet på ett sted.»
+
+### Lokalt/nær deg
+
+«Se om det finnes fordeler i nærheten av deg.»
+
+
+## 5. Hero-copy
+
+### Generell app-hero
+
+Tittel:
+«Fordeler for hjemmet og hverdagen»
+
+Tekst:
+«Utforsk rabattkoder, kampanjer og nyttige tilbud – samlet på mobilen.»
+
+CTA:
+«Se fordeler»
+
+
+### Flytterelatert hero
+
+Tittel:
+«Nylig flyttet?»
+
+Tekst:
+«Vi har samlet fordeler som kan gjøre det enklere å komme på plass.»
+
+CTA:
+«Se flyttefordeler»
+
+
+### Fallback-hero
+
+Tittel:
+«Alltid noe å oppdage»
+
+Tekst:
+«Vi fant ikke en spesifikk lokal fordel akkurat nå, men her er fordeler som gjelder for alle.»
+
+CTA:
+«Se alle fordeler»
+
+
+### Nær deg-hero
+
+Tittel:
+«Hva finnes nær deg?»
+
+Tekst:
+«Legg inn postnummer og se om det finnes lokale fordeler i ditt område.»
+
+CTA:
+«Sjekk mitt område»
+
+
+## 6. Fordelskort
+
+### CTA-varianter
+
+- «Se fordel»
+- «Vis kode»
+- «Hent kode»
+- «Bruk fordelen»
+- «Gå til tilbudet»
+- «Les mer»
+- «Meld interesse»
+
+### Badges
+
+- «Ny»
+- «Tidsbegrenset»
+- «Populær»
+- «Nær deg»
+- «Gjelder alle»
+- «For deg som har flyttet»
+- «Kun denne uken»
+
+### Utløpstekster
+
+- «Gjelder til {date}»
+- «Utløper snart»
+- «Siste dag i dag»
+- «Kampanjen er avsluttet»
+
+
+## 7. Fordelsdetalj
+
+### Standardseksjoner
+
+Overskrift for beskrivelse:
+«Dette får du»
+
+Overskrift for bruk:
+«Slik bruker du fordelen»
+
+Overskrift for vilkår:
+«Vilkår»
+
+Overskrift for annonsør:
+«Tilbys av»
+
+
+### Generell kode
+
+Før kode vises:
+«Trykk for å vise rabattkoden.»
+
+CTA:
+«Vis kode»
+
+Etter kode vises:
+«Kopier koden og bruk den hos {annonsør}.»
+
+Kopier-knapp:
+«Kopier kode»
+
+Kopiert:
+«Koden er kopiert»
+
+
+### Unik kode
+
+Før kode:
+«Denne fordelen bruker en unik kode. Når du henter koden, reserveres den til deg.»
+
+CTA:
+«Hent kode»
+
+Etter kode:
+«Dette er din kode.»
+
+Tom kodepool:
+«Akkurat nå er alle kodene hentet.»
+
+CTA tom:
+«Se andre fordeler»
+
+
+### QR-kode
+
+Før QR:
+«Vis QR-koden når du skal bruke fordelen.»
+
+CTA:
+«Vis QR-kode»
+
+Instruksjon:
+«Vis denne i butikk eller der fordelen skal brukes.»
+
+
+### Ekstern lenke
+
+CTA:
+«Gå til tilbudet»
+
+Hjelpetekst:
+«Du sendes videre til {annonsør}.»
+
+
+### Leadskjema
+
+Tittel:
+«Meld interesse»
+
+Intro:
+«Fyll ut skjemaet, så deler vi opplysningene dine med {annonsør} slik at de kan kontakte deg om denne fordelen.»
+
+CTA:
+«Send interesse»
+
+Kvittering:
+«Takk! Interessen din er sendt.»
+
+Kvitteringstekst:
+«{Annonsør} kan kontakte deg direkte om denne fordelen.»
+
+
+## 8. Nær deg
+
+### Uten postnummer
+
+Tittel:
+«Vil du se fordeler nær deg?»
+
+Tekst:
+«Legg inn postnummer, så sjekker vi om det finnes relevante fordeler i ditt område.»
+
+Input label:
+«Postnummer»
+
+CTA:
+«Se fordeler nær meg»
+
+Sekundær CTA:
+«Se nasjonale fordeler»
+
+
+### Med postnummer
+
+Tittel:
+«Fordeler nær {postcode}»
+
+Tekst:
+«Her er fordeler som kan være relevante for området ditt.»
+
+Endre-knapp:
+«Endre postnummer»
+
+
+### Ingen lokale treff
+
+Tittel:
+«Ingen lokale fordeler akkurat nå»
+
+Tekst:
+«Vi fant ingen fordeler for dette området ennå, men du kan fortsatt se fordeler som gjelder for alle.»
+
+CTA:
+«Se alle fordeler»
+
+
+## 9. Mine fordeler
+
+### Tom lagretliste
+
+Tittel:
+«Ingen lagrede fordeler ennå»
+
+Tekst:
+«Lagre fordeler du vil finne igjen senere.»
+
+CTA:
+«Utforsk fordeler»
+
+
+### Utløpt fordel
+
+«Denne fordelen er utløpt.»
+
+CTA:
+«Se lignende fordeler»
+
+
+## 10. Profil
+
+### Postnummer
+
+Label:
+«Postnummer»
+
+Hjelpetekst:
+«Brukes for å vise mer relevante fordeler. Du kan endre dette når som helst.»
+
+CTA:
+«Lagre postnummer»
+
+
+### Flyttestatus
+
+Label:
+«Hva passer best for deg?»
+
+Alternativer:
+
+- «Jeg har nylig flyttet»
+- «Jeg flyttet for en stund siden»
+- «Jeg flytter ikke»
+- «Ikke relevant»
+
+Hjelpetekst:
+«Dette hjelper oss å vise fordeler som passer bedre.»
+
+
+### Samtykker
+
+Tittel:
+«Samtykker»
+
+Tekst:
+«Her kan du se og endre hva du har samtykket til.»
+
+
+## 11. PWA installasjon
+
+### Generell
+
+Tittel:
+«Legg Fordelsklubben på hjemskjermen»
+
+Tekst:
+«Da har du fordelene lett tilgjengelig – akkurat som en app.»
+
+CTA:
+«Vis hvordan»
+
+
+### iPhone
+
+Tittel:
+«Slik legger du til på iPhone»
+
+Steg:
+
+1. «Åpne siden i Safari.»
+2. «Trykk på delingsikonet.»
+3. «Velg ‘Legg til på Hjem-skjerm’.»
+4. «Trykk ‘Legg til’.»
+
+
+### Android
+
+Tittel:
+«Slik legger du til på Android»
+
+Steg:
+
+1. «Åpne siden i Chrome.»
+2. «Trykk på menyen.»
+3. «Velg ‘Installer app’ eller ‘Legg til på startskjermen’.»
+4. «Bekreft.»
+
+
+## 12. Feilmeldinger
+
+### Generell feil
+
+«Noe gikk galt. Prøv igjen om litt.»
+
+### Nettverksfeil
+
+«Vi får ikke kontakt akkurat nå. Sjekk nettet og prøv igjen.»
+
+### Ikke funnet
+
+«Vi fant ikke det du leter etter.»
+
+CTA:
+«Gå til forsiden»
+
+### Fordel utløpt
+
+«Denne fordelen er dessverre utløpt.»
+
+CTA:
+«Se andre fordeler»
+
+### Ikke kvalifisert
+
+«Denne fordelen gjelder ikke for ditt område akkurat nå.»
+
+CTA:
+«Se fordeler som gjelder for deg»
+
+### Samtykke mangler
+
+«Du må godkjenne deling av opplysningene dine for å sende skjemaet.»
+
+### Validering postnummer
+
+«Skriv inn et gyldig postnummer med fire siffer.»
+
+### Validering e-post
+
+«Skriv inn en gyldig e-postadresse.»
+
+### Validering telefon
+
+«Skriv inn et gyldig telefonnummer.»
+
+
+## 13. Admin copy
+
+### Ny fordel
+
+Tittel:
+«Ny fordel»
+
+Hjelpetekst:
+«Fyll inn informasjonen som skal vises i appen. Du kan lagre som utkast før publisering.»
+
+### Publisering
+
+Bekreftelse:
+«Er du sikker på at du vil publisere denne fordelen?»
+
+Suksess:
+«Fordelen er publisert.»
+
+Feil:
+«Fordelen kan ikke publiseres før alle påkrevde felter er fylt ut.»
+
+### Arkivering
+
+Bekreftelse:
+«Vil du arkivere denne fordelen? Den blir ikke synlig i appen, men beholdes i historikken.»
+
+Suksess:
+«Fordelen er arkivert.»
+
+### Sletting
+
+Bekreftelse:
+«Vil du slette denne? Handlingen kan påvirke historikk og rapportering.»
+
+Suksess:
+«Elementet er slettet.»
+
+### Kodeopplasting
+
+Tittel:
+«Last opp koder»
+
+Hjelpetekst:
+«Last opp en CSV/Excel-fil eller lim inn én kode per linje.»
+
+Suksess:
+«Kodene er lagt til.»
+
+Feil duplikater:
+«Noen koder var duplikater og ble ikke lagt til.»
+
+### Leads
+
+Eksport:
+«Eksporter leads»
+
+Suksess:
+«Leadene er eksportert.»
+
+Merk:
+«Status viser kun vår håndtering av leadet, ikke annonsørens videre oppfølging.»
+
+
+## 14. Samtykketekster
+
+### Deling med annonsør
+
+«Jeg samtykker til at opplysningene mine deles med {annonsør}, slik at de kan kontakte meg om denne fordelen.»
+
+### Relevans/personalisering
+
+«Jeg ønsker at Fordelsklubben kan bruke opplysninger som postnummer og flyttestatus til å vise meg mer relevante fordeler.»
+
+### Markedsføring
+
+«Jeg ønsker å motta tips, fordeler og relevant informasjon fra Fordelsklubben.»
+
+
+## 15. Copy som bør unngås
+
+Unngå:
+
+- «Du har spart X kr»
+- «Eksklusivt for deg» dersom det ikke er sant
+- «Kun i dag» dersom kampanjen varer lenger
+- «Vi kontakter deg» dersom det er annonsør som kontakter
+- «Garantert rabatt» dersom vilkår gjelder
+- For mye press: «Skynd deg!», «Ikke gå glipp av!» i overdreven grad
+
+
+## 16. Prinsipp for juridisk tekst
+
+Vilkår og samtykke skal være tydelig, men ikke dominere opplevelsen. Bruk korte forklaringer i UI og lenk til full vilkårstekst der det trengs.

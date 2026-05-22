@@ -1,0 +1,175 @@
+# 01 — Produktprinsipper og scope
+
+Prosjekt: Fordelsklubben / Flyttefordel MVP
+Dokumenttype: PRD-del 01
+Målgruppe for dokumentet: produkteier, designer, utvikler og Claude Code
+Plattform: Mobil PWA for Android og iPhone
+Ikke prioritert i denne versjonen: desktop, nettbrett, native app, avansert kart/API
+
+
+## 1. Produktidé
+
+Vi skal bygge en mobil PWA som samler relevante fordeler, tilbud, kampanjer og nyttig innhold for personer i Norge. Tjenesten skal kunne brukes både av personer som nylig har flyttet, personer som har flyttet for mer enn 60 dager siden, personer som ikke flytter, og personer som kun laster ned appen fordi de ønsker gode fordeler.
+
+Arbeidstittel kan være «Fordelsklubben». Navnet trenger ikke være Flyttefordel, fordi ambisjonen er bredere enn flytteøyeblikket. Flytting er fortsatt en sterk trigger og et viktig datagrunnlag, men produktet skal ikke oppleves som ubrukelig etter flytteperioden.
+
+
+## 2. Ambisjon
+
+Ambisjonen er å bygge Norges største fordelsapp. MVP-en skal derfor ikke bare løse ett smalt flyttebehov, men etablere en fleksibel plattform for fordeler, kampanjer, rabattkoder, QR-koder, leadskjemaer, redaksjonelt innhold, herobannere og annonsørstyrte tilbud.
+
+Appen skal kunne skaleres til flere kategorier, flere annonsører, flere geografiske regler og flere brukersegmenter uten at grunnarkitekturen må bygges om.
+
+
+## 3. Produktprinsipper
+
+### 3.1 Lav terskel
+
+Brukeren skal raskt forstå verdien av appen. Det skal være mulig å åpne appen og se fordeler uten å måtte gjennom en lang onboarding. Der vi trenger samtykke, postnummer, innlogging eller annen informasjon, skal dette innhentes gradvis og bare når det gir tydelig verdi.
+
+### 3.2 Ikke bare for flyttere
+
+Appen skal aldri låse hele opplevelsen til flyttestatus. Flytting kan gi ekstra relevante fordeler, men alle brukere skal kunne få en meningsfull opplevelse.
+
+Segmenter i MVP:
+
+- Nylig flyttet: 0–60 dager etter flytting
+- Flyttet tidligere: mer enn 60 dager siden flytting
+- Ikke flyttet / ukjent flyttestatus
+- Ny bruker uten profilinformasjon
+
+### 3.3 Fordeler først, forklaring etterpå
+
+Appen skal vise konkrete fordeler raskt. Ikke bruk for mye plass på å forklare konseptet før brukeren ser verdi. Hero, kategorier og fordelskort skal gjøre nytten åpenbar.
+
+### 3.4 Mobil først, kun mobil i MVP
+
+Denne versjonen bygges som PWA tilpasset Android- og iPhone-telefoner. Det skal ikke brukes tid på PC- eller nettbrettoptimalisering. Desktop kan vise en enkel unsupported/redirect-opplevelse, men det er ikke en designflate som skal prioriteres.
+
+### 3.5 Enkel administrasjon foran perfekt administrasjon
+
+Admin/backoffice skal være nok til å opprette, publisere, prioritere og avslutte fordeler, heroer og kampanjer. Det skal være robust nok til faktisk drift, men ikke overkomplisert.
+
+### 3.6 Transparens og kontroll
+
+Brukeren skal forstå hva som skjer når en fordel brukes. Rabattkode, QR-kode, ekstern lenke og kontaktskjema må oppleves tydelig. Hvis brukerdata deles med annonsør, skal det være basert på eksplisitt handling/samtykke.
+
+### 3.7 Fallback som standard
+
+Det skal alltid finnes innhold for brukere som ikke matcher en spesifikk fordel, geografisk regel eller flyttesegment. Appen må derfor støtte fallback-heroer, generelle fordeler og standardvisninger.
+
+### 3.8 Ikke tung kartavhengighet
+
+«Nær deg» kan være en morsom sekundærfunksjon, men appen skal ikke primært posisjoneres som «fordeler der du bor». Kart-API kan være dyrt og skal derfor ikke være kritisk i MVP. Første versjon kan løse lokale fordeler med postnummer/kommune/by og en enkel listevisning.
+
+
+## 4. Mål for MVP
+
+MVP skal validere:
+
+1. At brukere forstår og bruker en bred fordelsapp.
+2. At flyttere kan få ekstra relevante fordeler uten at appen blir irrelevant for andre.
+3. At annonsører kan administreres med regler, koder og perioder.
+4. At Bas/Posten kan drifte fordeler uten utviklerhjelp i hverdagen.
+5. At appen kan utvides til flere annonsører, kategorier og inntektsmodeller.
+
+
+## 5. Ikke-mål for MVP
+
+Følgende skal ikke bygges i MVP med mindre det er helt nødvendig for å teste kjerneverdien:
+
+- Native iOS- eller Android-app
+- Desktopversjon
+- Nettbrettoptimalisering
+- Kompleks personalisering basert på mange datakilder
+- Avansert kartvisning med live POI-data
+- Kompleks lojalitetspoengmotor
+- Fullverdig CRM for annonsører
+- Automatisk annonsørportal for selvbetjening
+- Betaling i app
+- Kompleks analyseplattform utover grunnleggende tracking
+- Push-varsler med avanserte journeys, med mindre PWA-støtte og samtykke er enkelt å håndtere
+
+
+## 6. Suksesskriterier
+
+### For privatperson / bruker
+
+- Brukeren finner raskt minst én relevant fordel.
+- Brukeren forstår hvordan en fordel brukes.
+- Brukeren kan bruke appen selv om vedkommende ikke flytter.
+- Brukeren opplever appen som seriøs, enkel og nyttig.
+- Brukeren slipper unødvendig registrering før verdi er tydelig.
+
+### For bedrift / annonsør / drift
+
+- Admin kan opprette og publisere fordeler uten utvikler.
+- Admin kan styre fordeler etter status, periode, segment og geografi.
+- Admin kan legge inn rabattkoder manuelt eller laste opp koder.
+- Admin kan legge inn fallback-heroer og generelle kampanjer.
+- Leads kan samles inn uten at systemet trenger å vite om annonsøren har kontaktet brukeren etterpå.
+- Fordeler kan automatisk utløpe eller tas av etter definert sluttdato.
+
+
+## 7. Roller
+
+### Sluttbruker
+
+Person som bruker appen for å finne og bruke fordeler.
+
+### Admin
+
+Intern bruker hos Bas/Posten som oppretter og vedlikeholder fordeler, annonsører, heroer, kategorier og kampanjer.
+
+### Annonsør
+
+Ekstern kommersiell partner som tilbyr rabatt, kampanje, kode, QR, lenke eller leadbasert tilbud.
+
+### Utvikler / Claude Code
+
+Skal kunne bruke PRD-filene som styringsgrunnlag for datamodell, API-er, komponenter, skjermstruktur og implementering.
+
+
+## 8. Produktflate
+
+### App / PWA
+
+- Mobil webapp installable som PWA
+- Skal fungere på moderne Android- og iPhone-nettlesere
+- Skal ha app-lignende opplevelse
+- Skal kunne legges til på hjemskjerm
+- Skal støtte sikker innlogging/sesjon dersom valgt
+- Skal kunne cache grunnleggende assets
+- Skal håndtere dårlig nett med enkle feilmeldinger
+
+### Admin
+
+- Webbasert admin kan gjerne være desktopvennlig, selv om sluttbrukerappen kun prioriteres for mobil
+- Admin skal være funksjonell, ikke nødvendigvis visuelt avansert
+- Admin skal ha tydelige statusfelter, forhåndsvisning og publiseringskontroll
+
+
+## 9. Teknisk antakelse
+
+Dette dokumentet er teknologinøytralt, men implementasjonen bør tilrettelegges for moderne webstack. Eksempel:
+
+- Frontend: Next.js / React / TypeScript
+- Backend/API: Next.js API routes, Node, Supabase, Firebase eller tilsvarende
+- Database: PostgreSQL-lignende relasjonsdatabase anbefales
+- Auth: enkel admin-auth og eventuell bruker-auth
+- Filopplasting: bildeopplasting til egnet storage
+- PWA: manifest, service worker, mobiltilpasset routing
+
+Claude Code skal ikke tolke dette som endelig teknologivalg, men som ønsket arkitekturretning.
+
+
+## 10. Viktige avklaringer som er tatt inn i scope
+
+- Appen skal være brukbar for ikke-flyttere.
+- Appen skal ikke primært handle om «der du bor».
+- Lokale/nærliggende fordeler er sekundært og kan løses enkelt.
+- Kart-API skal ikke være sentralt i MVP.
+- Admin skal støtte fallback-heroer for brukere som ikke kvalifiserer for spesifikke fordeler.
+- Fordeler skal kunne slettes, arkiveres eller utløpe etter en periode.
+- Annonsør trenger tilgang til koder, men ikke nødvendigvis via egen portal i MVP.
+- Systemet skal ikke ha statuser som krever at vi vet om annonsør har kontaktet bruker etter lead.

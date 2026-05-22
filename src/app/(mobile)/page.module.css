@@ -1,0 +1,25 @@
+.page {
+  /* MobileShell already handles bottom-nav padding */
+}
+
+.section {
+  padding: var(--space-5);
+}
+
+.sectionTitle {
+  font-size: var(--font-lg);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-4);
+  color: var(--color-text);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.empty {
+  color: var(--color-text-muted);
+  font-size: var(--font-sm);
+}

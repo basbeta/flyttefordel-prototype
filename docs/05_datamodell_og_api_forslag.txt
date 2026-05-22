@@ -1,0 +1,866 @@
+# 05 — Datamodell og API-forslag
+
+Prosjekt: Fordelsklubben / Flyttefordel MVP
+Dokumenttype: PRD-del 05
+Tema: Datamodell og API-forslag
+
+
+## 1. Formål
+
+Dette dokumentet beskriver en implementasjonsvennlig datamodell og API-struktur for app og admin. Det er ikke låst til ett konkret rammeverk, men er skrevet slik at Claude Code kan bruke det som grunnlag for å lage database, typer, API-ruter og service-lag.
+
+Anbefalt retning:
+
+- Relasjonsdatabase, f.eks. PostgreSQL
+- TypeScript types/interfaces
+- API-ruter med tydelig validering
+- Soft delete på viktige entiteter
+- Auditfelter på adminstyrt innhold
+
+
+## 2. Viktige enum-verdier
+
+### UserMovingStatus
+
+- recently_moved
+- moved_past
+- not_moving
+- unknown
+
+### BenefitStatus
+
+- draft
+- scheduled
+- active
+- paused
+- expired
+- archived
+- deleted
+
+### BenefitRedemptionType
+
+- generic_code
+- unique_code
+- qr_code
+- external_link
+- lead_form
+- info_only
+- mixed
+
+### BenefitVisibility
+
+- public
+- targeted
+- hidden
+
+### LeadStatus
+
+- new
+- exported
+- failed
+- deleted
+
+### CodeStatus
+
+- available
+- reserved
+- assigned
+- expired
+- disabled
+
+### HeroStatus
+
+- draft
+- scheduled
+- active
+- paused
+- expired
+- archived
+
+### CTAType
+
+- benefit
+- category
+- external_url
+- internal_page
+- none
+
+
+## 3. Tabeller / entiteter
+
+## 3.1 users
+
+Brukere kan være anonyme eller identifiserte. MVP kan starte med session-baserte brukere, men modellen bør tåle innlogging senere.
+
+Felter:
+
+- id: uuid, primary key
+- external_auth_id: string nullable
+- email: string nullable
+- phone: string nullable
+- name: string nullable
+- postcode: string nullable
+- municipality: string nullable
+- county: string nullable
+- moving_status: UserMovingStatus default unknown
+- moved_at: date nullable
+- created_at: timestamp
+- updated_at: timestamp
+- deleted_at: timestamp nullable
+
+Kommentar:
+
+Ikke krev komplett profil for å bruke appen.
+
+
+## 3.2 user_sessions
+
+Felter:
+
+- id: uuid
+- user_id: uuid nullable
+- anonymous_id: string
+- device_type: string nullable
+- platform: string nullable
+- created_at: timestamp
+- last_seen_at: timestamp
+
+Brukes til å knytte handlinger til anonym eller kjent bruker.
+
+
+## 3.3 advertisers
+
+Felter:
+
+- id: uuid
+- name: string
+- slug: string unique
+- org_number: string nullable
+- logo_url: string nullable
+- website_url: string nullable
+- contact_name: string nullable
+- contact_email: string nullable
+- contact_phone: string nullable
+- internal_notes: text nullable
+- is_active: boolean default true
+- created_at: timestamp
+- updated_at: timestamp
+- deleted_at: timestamp nullable
+
+
+## 3.4 categories
+
+Felter:
+
+- id: uuid
+- name: string
+- slug: string unique
+- description: text nullable
+- icon: string nullable
+- sort_order: integer default 0
+- is_active: boolean default true
+- created_at: timestamp
+- updated_at: timestamp
+
+Kategorier må ikke hardkodes i frontend.
+
+
+## 3.5 benefits
+
+Felter:
+
+- id: uuid
+- advertiser_id: uuid foreign key advertisers.id
+- category_id: uuid foreign key categories.id
+- title: string
+- slug: string unique
+- short_description: string
+- long_description: text
+- image_url: string nullable
+- image_alt: string nullable
+- badge_text: string nullable
+- status: BenefitStatus
+- visibility: BenefitVisibility default public
+- redemption_type: BenefitRedemptionType
+- priority: integer default 0
+- starts_at: timestamp nullable
+- ends_at: timestamp nullable
+- auto_expire: boolean default true
+- terms_text: text nullable
+- usage_instruction: text nullable
+- consent_text: text nullable
+- is_featured: boolean default false
+- is_time_limited: boolean default false
+- created_by: uuid nullable
+- updated_by: uuid nullable
+- created_at: timestamp
+- updated_at: timestamp
+- deleted_at: timestamp nullable
+
+Regler:
+
+- Aktiv fordel må ha gyldig status og være innenfor periode
+- Fordel med ends_at i fortid skal ikke vises som aktiv
+- Slug skal kunne autogenereres fra tittel, men redigeres av admin
+
+
+## 3.6 benefit_redemptions
+
+Denne tabellen lagrer redemption-konfigurasjon per fordel.
+
+Felter:
+
+- id: uuid
+- benefit_id: uuid foreign key benefits.id
+- type: BenefitRedemptionType
+- generic_code: string nullable
+- external_url: string nullable
+- qr_value: text nullable
+- qr_image_url: string nullable
+- code_pool_id: uuid nullable
+- lead_form_id: uuid nullable
+- cta_label: string nullable
+- opens_in_new_tab: boolean default true
+- created_at: timestamp
+- updated_at: timestamp
+
+
+## 3.7 code_pools
+
+Felter:
+
+- id: uuid
+- benefit_id: uuid foreign key benefits.id
+- name: string
+- description: text nullable
+- total_codes: integer default 0
+- available_codes: integer default 0
+- low_stock_threshold: integer default 10
+- is_active: boolean default true
+- created_at: timestamp
+- updated_at: timestamp
+
+
+## 3.8 codes
+
+Felter:
+
+- id: uuid
+- code_pool_id: uuid foreign key code_pools.id
+- benefit_id: uuid foreign key benefits.id
+- code_value: string
+- status: CodeStatus default available
+- assigned_user_id: uuid nullable
+- assigned_session_id: uuid nullable
+- assigned_at: timestamp nullable
+- reserved_until: timestamp nullable
+- expires_at: timestamp nullable
+- created_at: timestamp
+- updated_at: timestamp
+
+Viktig:
+
+Unik kode må tildeles atomisk. Bruk transaksjon/locking.
+
+
+## 3.9 heroes
+
+Felter:
+
+- id: uuid
+- title: string
+- description: text nullable
+- image_url: string nullable
+- image_alt: string nullable
+- cta_label: string nullable
+- cta_type: CTAType
+- cta_target: string nullable
+- status: HeroStatus
+- priority: integer default 0
+- is_fallback: boolean default false
+- starts_at: timestamp nullable
+- ends_at: timestamp nullable
+- created_at: timestamp
+- updated_at: timestamp
+- deleted_at: timestamp nullable
+
+
+## 3.10 targeting_rules
+
+Kan brukes for både benefits og heroes.
+
+Felter:
+
+- id: uuid
+- entity_type: string enum benefit|hero
+- entity_id: uuid
+- moving_statuses: jsonb nullable
+- postcodes: jsonb nullable
+- postcode_ranges: jsonb nullable
+- municipalities: jsonb nullable
+- counties: jsonb nullable
+- include_unknown_location: boolean default true
+- applies_nationally: boolean default false
+- created_at: timestamp
+- updated_at: timestamp
+
+Eksempel postcode_ranges:
+
+[
+  { "from": "0001", "to": "1299" },
+  { "from": "5000", "to": "5999" }
+]
+
+For opplastet Excel med postnummer kan data normaliseres til egen tabell hvis volumet blir stort.
+
+
+## 3.11 benefit_events
+
+Eventlogg for bruk av appen.
+
+Felter:
+
+- id: uuid
+- user_id: uuid nullable
+- session_id: uuid nullable
+- benefit_id: uuid nullable
+- event_type: string
+- metadata: jsonb nullable
+- created_at: timestamp
+
+Eksempler event_type:
+
+- benefit_viewed
+- benefit_saved
+- code_revealed
+- code_copied
+- qr_opened
+- external_link_clicked
+- lead_form_started
+- lead_submitted
+
+
+## 3.12 saved_benefits
+
+Felter:
+
+- id: uuid
+- user_id: uuid nullable
+- session_id: uuid nullable
+- benefit_id: uuid
+- created_at: timestamp
+- deleted_at: timestamp nullable
+
+Unik constraint:
+
+- user_id + benefit_id der deleted_at er null
+- session_id + benefit_id der deleted_at er null
+
+
+## 3.13 lead_forms
+
+Felter:
+
+- id: uuid
+- benefit_id: uuid
+- name: string
+- fields: jsonb
+- consent_required: boolean default true
+- created_at: timestamp
+- updated_at: timestamp
+
+Eksempel fields:
+
+[
+  { "name": "name", "label": "Navn", "type": "text", "required": true },
+  { "name": "email", "label": "E-post", "type": "email", "required": true },
+  { "name": "phone", "label": "Telefon", "type": "tel", "required": false },
+  { "name": "postcode", "label": "Postnummer", "type": "text", "required": false }
+]
+
+
+## 3.14 leads
+
+Felter:
+
+- id: uuid
+- benefit_id: uuid
+- advertiser_id: uuid
+- user_id: uuid nullable
+- session_id: uuid nullable
+- form_data: jsonb
+- consent_text: text
+- consent_accepted_at: timestamp
+- status: LeadStatus default new
+- exported_at: timestamp nullable
+- deleted_at: timestamp nullable
+- created_at: timestamp
+- updated_at: timestamp
+
+Ikke lag statuser for annonsørens videre behandling.
+
+
+## 3.15 admin_users
+
+Felter:
+
+- id: uuid
+- email: string unique
+- name: string
+- role: string enum admin|editor|viewer
+- is_active: boolean default true
+- created_at: timestamp
+- updated_at: timestamp
+
+
+## 3.16 audit_log
+
+Felter:
+
+- id: uuid
+- admin_user_id: uuid nullable
+- action: string
+- entity_type: string
+- entity_id: uuid
+- before: jsonb nullable
+- after: jsonb nullable
+- created_at: timestamp
+
+Brukes for historikk i admin.
+
+
+## 4. API-forslag for app
+
+Base: /api
+
+### GET /api/app/bootstrap
+
+Returnerer grunnleggende data for appstart.
+
+Response:
+
+- user/session summary
+- categories
+- active heroes
+- featured benefits
+- pwa config
+
+
+### GET /api/benefits
+
+Query params:
+
+- category
+- postcode
+- movingStatus
+- featured
+- nearby
+- limit
+- offset
+
+Returnerer liste med aktive fordeler basert på målgruppe og periode.
+
+
+### GET /api/benefits/:id
+
+Returnerer detaljert fordel.
+
+Må inkludere:
+
+- advertiser
+- category
+- redemption config, men ikke nødvendigvis skjult unik kode før tildeling
+- terms
+- saved state
+- user interaction state
+
+
+### POST /api/benefits/:id/save
+
+Lagrer fordel for bruker/session.
+
+Body:
+
+- userId optional
+- sessionId
+
+
+### DELETE /api/benefits/:id/save
+
+Fjerner lagring.
+
+
+### POST /api/benefits/:id/reveal-code
+
+For generic_code:
+
+- logger code_revealed
+- returnerer kode
+
+For unique_code:
+
+- bør redirectes til assign-code endpoint eller håndtere samme logikk
+
+
+### POST /api/benefits/:id/assign-code
+
+Tildeler unik kode atomisk.
+
+Body:
+
+- userId optional
+- sessionId
+
+Response:
+
+- code
+- expiresAt optional
+- alreadyAssigned boolean
+
+Feil:
+
+- CODE_POOL_EMPTY
+- BENEFIT_NOT_ACTIVE
+- NOT_ELIGIBLE
+
+
+### POST /api/benefits/:id/copy-code-event
+
+Logger at kode ble kopiert.
+
+
+### POST /api/benefits/:id/qr-opened
+
+Logger QR-visning.
+
+
+### POST /api/benefits/:id/external-click
+
+Logger ekstern lenkeklikk og returnerer URL eller redirecter.
+
+
+### POST /api/leads
+
+Sender lead.
+
+Body:
+
+- benefitId
+- formData
+- consentAccepted
+- consentText
+- sessionId/userId
+
+Validering:
+
+- benefit må være aktiv
+- lead form må finnes
+- påkrevde felter må være fylt ut
+- samtykke må være akseptert hvis påkrevd
+
+
+### POST /api/profile/postcode
+
+Lagrer postnummer på bruker/session.
+
+
+### POST /api/profile/moving-status
+
+Lagrer flyttestatus.
+
+
+### GET /api/saved-benefits
+
+Returnerer lagrede fordeler.
+
+
+## 5. API-forslag for admin
+
+Base: /api/admin
+
+Alle admin-endepunkter krever auth og rollevalidering.
+
+### GET /api/admin/dashboard
+
+Returnerer:
+
+- activeBenefitsCount
+- scheduledBenefitsCount
+- expiringSoonCount
+- newLeadsCount
+- lowCodePools
+- recentActivity
+
+
+### GET /api/admin/benefits
+
+Filter:
+
+- status
+- advertiserId
+- categoryId
+- query
+- startsAt
+- endsAt
+
+
+### POST /api/admin/benefits
+
+Oppretter fordel.
+
+
+### GET /api/admin/benefits/:id
+
+Henter fordel.
+
+
+### PUT /api/admin/benefits/:id
+
+Oppdaterer fordel.
+
+
+### POST /api/admin/benefits/:id/publish
+
+Validerer og publiserer fordel.
+
+
+### POST /api/admin/benefits/:id/pause
+
+Pauser fordel.
+
+
+### POST /api/admin/benefits/:id/archive
+
+Arkiverer fordel.
+
+
+### POST /api/admin/benefits/:id/duplicate
+
+Dupliserer fordel.
+
+
+### DELETE /api/admin/benefits/:id
+
+Soft delete.
+
+
+### GET /api/admin/advertisers
+### POST /api/admin/advertisers
+### GET /api/admin/advertisers/:id
+### PUT /api/admin/advertisers/:id
+### DELETE /api/admin/advertisers/:id
+
+CRUD for annonsører.
+
+
+### GET /api/admin/heroes
+### POST /api/admin/heroes
+### GET /api/admin/heroes/:id
+### PUT /api/admin/heroes/:id
+### DELETE /api/admin/heroes/:id
+
+CRUD for heroer.
+
+
+### POST /api/admin/code-pools
+
+Oppretter kodepool.
+
+
+### POST /api/admin/code-pools/:id/upload
+
+Laster opp CSV/Excel eller liste med koder.
+
+Body:
+
+- codes: string[]
+
+Må deduplisere.
+
+
+### GET /api/admin/code-pools/:id
+
+Returnerer status og koder.
+
+
+### GET /api/admin/leads
+
+Filter:
+
+- advertiserId
+- benefitId
+- status
+- dateFrom
+- dateTo
+
+
+### POST /api/admin/leads/export
+
+Eksporterer valgte leads.
+
+Body:
+
+- leadIds
+- format: csv|xlsx
+
+Setter status til exported hvis eksport lykkes.
+
+
+### DELETE /api/admin/leads/:id
+
+Soft delete / slett lead.
+
+
+## 6. Targetinglogikk
+
+En fordel er synlig hvis:
+
+1. status = active
+2. nå er mellom starts_at og ends_at, dersom disse finnes
+3. bruker matcher targeting_rules, eller fordelen applies_nationally = true
+4. fordelen ikke er deleted/archived/paused
+
+Targetingprioritet:
+
+1. Eksakt postnummer
+2. Postnummerområde
+3. Kommune
+4. Fylke
+5. Flyttestatus
+6. Nasjonal fallback
+
+Hvis ingen fordeler matcher:
+
+- returner nasjonale fordeler
+- returner fallback hero
+
+
+## 7. Sortering
+
+Standard sortering:
+
+1. Prioritet høyest først
+2. Segmentmatch foran generell
+3. Tidsbegrenset foran ikke tidsbegrenset, hvis relevant
+4. Nyeste publisering
+
+Admin skal kunne sette priority manuelt.
+
+
+## 8. Excel/CSV-opplasting av postnummer
+
+Admin bør kunne laste opp liste med postnummer for en fordel.
+
+MVP-støtte:
+
+- CSV med én kolonne: postcode
+- Eventuelt Excel hvis enkelt å støtte
+- Systemet validerer at postnummer er fire siffer
+- Dedupliserer listen
+- Lagrer i targeting_rules.postcodes eller egen benefit_postcodes-tabell
+
+Ved mange postnummer anbefales egen tabell:
+
+benefit_postcodes:
+
+- id
+- benefit_id
+- postcode
+- created_at
+
+
+## 9. Feilkoder
+
+Standardiserte API-feil:
+
+- BENEFIT_NOT_FOUND
+- BENEFIT_NOT_ACTIVE
+- NOT_ELIGIBLE
+- CODE_POOL_EMPTY
+- CODE_ALREADY_ASSIGNED
+- VALIDATION_ERROR
+- CONSENT_REQUIRED
+- UNAUTHORIZED
+- FORBIDDEN
+- RATE_LIMITED
+- INTERNAL_ERROR
+
+
+## 10. Sikkerhet
+
+- Admin-endepunkter må kreve auth
+- Rollebasert tilgang bør være enkel, men eksistere
+- Input må valideres
+- Leaddata må behandles som persondata
+- Ikke eksponer skjulte koder før bruker faktisk ber om å hente/vise kode
+- Rate limit på leadinnsending og kodehenting
+- Audit log på publisering, sletting og eksport
+
+
+## 11. PWA-teknisk
+
+Må ha:
+
+- manifest.json
+- service worker eller framework-støttet PWA-oppsett
+- app icons
+- theme color
+- offline fallback
+- cache-strategi for statiske assets
+
+Ikke cache persondata ukritisk.
+
+
+## 12. Anbefalt mappe-/filstruktur
+
+Dette er forslag dersom prosjektet bygges i Next.js/React/TypeScript:
+
+/src
+  /app
+    /(mobile)
+      /page.tsx
+      /benefits
+      /nearby
+      /saved
+      /profile
+      /install
+    /admin
+      /dashboard
+      /benefits
+      /advertisers
+      /heroes
+      /codes
+      /leads
+    /api
+      /benefits
+      /leads
+      /profile
+      /admin
+  /components
+    /mobile
+    /admin
+    /shared
+  /lib
+    /api
+    /auth
+    /db
+    /targeting
+    /tracking
+    /validation
+    /pwa
+  /types
+  /styles
+  /content
+
+
+## 13. Akseptansekriterier for datamodell/API
+
+- Det er mulig å opprette en nasjonal fordel og se den i appen.
+- Det er mulig å opprette en fordel målrettet mot postnummer.
+- Det er mulig å opprette en fordel målrettet mot nylig flyttet.
+- Det er mulig å vise fallback-hero når ingen regler matcher.
+- Det er mulig å hente en generell kode.
+- Det er mulig å tildele unik kode uten dobbeltutdeling.
+- Det er mulig å sende lead med samtykke.
+- Det er mulig å eksportere lead uten å registrere annonsørens oppfølging.
+- Det er mulig å arkivere/utløpe fordel.

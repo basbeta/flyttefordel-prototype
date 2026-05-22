@@ -1,0 +1,577 @@
+# 08 — Implementeringsplan, akseptansekriterier og foreslått filstruktur
+
+Prosjekt: Fordelsklubben / Flyttefordel MVP
+Dokumenttype: PRD-del 08
+Tema: Implementeringsplan og Claude Code-vennlig filstruktur
+
+
+## 1. Formål
+
+Dette dokumentet samler anbefalt implementeringsrekkefølge, akseptansekriterier og filstruktur. Det er laget for å gjøre det enklere å gi Claude Code konkrete oppgaver uten at løsningen mister produktretningen.
+
+
+## 2. Anbefalt implementeringsrekkefølge
+
+### Fase 1 — Grunnmur
+
+Bygg:
+
+- Prosjektoppsett
+- PWA-konfigurasjon
+- Design tokens
+- MobileShell
+- AdminShell
+- Database schema
+- Seed-data for kategorier, annonsører, heroer og fordeler
+- Enkel session/anonym bruker
+
+Akseptanse:
+
+- Appen kan åpnes på mobil
+- Manifest finnes
+- Hjemskjerm har layout
+- Admin kan åpnes bak enkel auth eller mock-auth
+- Seedet fordel vises i app
+
+
+### Fase 2 — Fordeler i app
+
+Bygg:
+
+- Hjemskjerm
+- HeroCarousel
+- BenefitCard
+- Fordelsliste
+- Kategorifilter
+- Fordelsdetalj
+- Fallback-hero
+
+Akseptanse:
+
+- Bruker ser aktive fordeler
+- Bruker kan filtrere på kategori
+- Bruker kan åpne detaljside
+- Utløpte/pausede fordeler vises ikke
+- Fallback vises når ingen targeting matcher
+
+
+### Fase 3 — Redemption
+
+Bygg:
+
+- Generell kode
+- Unik kode
+- QR-kode
+- Ekstern lenke
+- Leadskjema
+- Lagre fordel
+- Mine fordeler
+
+Akseptanse:
+
+- Generell kode kan vises og kopieres
+- Unik kode kan tildeles uten duplikat
+- QR kan vises
+- Ekstern lenke kan åpnes og trackes
+- Lead kan sendes med samtykke
+- Lagrede fordeler vises under Mine fordeler
+
+
+### Fase 4 — Admin MVP
+
+Bygg:
+
+- Admin dashboard
+- CRUD fordeler
+- CRUD annonsører
+- CRUD heroer
+- Kodepool og kodeopplasting
+- Leadliste og eksport
+- Mobil forhåndsvisning
+
+Akseptanse:
+
+- Admin kan opprette og publisere fordel
+- Admin kan sette status, periode og kategori
+- Admin kan sette geografi og segment
+- Admin kan laste opp/lime inn koder
+- Admin kan se leads og eksportere dem
+- Admin kan lage fallback-hero
+
+
+### Fase 5 — Targeting og kvalitet
+
+Bygg:
+
+- Postnummerregler
+- Postnummerområde
+- Flyttestatusregler
+- Prioritetslogikk
+- Tomtilstander
+- Feilhåndtering
+- Audit log
+- Enkel analytics/eventlogg
+
+Akseptanse:
+
+- Bruker med postnummer ser relevante fordeler
+- Bruker uten postnummer ser nasjonale/fallback-fordeler
+- Nylig flyttet-segment fungerer
+- Ikke-flytter får meningsfull opplevelse
+- Admin kan se og rette typiske feil før publisering
+
+
+## 3. MVP-scope som må være med
+
+App:
+
+- Mobil PWA
+- Hjem
+- Fordeler
+- Fordelsdetalj
+- Nær deg enkel liste/postnummer
+- Mine fordeler
+- Profil enkel
+- PWA-installasjonstekst
+- Fallback-hero og generelle fordeler
+
+Admin:
+
+- Dashboard
+- Fordeler
+- Annonsører
+- Heroer
+- Koder
+- Leads
+- Kategorier minimum som seed/enkelt admin
+
+Data:
+
+- Fordeler
+- Annonsører
+- Kategorier
+- Heroer
+- Koder/kodepool
+- Leads
+- Targetingregler
+- Bruker/session
+- Events
+
+
+## 4. Bør ikke bygges i MVP
+
+- Native app
+- Desktoptilpasset sluttbrukerapp
+- Nettbrettoptimalisering
+- Avansert kart
+- Annonsørportal
+- Betaling
+- Poeng/lojalitetsmotor
+- Kompleks CRM-status for leads
+- «Du har spart»-funksjon
+- Avansert AI-personalisering
+
+
+## 5. Foreslått filstruktur
+
+Eksempel for Next.js / React / TypeScript:
+
+/src
+  /app
+    /(mobile)
+      /layout.tsx
+      /page.tsx
+      /benefits
+        /page.tsx
+        /[benefitId]
+          /page.tsx
+      /categories
+        /[categorySlug]
+          /page.tsx
+      /nearby
+        /page.tsx
+      /saved
+        /page.tsx
+      /profile
+        /page.tsx
+      /install
+        /page.tsx
+      /onboarding
+        /page.tsx
+    /admin
+      /layout.tsx
+      /page.tsx
+      /login
+        /page.tsx
+      /dashboard
+        /page.tsx
+      /benefits
+        /page.tsx
+        /new
+          /page.tsx
+        /[benefitId]
+          /page.tsx
+      /advertisers
+        /page.tsx
+        /new
+          /page.tsx
+        /[advertiserId]
+          /page.tsx
+      /heroes
+        /page.tsx
+        /new
+          /page.tsx
+        /[heroId]
+          /page.tsx
+      /codes
+        /page.tsx
+        /upload
+          /page.tsx
+      /leads
+        /page.tsx
+      /categories
+        /page.tsx
+      /settings
+        /page.tsx
+    /api
+      /app
+        /bootstrap
+          /route.ts
+      /benefits
+        /route.ts
+        /[benefitId]
+          /route.ts
+          /save
+            /route.ts
+          /assign-code
+            /route.ts
+          /reveal-code
+            /route.ts
+          /external-click
+            /route.ts
+          /qr-opened
+            /route.ts
+      /leads
+        /route.ts
+      /profile
+        /postcode
+          /route.ts
+        /moving-status
+          /route.ts
+      /admin
+        /dashboard
+          /route.ts
+        /benefits
+          /route.ts
+          /[benefitId]
+            /route.ts
+            /publish
+              /route.ts
+            /pause
+              /route.ts
+            /archive
+              /route.ts
+            /duplicate
+              /route.ts
+        /advertisers
+          /route.ts
+          /[advertiserId]
+            /route.ts
+        /heroes
+          /route.ts
+          /[heroId]
+            /route.ts
+        /code-pools
+          /route.ts
+          /[codePoolId]
+            /route.ts
+            /upload
+              /route.ts
+        /leads
+          /route.ts
+          /export
+            /route.ts
+  /components
+    /mobile
+      MobileShell.tsx
+      BottomNavigation.tsx
+      TopBar.tsx
+      HeroCarousel.tsx
+      HeroCard.tsx
+      SegmentGreeting.tsx
+      BenefitCard.tsx
+      BenefitList.tsx
+      CategoryFilterChips.tsx
+      RedemptionPanel.tsx
+      CodeRedemption.tsx
+      UniqueCodeRedemption.tsx
+      QRRedemption.tsx
+      ExternalLinkRedemption.tsx
+      LeadFormRedemption.tsx
+      NearbyPostcodePrompt.tsx
+      InstallInstructions.tsx
+    /admin
+      AdminShell.tsx
+      AdminSidebar.tsx
+      AdminTopBar.tsx
+      AdminTable.tsx
+      AdminStatusBadge.tsx
+      DashboardStats.tsx
+      BenefitEditor.tsx
+      BenefitPreviewMobile.tsx
+      BenefitTargetingEditor.tsx
+      BenefitRedemptionEditor.tsx
+      AdvertiserEditor.tsx
+      HeroEditor.tsx
+      CodeUpload.tsx
+      LeadExport.tsx
+    /shared
+      Button.tsx
+      Card.tsx
+      Badge.tsx
+      Chip.tsx
+      Input.tsx
+      Textarea.tsx
+      Select.tsx
+      Checkbox.tsx
+      Modal.tsx
+      Drawer.tsx
+      Toast.tsx
+      EmptyState.tsx
+      ErrorState.tsx
+      Skeleton.tsx
+      ConfirmDialog.tsx
+  /lib
+    /api
+      appApi.ts
+      benefitApi.ts
+      adminApi.ts
+    /auth
+      adminAuth.ts
+      session.ts
+    /db
+      client.ts
+      schema.ts
+      migrations
+      seed.ts
+    /targeting
+      matchBenefit.ts
+      matchHero.ts
+      postcode.ts
+      sorting.ts
+    /tracking
+      events.ts
+      track.ts
+    /validation
+      benefitSchemas.ts
+      leadSchemas.ts
+      adminSchemas.ts
+    /codes
+      assignUniqueCode.ts
+      importCodes.ts
+    /pwa
+      manifest.ts
+      installPrompt.ts
+    /utils
+      dates.ts
+      slug.ts
+      errors.ts
+  /styles
+    tokens.css
+    globals.css
+  /types
+    benefit.ts
+    advertiser.ts
+    hero.ts
+    lead.ts
+    user.ts
+    admin.ts
+    api.ts
+  /content
+    copy.ts
+    categories.ts
+
+/public
+  /icons
+  /images
+  manifest.json
+  sw.js optional
+
+
+## 6. Claude Code-instruksjon for første implementeringsprompt
+
+Forslag til første prompt til Claude Code:
+
+«Bygg grunnstrukturen for en mobil PWA kalt Fordelsklubben basert på PRD-filene. Bruk Next.js, React og TypeScript. Prioriter mobilapp for iPhone/Android og enkel admin. Start med filstruktur, design tokens, mockdata/seeddata, MobileShell, AdminShell, hjemskjerm, fordelskort, fordelsdetalj og enkel adminliste for fordeler. Ikke bygg desktoptilpasning for sluttbrukerappen. Følg datamodell, statuser, copy og UX-prinsipper fra PRD-filene.»
+
+
+## 7. Akseptansekriterier app
+
+### Hjem
+
+- Viser minst én hero
+- Viser fallback-hero hvis ingen målrettet hero finnes
+- Viser utvalgte fordeler
+- Viser kategorier
+- Oppleves mobiltilpasset
+
+### Fordeler
+
+- Viser aktive fordeler
+- Skjuler utløpte/pausede/arkiverte fordeler
+- Filtrering på kategori fungerer
+- Fordelskort viser tittel, annonsør, bilde, badge og CTA
+
+### Fordelsdetalj
+
+- Viser hva fordelen er
+- Viser hvordan den brukes
+- Viser vilkår
+- Viser riktig redemption-komponent
+
+### Rabattkode
+
+- Kode er skjult før bruker trykker
+- Kode kan kopieres
+- Event logges
+
+### Unik kode
+
+- Samme bruker får samme kode ved nytt besøk
+- To brukere får ikke samme unike kode
+- Tom kodepool gir god feilmelding
+
+### QR
+
+- QR kan vises
+- Instruksjon vises
+- Event logges
+
+### Lead
+
+- Påkrevde felter valideres
+- Samtykke kreves
+- Kvittering vises
+- Lead lagres med status new
+
+### Nær deg
+
+- Bruker kan legge inn postnummer
+- Lokale fordeler vises hvis de finnes
+- Nasjonal fallback vises hvis ingen lokale treff finnes
+
+### Mine fordeler
+
+- Bruker kan lagre en fordel
+- Lagret fordel vises i Mine fordeler
+- Utløpte fordeler merkes som utløpt
+
+
+## 8. Akseptansekriterier admin
+
+### Fordeler
+
+- Admin kan opprette fordel
+- Admin kan lagre utkast
+- Admin kan publisere hvis påkrevde felter er fylt ut
+- Admin kan pause, arkivere og duplisere fordel
+- Admin kan sette start- og sluttdato
+- Admin kan sette prioritet
+
+### Targeting
+
+- Admin kan velge gjelder alle/nasjonalt
+- Admin kan legge inn postnummer
+- Admin kan legge inn postnummerområder
+- Admin kan velge flyttestatussegmenter
+
+### Heroer
+
+- Admin kan opprette hero
+- Admin kan merke hero som fallback
+- Admin kan sette CTA
+- Admin kan forhåndsvise mobil
+
+### Koder
+
+- Admin kan legge inn generell kode
+- Admin kan opprette kodepool
+- Admin kan laste opp/lime inn koder
+- Admin kan se antall tilgjengelige koder
+
+### Leads
+
+- Admin kan se leads
+- Admin kan eksportere leads
+- Admin kan slette leads
+- Leadstatuser begrenses til new/exported/failed/deleted
+
+
+## 9. Testdata som bør seedes
+
+Annonsører:
+
+- If
+- Strømleverandør Demo
+- Interiørbutikk Demo
+- Treningssenter Demo
+- Lokal aktør Demo
+
+Kategorier:
+
+- Flytting og bolig
+- Strøm og energi
+- Forsikring
+- Mat og dagligvarer
+- Interiør og hjem
+- Trening og helse
+- Underholdning
+- Lokalt
+- Diverse
+
+Fordeler:
+
+1. Nasjonal generell rabattkode
+2. Unik kode-fordel
+3. QR-kode-fordel
+4. Leadskjema-fordel
+5. Ekstern lenke-fordel
+6. Fordel kun for nylig flyttet
+7. Fordel kun for spesifikke postnummer
+8. Utløpt fordel for test
+
+Heroer:
+
+1. Generell fallback-hero
+2. Flytterelatert hero
+3. Nær deg-hero
+4. App-intro hero
+
+
+## 10. Definisjon av ferdig MVP
+
+MVP er ferdig når:
+
+- En mobilbruker kan åpne PWA-en og finne fordeler.
+- Appen fungerer meningsfullt for både flyttere og ikke-flyttere.
+- Bruker kan bruke minst fire redemption-typer: kode, unik kode, QR og lead.
+- Admin kan opprette, publisere, pause, utløpe og arkivere fordeler.
+- Admin kan lage fallback-heroer.
+- Admin kan styre fordeler basert på segment og geografi.
+- Admin kan laste opp eller legge inn koder.
+- Admin kan eksportere leads.
+- PWA-en kan installeres på iPhone/Android via nettleserens støttede metode.
+
+
+## 11. Viktigste produktbeslutninger som må bevares
+
+- Appen er bredere enn Flyttefordel.
+- Flytting er et relevant segment, ikke hele produktet.
+- Ikke-flyttere skal få en god opplevelse.
+- Lokale fordeler er sekundært.
+- Kart er ikke kritisk i MVP.
+- Fallback-innhold er obligatorisk.
+- «Du har spart» skal ikke brukes.
+- Leadstatus skal ikke speile annonsørens oppfølging.
+- Admin skal være enkel, men reelt driftbar.
+- PWA bygges for mobil, ikke desktop/tablet.

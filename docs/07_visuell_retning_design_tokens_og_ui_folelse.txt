@@ -1,0 +1,402 @@
+# 07 — Visuell retning, design tokens og UI-følelse
+
+Prosjekt: Fordelsklubben / Flyttefordel MVP
+Dokumenttype: PRD-del 07
+Tema: Visuell retning, design tokens og UI-følelse
+Plattform: Mobil PWA for Android og iPhone
+
+
+## 1. Overordnet visuell retning
+
+Appen skal oppleves nordisk, ryddig, lys, trygg og moderne. Den skal ha nok personlighet til å skille seg fra en tradisjonell annonsekatalog, men ikke så mye at fordelene drukner.
+
+Designet skal føles:
+
+- Lett
+- Romslig
+- Kuratert
+- Mobilvennlig
+- Seriøst
+- Hverdagsnyttig
+- Litt varmt og inviterende
+
+Unngå:
+
+- For tett layout
+- For mange bokser samtidig
+- For mange sterke farger
+- Aggressiv kupongestetikk
+- Komplisert dashboard-følelse i appen
+- Desktopmønstre i mobilappen
+
+
+## 2. Visuell prioritet
+
+Appens viktigste innhold er fordelen. Designet skal hjelpe brukeren å forstå:
+
+1. Hva er fordelen?
+2. Hvem tilbyr den?
+3. Hvor relevant er den?
+4. Hvordan bruker jeg den?
+5. Når utløper den?
+
+Ikke bruk store visuelle elementer på data vi ikke har, som «du har spart».
+
+
+## 3. Layoutprinsipper mobil
+
+- En kolonne
+- God luft mellom seksjoner
+- Sticky bunnnavigasjon
+- Hero øverst, men ikke så stor at resten forsvinner
+- Horisontal scroll kan brukes for kategorier og utvalgte fordeler
+- Primær CTA skal være lett å nå
+- Detaljsider kan ha sticky CTA nederst
+- Bruk kort med myke hjørner
+- Bruk tydelig typografisk hierarki
+
+
+## 4. Design tokens — farger
+
+Endelige farger må bestemmes i designfasen, men utvikler kan starte med tokens.
+
+### Primær
+
+--color-primary: #1F5C4D
+Mørk grønn. Brukes til primære CTA-er, aktive states og viktige detaljer.
+
+--color-primary-soft: #E7F1ED
+Lys grønn bakgrunn for rolige flater.
+
+### Sekundær
+
+--color-secondary: #F4B860
+Varm aksent, brukes sparsomt for badges eller detaljer.
+
+--color-secondary-soft: #FFF4DF
+Lys varm bakgrunn.
+
+### Nøytrale
+
+--color-bg: #F8F7F4
+Varm, lys bakgrunn.
+
+--color-surface: #FFFFFF
+Kort og flater.
+
+--color-surface-muted: #F1F0EC
+Sekundære flater.
+
+--color-text: #1E1E1B
+Primær tekst.
+
+--color-text-muted: #6F6F68
+Sekundær tekst.
+
+--color-border: #E2E0DA
+Borders og skillelinjer.
+
+### Status
+
+--color-success: #2F7D5C
+--color-warning: #B7791F
+--color-error: #B42318
+--color-info: #2F5F98
+
+Bruk statusfarger kontrollert og med tekst/ikon, ikke kun farge.
+
+
+## 5. Design tokens — spacing
+
+--space-1: 4px
+--space-2: 8px
+--space-3: 12px
+--space-4: 16px
+--space-5: 20px
+--space-6: 24px
+--space-8: 32px
+--space-10: 40px
+--space-12: 48px
+
+Mobilseksjoner bør ofte ha 20–24px horisontal padding.
+
+
+## 6. Design tokens — radius
+
+--radius-sm: 8px
+--radius-md: 12px
+--radius-lg: 16px
+--radius-xl: 20px
+--radius-2xl: 24px
+--radius-full: 999px
+
+Kort bør typisk bruke 16–24px radius.
+
+
+## 7. Design tokens — skygge
+
+--shadow-sm: 0 1px 2px rgba(0,0,0,0.06)
+--shadow-md: 0 6px 18px rgba(0,0,0,0.08)
+--shadow-lg: 0 14px 30px rgba(0,0,0,0.10)
+
+Bruk skygge subtilt. Ikke gjør appen tung.
+
+
+## 8. Typografi
+
+Anbefalt typografisk følelse:
+
+- Moderne sans-serif
+- God lesbarhet på mobil
+- Ikke for mange fontvekter
+
+Tokens:
+
+--font-family-base: system-ui, -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif
+
+Størrelser:
+
+--font-xs: 12px
+--font-sm: 14px
+--font-base: 16px
+--font-lg: 18px
+--font-xl: 22px
+--font-2xl: 28px
+--font-3xl: 34px
+
+Linjehøyde:
+
+--leading-tight: 1.15
+--leading-normal: 1.45
+--leading-relaxed: 1.6
+
+
+## 9. Komponentfølelse
+
+### Knapper
+
+Primær knapp:
+
+- Mørk grønn bakgrunn
+- Hvit tekst
+- Stor trykkflate
+- Radius full eller 16px
+- Minimum høyde 48px
+
+Sekundær knapp:
+
+- Lys bakgrunn
+- Mørk tekst
+- Border eller soft surface
+
+Ghost knapp:
+
+- Ingen bakgrunn
+- Brukes for mindre viktige handlinger
+
+
+### Kort
+
+Fordelskort:
+
+- Hvit surface
+- Myke hjørner
+- Bilde øverst eller venstre avhengig av korttype
+- Tydelig tittel
+- Kort beskrivelse
+- Badge hvis relevant
+- CTA eller indikasjon nederst
+
+Hero-kort:
+
+- Mer visuelt
+- Kan ha bakgrunnsbilde eller farget flate
+- Kort tekst
+- Én tydelig CTA
+
+
+### Badges
+
+Badges skal være små og rolige.
+
+Eksempler:
+
+- Ny
+- Tidsbegrenset
+- Nær deg
+- Gjelder alle
+
+Ikke bruk for mange badges samtidig.
+
+
+### Skjema
+
+- Store inputfelter
+- Tydelig label
+- Hjelpetekst under felt
+- Feilmelding tett på feltet
+- Checkbox med tydelig tekst
+
+
+## 10. Bildebruk
+
+Bilder skal støtte følelsen av fordel, hjem, hverdag eller kategori. Unngå generiske stockbilder som ser billige ut.
+
+Bildekrav:
+
+- Mobilvennlige utsnitt
+- Hovedmotiv sentrert
+- Ikke tekstkritisk informasjon i bildet
+- Alt-tekst i admin
+- Fallbackbilde hvis annonsør ikke har bilde
+
+Hero-bilder kan også brukes til å selge inn appen og konseptet, ikke bare én annonsør.
+
+
+## 11. Illustrasjonsstil
+
+Hvis illustrasjoner brukes, bør de være enkle, ansiktsløse og stiliserte, i tråd med tidligere retning i prosjektet. De skal føles moderne og nordiske, ikke barnslige.
+
+Kjennetegn:
+
+- Ingen detaljerte ansiktstrekk
+- Rolige former
+- Grønnfarge fra profilen bør inngå
+- Gjerne hverdagsobjekter: postkasse, nøkkel, hjem, handlepose, mobil
+
+
+## 12. App-ikon og PWA
+
+PWA trenger:
+
+- Appikon 192x192
+- Appikon 512x512
+- Maskable icon
+- Splash/theme color
+
+Ikonet bør være enkelt og tydelig på mobilskjerm.
+
+Mulige symboler:
+
+- F
+- Stilisert gave/fordel
+- Kort/kupong
+- Hus + fordel
+- Enkel grønn flate med hvitt symbol
+
+Ikke lås ikonet til flytting hvis appen skal være bred.
+
+
+## 13. Admin visuell retning
+
+Admin skal være funksjonell, ryddig og effektiv.
+
+Prinsipper:
+
+- Desktop-first
+- Tydelige tabeller
+- Tydelige statuser
+- Forhåndsvisning av mobilkort
+- God skjemastruktur
+- Ikke for mye visuell pynt
+
+Admin kan bruke samme tokens, men mer nøytralt.
+
+
+## 14. UI-states
+
+Alle viktige komponenter må ha states:
+
+- Default
+- Loading
+- Empty
+- Error
+- Disabled
+- Active
+- Success
+- Expired
+
+Eksempel BenefitCard states:
+
+- active
+- saved
+- expired
+- not_eligible
+- loading
+
+
+## 15. Motion
+
+MVP trenger ikke avansert animasjon. Bruk små, nyttige overganger:
+
+- Fade/slide på modal/drawer
+- Lett scale på knappetrykk
+- Smooth expand for kodevisning
+- Skeleton loading
+
+Ikke bruk tung animasjon som gjør appen treg.
+
+
+## 16. Tilgjengelighet og lesbarhet
+
+- Minimum 16px brødtekst der det er mulig
+- Kontrast må være god
+- Ikke bruk bare farge for status
+- Knapper bør være minst 44–48px høye
+- Inputs må ha labels
+- Bilder må ha alt-tekst der de bærer innhold
+
+
+## 17. Konkret UI-følelse for appen
+
+Tenk:
+
+- Et lyst, moderne fordelsmagasin på mobil
+- Ikke en tung bankapp
+- Ikke en rotete kupongside
+- Ikke en annonsefeed
+- Mer «kuraterte fordeler» enn «tilbudsavis»
+
+
+## 18. Designsystemstruktur
+
+Anbefalt struktur i kode:
+
+/styles
+  tokens.css
+  globals.css
+
+/components/shared
+  Button.tsx
+  Card.tsx
+  Badge.tsx
+  Chip.tsx
+  Input.tsx
+  Modal.tsx
+  Toast.tsx
+  EmptyState.tsx
+
+/components/mobile
+  MobileShell.tsx
+  BottomNavigation.tsx
+  HeroCard.tsx
+  BenefitCard.tsx
+  RedemptionPanel.tsx
+
+/components/admin
+  AdminShell.tsx
+  AdminTable.tsx
+  AdminStatusBadge.tsx
+  BenefitEditor.tsx
+  MobilePreview.tsx
+
+
+## 19. Akseptansekriterier visuell retning
+
+- Appen oppleves mobiltilpasset og luftig.
+- Hjemskjermen viser verdi uten at brukeren må lese mye tekst.
+- Fordelskort er enkle å skanne.
+- CTA-er er tydelige og enkle å trykke på.
+- Fargebruk er rolig og konsistent.
+- Appen ser ikke ut som en desktopside klemt ned på mobil.
+- Admin er effektivt å bruke for intern drift.
