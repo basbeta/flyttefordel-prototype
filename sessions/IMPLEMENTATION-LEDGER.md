@@ -77,3 +77,5 @@
 | 2026-05-22 | Session-7 | src/lib/codes/ | claimCode.ts: atomisk kode-tildeling via Prisma $transaction, idempotency-sjekk per sesjon | CR-006 | tsc ✓ |
 | 2026-05-22 | Session-7 | src/lib/codes/ | claimCode.test.ts: 4 unit-tester (idempotent, claim, tom pool, decrement) | CR-006 | vitest ✓ |
 | 2026-05-22 | Session-7 | src/app/api/benefits/[slug]/claim-code/ | route.ts: erstattet CR-002 stub med fullstendig implementasjon — sesjonsjekk, idempotency, tracking, 410 ved tom pool | CR-006 | tsc ✓ |
+| 2026-05-22 | Session-7 | src/app/api/benefits/[slug]/claim-code/ | route.ts: W4-fix — console.error logging i 500-grenen (review-funn) | CR-006 | tsc ✓ |
+| 2026-05-22 | Session-7 | sessions/ + change-requests/ | CR-006 markert Done, CURRENT-STATE og LEDGER oppdatert | CR-006 | — |

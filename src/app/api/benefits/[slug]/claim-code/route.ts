@@ -51,6 +51,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         { status: 410 },
       )
     }
+    console.error('[claim-code] Unexpected error:', err)
     return NextResponse.json({ message: 'Noe gikk galt. Prøv igjen.' }, { status: 500 })
   }
 }

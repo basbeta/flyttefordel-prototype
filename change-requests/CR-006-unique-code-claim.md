@@ -1,6 +1,6 @@
 # CR-006: Unik kode-tildeling
 
-Status: In Progress
+Status: Done
 Created: 2026-05-22
 
 ## Business Goal
