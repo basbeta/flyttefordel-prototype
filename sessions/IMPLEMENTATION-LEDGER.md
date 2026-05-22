@@ -30,3 +30,15 @@
 | 2026-05-22 | Session-3 | src/app/api/ | track/route.ts, benefits/[slug]/lead/route.ts | CR-002 | build ✓ |
 | 2026-05-22 | Session-3 | src/components/mobile/ | HeroCarousel, BenefitCard, CategoryFilter (+ CSS modules) | CR-002 | build ✓ |
 | 2026-05-22 | Session-3 | src/app/(mobile)/ | page.tsx oppdatert, benefits/page.tsx, benefits/[slug]/page.tsx, RedemptionSection.tsx | CR-002 | tsc ✓ build ✓ |
+| 2026-05-22 | Session-4 | change-requests/ | Opprettet og godkjent CR-003: Fase 3 — Anonyme sesjoner, lagrede fordeler, profil | CR-003 | — |
+| 2026-05-22 | Session-4 | prisma/schema.prisma | UserSession: anonymousId @unique, +postcode, +movingStatus | CR-003 | db push ✓ |
+| 2026-05-22 | Session-4 | src/middleware.ts | Anonym sesjon: setter anon_id cookie + x-anon-id header | CR-003 | tsc ✓ |
+| 2026-05-22 | Session-4 | src/lib/session/ | getOrCreateSession() — upsert UserSession basert på x-anon-id header | CR-003 | tsc ✓ |
+| 2026-05-22 | Session-4 | src/types/app.ts | isSaved flyttet til BenefitCard (var kun på BenefitDetail) | CR-003 | tsc ✓ |
+| 2026-05-22 | Session-4 | src/lib/queries/ | benefitQueries: isSaved-join + sessionId-param på getActiveBenefits og getBenefitBySlug | CR-003 | tsc ✓ |
+| 2026-05-22 | Session-4 | src/lib/queries/ | savedQueries.ts: getSavedBenefits(sessionId) | CR-003 | tsc ✓ |
+| 2026-05-22 | Session-4 | src/components/mobile/ | SaveButton.tsx + CSS — hjerte-toggle med optimistisk oppdatering | CR-003 | tsc ✓ |
+| 2026-05-22 | Session-4 | src/components/mobile/ | BenefitCard.tsx oppdatert — SaveButton i hjørnet av kortbildet | CR-003 | tsc ✓ |
+| 2026-05-22 | Session-4 | src/app/api/ | benefits/[slug]/save/route.ts (POST/DELETE), session/profile/route.ts (PATCH) | CR-003 | tsc ✓ |
+| 2026-05-22 | Session-4 | src/app/(mobile)/ | page.tsx + benefits/page.tsx + benefits/[slug]/page.tsx oppdatert med sessionId | CR-003 | tsc ✓ |
+| 2026-05-22 | Session-4 | src/app/(mobile)/ | saved/page.tsx, nearby/page.tsx, profile/page.tsx + ProfileForm.tsx + CSS | CR-003 | tsc ✓ dev ✓ |

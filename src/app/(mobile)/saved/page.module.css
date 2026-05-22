@@ -1,0 +1,42 @@
+.page {
+  padding: var(--space-4);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  gap: var(--space-3);
+}
+
+.emptyIcon {
+  width: 56px;
+  height: 56px;
+  color: var(--color-border);
+}
+
+.emptyIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.emptyTitle {
+  font-size: var(--font-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.emptyDesc {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+  max-width: 240px;
+}

@@ -3,11 +3,11 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-FASE 2 FULLFØRT — Fordeler i app implementert og validert. Klar for Fase 3 (autentisering og lagrede fordeler).
+FASE 3 FULLFØRT — Anonyme sesjoner, lagrede fordeler, profil og nær-deg implementert og validert. Klar for Fase 4 (admin-grensesnitt).
 
 ## Current Objectives
-1. Fase 3: Autentisering (Supabase Auth), brukersesjoner, lagrede fordeler
-2. Fase 4: Admin-grensesnitt (fordeler, annonsører, heroer, koder, leads)
+1. Fase 4: Admin-grensesnitt (fordeler, annonsører, heroer, koder, leads)
+2. CR-004: Targeting-logikk (utsatt fra Fase 3)
 
 ## Current Branch
 master
@@ -18,6 +18,7 @@ Ingen aktive blockers. Appen kjører på localhost:3000.
 ## Active Change Requests
 - CR-001: Fase 1 — Grunnmur (Status: Done)
 - CR-002: Fase 2 — Fordeler i app (Status: Done)
+- CR-003: Fase 3 — Anonyme sesjoner, lagrede fordeler, profil (Status: Done)
 
 ## Recently Modified Systems
 - `src/lib/queries/benefitQueries.ts` — Prisma-spørringer for fordeler og kategorier (2026-05-22)
@@ -42,12 +43,13 @@ Ingen aktive blockers. Appen kjører på localhost:3000.
 
 ## Notes
 - `<img>` brukes i stedet for `next/image` — lint warning, akseptabelt for demo (byttes ved MVP)
-- `isSaved` er hardkodet `false` frem til Fase 3 implementerer autentisering
-- Targeting ikke aktivt i demo — alle aktive fordeler vises for alle brukere
+- Targeting ikke aktivt — alle aktive fordeler vises for alle brukere (utsatt til CR-004)
 - Supabase free tier pauser etter 1 uke inaktivitet — se lib/db/client.ts
+- Anonym sesjon: `anon_id` cookie (1 år) + `x-anon-id` header via middleware
+- `prisma db push` brukes for schema-endringer (migrate dev er interaktiv, blokkerer i CI/scripts)
+- `NEXT_PUBLIC_ANON_KEY` og `SUPABASE_SERVICE_ROLE_KEY` er fortsatt placeholder — ikke nødvendig for Fase 3
 
 ## Next Recommended Actions
-1. Verifiser appen på localhost:3000 og localhost:3000/benefits
-2. Klikk gjennom fordelsdetaljer og test kodeavsløring
-3. Opprett CR-003 for Fase 3 (autentisering) ved behov
-4. Vurder Fase 4 (admin) som prioritet for demo
+1. Test save/unsave på localhost:3000 — lagre en fordel, gå til /saved
+2. Test /profile — sett postnummer og segment, gå til /nearby
+3. Opprett CR-004 for Fase 4 (admin-grensesnitt)

@@ -129,14 +129,18 @@ model User {
 }
 
 model UserSession {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String?  @map("user_id") @db.Uuid
-  // anonymousId is set in a cookie/localStorage for anonymous tracking.
-  anonymousId String   @map("anonymous_id")
-  deviceType  String?  @map("device_type")
+  id          String            @id @default(uuid()) @db.Uuid
+  userId      String?           @map("user_id") @db.Uuid
+  // anonymousId is set in a cookie for anonymous tracking.
+  // CR-003: unique constraint added to enable upsert-by-anonymousId.
+  anonymousId String            @unique @map("anonymous_id")
+  // CR-003: postcode and movingStatus stored on session for anonymous profile preferences.
+  postcode    String?
+  movingStatus UserMovingStatus? @map("moving_status")
+  deviceType  String?           @map("device_type")
   platform    String?
-  createdAt   DateTime @default(now()) @map("created_at")
-  lastSeenAt  DateTime @default(now()) @map("last_seen_at")
+  createdAt   DateTime          @default(now()) @map("created_at")
+  lastSeenAt  DateTime          @default(now()) @map("last_seen_at")
 
   user          User?          @relation(fields: [userId], references: [id])
   savedBenefits SavedBenefit[]

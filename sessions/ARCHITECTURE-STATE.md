@@ -4,20 +4,24 @@
 > Read by Claude at session startup.
 
 ## Current Phase
-FASE 2 FULLFØRT — Consumer-app med herokarusell, fordelsliste og detaljside ferdig.
+FASE 3 FULLFØRT — Anonyme sesjoner, lagrede fordeler, profil og nær-deg ferdig.
 
 ## Module Map
 
 | Modul | Status | Ansvar |
 |---|---|---|
-| `/app/(mobile)` | Fase 2 ✓ | Hjemskjerm, fordelsliste, fordelsdetalj |
+| `/app/(mobile)` | Fase 3 ✓ | Hjemskjerm, fordelsliste, fordelsdetalj, /saved, /nearby, /profile |
 | `/app/admin` | Fase 1 ✓ (placeholder) | Backoffice admin — desktop-first |
 | `/app/api/track` | Fase 2 ✓ | POST hendelseslogging |
 | `/app/api/benefits/[slug]/lead` | Fase 2 ✓ | POST lead-innsending |
+| `/app/api/benefits/[slug]/save` | Fase 3 ✓ | POST/DELETE lagre/avlagre fordel |
+| `/app/api/session/profile` | Fase 3 ✓ | PATCH postnummer og segment |
 | `/components/mobile` | Fase 2 ✓ | HeroCarousel, BenefitCard, CategoryFilter, MobileShell, BottomNavigation, TopBar |
 | `/components/admin` | Fase 1 ✓ | AdminShell, AdminSidebar (placeholder) |
 | `/components/shared` | Fase 1 ✓ | Button |
-| `/lib/auth` | Ikke startet | Auth (Supabase Auth — isolert for migrering) |
+| `/lib/auth` | Utsatt | Supabase Auth (e-postinnlogging) — utsatt, krever NEXT_PUBLIC_ANON_KEY |
+| `/lib/session` | Fase 3 ✓ | Anonym sesjon via cookie + DB UserSession upsert |
+| `/lib/targeting` | Ikke startet | Targeting-logikk — CR-004 |
 | `/lib/db` | Fase 1 ✓ | Prisma client + schema |
 | `/lib/queries` | Fase 2 ✓ | benefitQueries, heroQueries |
 | `/lib/targeting` | Ikke startet | Fordel/hero targeting-logikk |
@@ -46,4 +50,4 @@ Forretningslogikk er DB-agnostisk — kun Prisma-abstraksjon.
 Next.js 14 + TypeScript | Supabase (PostgreSQL + Auth + Storage) | Prisma ORM | Vercel Hobby
 
 ## Last Structural Change
-2026-05-22 — CR-002: lib/queries/ og lib/tracking/ lagt til. Consumer-app ruter live.
+2026-05-22 — CR-003: middleware.ts, lib/session/, saved/nearby/profile-sider, save/profile API. UserSession @unique + postcode + movingStatus.

@@ -1,8 +1,10 @@
 // CR-002: Fordelsliste med kategorifilterkort.
+// CR-003: Session-aware isSaved state.
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getActiveBenefits, getActiveCategories } from '@/lib/queries/benefitQueries'
+import { getOrCreateSession } from '@/lib/session'
 import { BenefitCard } from '@/components/mobile/BenefitCard'
 import { CategoryFilter } from '@/components/mobile/CategoryFilter'
 import { TopBar } from '@/components/mobile/TopBar'
@@ -18,9 +20,10 @@ type Props = {
 
 export default async function BenefitsPage({ searchParams }: Props) {
   const activeCategory = searchParams.category ?? null
+  const session = await getOrCreateSession()
   const [categories, benefits] = await Promise.all([
     getActiveCategories(),
-    getActiveBenefits(activeCategory ?? undefined),
+    getActiveBenefits(activeCategory ?? undefined, session?.sessionId),
   ])
 
   return (

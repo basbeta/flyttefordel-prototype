@@ -1,0 +1,50 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-full);
+  transition: color var(--transition-fast), background var(--transition-fast), transform var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.btn:not(:disabled):active {
+  transform: scale(0.88);
+}
+
+.saved {
+  color: #e53e3e;
+}
+
+/* Size variants */
+.sm {
+  width: 32px;
+  height: 32px;
+  padding: 6px;
+}
+
+.md {
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow-sm);
+}
+
+.md:not(:disabled):hover {
+  background: var(--color-surface);
+}
+
+.icon {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}

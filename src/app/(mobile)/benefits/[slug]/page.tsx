@@ -1,9 +1,12 @@
 // CR-002: Fordelsdetaljside.
+// CR-003: Session-aware isSaved state + SaveButton in header.
 
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getBenefitBySlug } from '@/lib/queries/benefitQueries'
+import { getOrCreateSession } from '@/lib/session'
 import { TopBar } from '@/components/mobile/TopBar'
+import { SaveButton } from '@/components/mobile/SaveButton'
 import { RedemptionSection } from './RedemptionSection'
 import styles from './page.module.css'
 
@@ -18,7 +21,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BenefitDetailPage({ params }: Props) {
-  const benefit = await getBenefitBySlug(params.slug)
+  const session = await getOrCreateSession()
+  const benefit = await getBenefitBySlug(params.slug, session?.sessionId)
   if (!benefit) notFound()
 
   return (
@@ -36,6 +40,9 @@ export default async function BenefitDetailPage({ params }: Props) {
             <div className={styles.imageFallback} />
           )}
           {benefit.badgeText && <span className={styles.badge}>{benefit.badgeText}</span>}
+          <div className={styles.saveBtn}>
+            <SaveButton slug={benefit.slug} initialSaved={benefit.isSaved} size="md" />
+          </div>
         </div>
 
         <div className={styles.body}>

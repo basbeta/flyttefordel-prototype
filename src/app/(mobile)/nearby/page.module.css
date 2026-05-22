@@ -1,0 +1,85 @@
+.page {
+  padding: var(--space-4);
+}
+
+.postcodeBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--color-primary-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.postcodeLabel {
+  font-size: var(--font-sm);
+  color: var(--color-text);
+}
+
+.changeLink {
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-primary);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.empty,
+.noPostcode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-12) var(--space-6);
+  gap: var(--space-3);
+}
+
+.noPostcodeIcon {
+  width: 56px;
+  height: 56px;
+  color: var(--color-primary-soft);
+}
+
+.noPostcodeIcon svg {
+  width: 100%;
+  height: 100%;
+  fill: var(--color-primary);
+  opacity: 0.35;
+}
+
+.emptyTitle {
+  font-size: var(--font-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.emptyDesc {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-normal);
+}
+
+.setPostcodeBtn {
+  display: inline-block;
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-full);
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+
+.setPostcodeBtn:active {
+  background: var(--color-primary-hover);
+}

@@ -25,6 +25,12 @@
   );
 }
 
+.saveBtn {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+}
+
 .badge {
   position: absolute;
   top: var(--space-3);

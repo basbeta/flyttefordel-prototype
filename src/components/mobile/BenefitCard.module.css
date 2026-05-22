@@ -1,3 +1,14 @@
+.wrapper {
+  position: relative;
+}
+
+.saveBtn {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 1;
+}
+
 .card {
   display: block;
   background: var(--color-surface);

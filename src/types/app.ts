@@ -61,6 +61,7 @@ export type BenefitCard = {
   endsAt: string | null
   isTimeLimited: boolean
   isFeatured: boolean
+  isSaved: boolean
   advertiser: AdvertiserSummary
   category: CategorySummary
 }
@@ -71,7 +72,6 @@ export type BenefitDetail = BenefitCard & {
   usageInstruction: string | null
   consentText: string | null
   redemption: BenefitRedemptionConfig | null
-  isSaved: boolean
 }
 
 export type BenefitRedemptionConfig = {

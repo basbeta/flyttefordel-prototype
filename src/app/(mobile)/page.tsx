@@ -1,8 +1,10 @@
 // CR-002: Fase 2 — Hjemskjerm med herokarusell og fordelsgrid.
+// CR-003: Fase 3 — Session-aware isSaved state.
 
 import type { Metadata } from 'next'
 import { getActiveHeroes } from '@/lib/queries/heroQueries'
 import { getActiveBenefits } from '@/lib/queries/benefitQueries'
+import { getOrCreateSession } from '@/lib/session'
 import { HeroCarousel } from '@/components/mobile/HeroCarousel'
 import { BenefitCard } from '@/components/mobile/BenefitCard'
 import { TopBar } from '@/components/mobile/TopBar'
@@ -13,7 +15,11 @@ export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Hjem' }
 
 export default async function HomePage() {
-  const [heroes, benefits] = await Promise.all([getActiveHeroes(), getActiveBenefits()])
+  const session = await getOrCreateSession()
+  const [heroes, benefits] = await Promise.all([
+    getActiveHeroes(),
+    getActiveBenefits(undefined, session?.sessionId),
+  ])
 
   return (
     <>

@@ -1,4 +1,5 @@
 // CR-002: Fase 2 — Fordeler i app
+// CR-003: Fase 3 — isSaved join added (requires sessionId)
 // Public-facing benefit queries — maps Prisma objects to API response types.
 // Pages call these directly as Server Components. Never import prisma directly in components.
 
@@ -25,30 +26,46 @@ export async function getActiveCategories(): Promise<CategorySummary[]> {
 
 // ---- Benefits list ----
 
-export async function getActiveBenefits(categorySlug?: string): Promise<BenefitCard[]> {
+export async function getActiveBenefits(
+  categorySlug?: string,
+  sessionId?: string,
+): Promise<BenefitCard[]> {
   const now = new Date()
-  const benefits = await prisma.benefit.findMany({
-    where: {
-      status: 'active',
-      deletedAt: null,
-      AND: [
-        { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
-        { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
-      ],
-      ...(categorySlug ? { category: { slug: categorySlug } } : {}),
-    },
-    include: {
-      advertiser: { select: { id: true, name: true, slug: true, logoUrl: true, websiteUrl: true } },
-      category: { select: { id: true, name: true, slug: true, icon: true, sortOrder: true } },
-    },
-    orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
-  })
-  return benefits.map(mapBenefitCard)
+  const [benefits, savedIds] = await Promise.all([
+    prisma.benefit.findMany({
+      where: {
+        status: 'active',
+        deletedAt: null,
+        AND: [
+          { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
+          { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
+        ],
+        ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+      },
+      include: {
+        advertiser: { select: { id: true, name: true, slug: true, logoUrl: true, websiteUrl: true } },
+        category: { select: { id: true, name: true, slug: true, icon: true, sortOrder: true } },
+      },
+      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
+    }),
+    sessionId
+      ? prisma.savedBenefit
+          .findMany({
+            where: { sessionId, deletedAt: null },
+            select: { benefitId: true },
+          })
+          .then((rows) => new Set(rows.map((r) => r.benefitId)))
+      : Promise.resolve(new Set<string>()),
+  ])
+  return benefits.map((b) => ({ ...mapBenefitCard(b), isSaved: savedIds.has(b.id) }))
 }
 
 // ---- Benefit detail ----
 
-export async function getBenefitBySlug(slug: string): Promise<BenefitDetail | null> {
+export async function getBenefitBySlug(
+  slug: string,
+  sessionId?: string,
+): Promise<BenefitDetail | null> {
   const now = new Date()
   // decodeURIComponent handles URL-encoded characters (e.g. ø → %C3%B8) from route params.
   const decodedSlug = decodeURIComponent(slug)
@@ -75,7 +92,17 @@ export async function getBenefitBySlug(slug: string): Promise<BenefitDetail | nu
   })
   if (!benefit) return null
 
-  const redemption = benefit.redemption ? mapRedemptionConfig(benefit.redemption) : null
+  const [redemption, isSaved] = await Promise.all([
+    Promise.resolve(benefit.redemption ? mapRedemptionConfig(benefit.redemption) : null),
+    sessionId
+      ? prisma.savedBenefit
+          .findFirst({
+            where: { sessionId, benefitId: benefit.id, deletedAt: null },
+            select: { id: true },
+          })
+          .then(Boolean)
+      : Promise.resolve(false),
+  ])
 
   // Generate QR code as data URL server-side so the client gets a plain <img> src.
   if (redemption?.type === 'qr_code' && redemption.qrValue && !redemption.qrImageUrl) {
@@ -88,11 +115,11 @@ export async function getBenefitBySlug(slug: string): Promise<BenefitDetail | nu
 
   return {
     ...mapBenefitCard(benefit),
+    isSaved,
     longDescription: benefit.longDescription,
     termsText: benefit.termsText,
     usageInstruction: benefit.usageInstruction,
     consentText: benefit.consentText,
-    isSaved: false, // Phase 2: auth not yet implemented — always false
     redemption,
   }
 }
@@ -115,6 +142,10 @@ type BenefitWithRelations = {
   category: { id: string; name: string; slug: string; icon: string | null; sortOrder: number }
 }
 
+export function mapBenefitCardFromSaved(benefit: BenefitWithRelations): BenefitCard {
+  return mapBenefitCard(benefit)
+}
+
 function mapBenefitCard(benefit: BenefitWithRelations): BenefitCard {
   return {
     id: benefit.id,
@@ -128,6 +159,7 @@ function mapBenefitCard(benefit: BenefitWithRelations): BenefitCard {
     endsAt: benefit.endsAt?.toISOString() ?? null,
     isTimeLimited: benefit.isTimeLimited,
     isFeatured: benefit.isFeatured,
+    isSaved: false, // default — callers override with actual session data
     advertiser: benefit.advertiser,
     category: benefit.category,
   }
