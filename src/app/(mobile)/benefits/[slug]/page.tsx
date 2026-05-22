@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getBenefitBySlug } from '@/lib/queries/benefitQueries'
 import { getOrCreateSession } from '@/lib/session'
+import { trackEvent } from '@/lib/tracking/trackEvent'
 import { TopBar } from '@/components/mobile/TopBar'
 import { SaveButton } from '@/components/mobile/SaveButton'
 import { RedemptionSection } from './RedemptionSection'
@@ -24,6 +25,8 @@ export default async function BenefitDetailPage({ params }: Props) {
   const session = await getOrCreateSession()
   const benefit = await getBenefitBySlug(params.slug, session?.sessionId)
   if (!benefit) notFound()
+
+  await trackEvent('benefit_viewed', benefit.id)
 
   return (
     <>

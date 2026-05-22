@@ -4,6 +4,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/client'
 import { z } from 'zod'
+import { trackEvent } from '@/lib/tracking/trackEvent'
 
 const LeadBodySchema = z
   .object({
@@ -49,6 +50,7 @@ export async function POST(request: Request, { params }: { params: { slug: strin
       },
     })
 
+    await trackEvent('lead_submitted', benefit.id)
     return NextResponse.json({ ok: true })
   } catch {
     return NextResponse.json(
