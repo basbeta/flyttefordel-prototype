@@ -1,5 +1,7 @@
 .wrapper {
   position: relative;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .saveBtn {
