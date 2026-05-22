@@ -47,9 +47,10 @@ export async function requireAdminAuth(): Promise<AdminPayload> {
 
 export function validateAdminCredentials(email: string, password: string): boolean {
   // DEMO-ONLY: plaintext comparison against env vars.
+  // ADMIN_EMAILS accepts a comma-separated list of allowed emails.
   // MVP: lookup AdminUser in DB, compare with bcrypt.hash.
-  return (
-    email === (process.env.ADMIN_EMAIL ?? 'admin@fordelsklubben.no') &&
-    password === (process.env.ADMIN_PASSWORD ?? 'Admin123!')
-  )
+  const allowedEmails = (process.env.ADMIN_EMAILS ?? process.env.ADMIN_EMAIL ?? '')
+    .split(',').map((e) => e.trim()).filter(Boolean)
+  const correctPassword = process.env.ADMIN_PASSWORD ?? 'Admin123!'
+  return allowedEmails.includes(email) && password === correctPassword
 }
