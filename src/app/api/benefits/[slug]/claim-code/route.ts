@@ -1,76 +1,56 @@
-// CR-002: Unique code assignment endpoint.
+// CR-006: POST /api/benefits/[slug]/claim-code
+// Tildeler en unik kode fra fordelens kode-pool til nåværende sesjon.
+// Idempotent: gjentatte kall fra samme sesjon returnerer samme kode.
 //
-// MIGRATION NOTE: This uses a Prisma interactive transaction which is atomic
-// within a single DB connection. For high-traffic production use, replace with
-// a SELECT ... FOR UPDATE SKIP LOCKED approach in raw SQL. See entities.md:
-// "Tildeling skjer i databasetransaksjon — se /lib/codes/assignUniqueCode.ts"
+// MIGRATION NOTE: For MVP med høyt volum (>1000 samtidige brukere),
+// bytt claimCode-transaksjonen til raw SQL med SELECT ... FOR UPDATE SKIP LOCKED.
 
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db/client'
+import { ANON_ID_HEADER } from '@/lib/session'
+import { trackEvent } from '@/lib/tracking/trackEvent'
+import { claimCode, NoCodesAvailableError } from '@/lib/codes/claimCode'
 
-export async function POST(_request: Request, { params }: { params: { slug: string } }) {
+type Params = { params: { slug: string } }
+
+export async function POST(request: NextRequest, { params }: Params) {
+  const anonymousId = request.headers.get(ANON_ID_HEADER)
+  if (!anonymousId) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
+
+  const session = await prisma.userSession.findUnique({
+    where: { anonymousId },
+    select: { id: true },
+  })
+  if (!session) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
+
+  const benefit = await prisma.benefit.findFirst({
+    where: { slug: decodeURIComponent(params.slug), status: 'active', deletedAt: null },
+    select: {
+      id: true,
+      redemptionType: true,
+      redemption: { select: { codePoolId: true } },
+    },
+  })
+
+  if (!benefit) {
+    return NextResponse.json({ message: 'Fordel ikke funnet' }, { status: 404 })
+  }
+  if (benefit.redemptionType !== 'unique_code' || !benefit.redemption?.codePoolId) {
+    return NextResponse.json({ message: 'Fordelen støtter ikke unik kode-tildeling' }, { status: 404 })
+  }
+
   try {
-    const decodedSlug = decodeURIComponent(params.slug)
-
-    const benefit = await prisma.benefit.findFirst({
-      where: { slug: decodedSlug, status: 'active', deletedAt: null },
-      include: {
-        redemption: {
-          include: {
-            codePool: { select: { id: true, availableCodes: true } },
-          },
-        },
-      },
-    })
-
-    if (!benefit) {
+    const result = await claimCode(benefit.redemption.codePoolId, session.id)
+    void trackEvent('code_revealed', benefit.id)
+    return NextResponse.json({ code: result.codeValue, alreadyClaimed: result.alreadyClaimed })
+  } catch (err) {
+    if (err instanceof NoCodesAvailableError) {
       return NextResponse.json(
-        { error: 'BENEFIT_NOT_FOUND', message: 'Fordel ikke funnet' },
-        { status: 404 }
+        { message: 'Ingen koder igjen. Ta kontakt med annonsøren.' },
+        { status: 410 },
       )
     }
-
-    const codePoolId = benefit.redemption?.codePool?.id
-    if (!codePoolId) {
-      return NextResponse.json(
-        { error: 'CODE_POOL_EMPTY', message: 'Ingen kodepool tilknyttet denne fordelen' },
-        { status: 409 }
-      )
-    }
-
-    // Atomic: find and claim a code in a single transaction.
-    const code = await prisma.$transaction(async (tx) => {
-      const available = await tx.code.findFirst({
-        where: { codePoolId, status: 'available' },
-        orderBy: { createdAt: 'asc' },
-      })
-      if (!available) return null
-
-      const [claimed] = await Promise.all([
-        tx.code.update({
-          where: { id: available.id },
-          data: { status: 'assigned', assignedAt: new Date() },
-        }),
-        tx.codePool.update({
-          where: { id: codePoolId },
-          data: { availableCodes: { decrement: 1 } },
-        }),
-      ])
-      return claimed
-    })
-
-    if (!code) {
-      return NextResponse.json(
-        { error: 'CODE_POOL_EMPTY', message: 'Kodelager er tomt' },
-        { status: 409 }
-      )
-    }
-
-    return NextResponse.json({ code: code.codeValue })
-  } catch {
-    return NextResponse.json(
-      { error: 'INTERNAL_ERROR', message: 'Intern feil' },
-      { status: 500 }
-    )
+    return NextResponse.json({ message: 'Noe gikk galt. Prøv igjen.' }, { status: 500 })
   }
 }

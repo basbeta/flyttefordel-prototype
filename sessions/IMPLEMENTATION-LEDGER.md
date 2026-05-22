@@ -73,3 +73,7 @@
 | 2026-05-22 | Session-6 | git | Commit 753a7a3: chore end-session + CR-005 Done | CR-005 | — |
 | 2026-05-22 | Session-6 | Vercel | git push → auto-deploy CR-005 til prod (commit 753a7a3) | CR-005 | deploy ✓ |
 | 2026-05-22 | Session-6 | Prod-verifisering | /verify PASS: ingen sesjon→5 kort, postnummer 7777→6 kort, feil postnummer→5 kort | CR-005 | prod ✓ |
+| 2026-05-22 | Session-7 | change-requests/ | Opprettet og godkjent CR-006: Unik kode-tildeling | CR-006 | — |
+| 2026-05-22 | Session-7 | src/lib/codes/ | claimCode.ts: atomisk kode-tildeling via Prisma $transaction, idempotency-sjekk per sesjon | CR-006 | tsc ✓ |
+| 2026-05-22 | Session-7 | src/lib/codes/ | claimCode.test.ts: 4 unit-tester (idempotent, claim, tom pool, decrement) | CR-006 | vitest ✓ |
+| 2026-05-22 | Session-7 | src/app/api/benefits/[slug]/claim-code/ | route.ts: erstattet CR-002 stub med fullstendig implementasjon — sesjonsjekk, idempotency, tracking, 410 ved tom pool | CR-006 | tsc ✓ |
