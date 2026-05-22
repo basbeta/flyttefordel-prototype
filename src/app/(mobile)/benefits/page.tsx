@@ -23,7 +23,7 @@ export default async function BenefitsPage({ searchParams }: Props) {
   const session = await getOrCreateSession()
   const [categories, benefits] = await Promise.all([
     getActiveCategories(),
-    getActiveBenefits(activeCategory ?? undefined, session?.sessionId),
+    getActiveBenefits(activeCategory ?? undefined, session),
   ])
 
   return (

@@ -6,6 +6,14 @@ import { useRouter } from 'next/navigation'
 import type { CTAType, HeroStatus } from '@prisma/client'
 import styles from '@/components/admin/AdminTable.module.css'
 
+type TargetingData = {
+  appliesNationally: boolean
+  includeUnknownLocation: boolean
+  postcodes: unknown
+  postcodeRanges: unknown
+  movingStatuses: unknown
+}
+
 type HeroData = {
   id: string
   title: string
@@ -20,6 +28,7 @@ type HeroData = {
   isFallback: boolean
   startsAt: Date | null
   endsAt: Date | null
+  targeting?: TargetingData | null
 }
 
 type Props = { hero?: HeroData }
@@ -49,6 +58,18 @@ export function HeroForm({ hero }: Props) {
   const [startsAt, setStartsAt] = useState(hero?.startsAt ? new Date(hero.startsAt).toISOString().slice(0, 16) : '')
   const [endsAt, setEndsAt] = useState(hero?.endsAt ? new Date(hero.endsAt).toISOString().slice(0, 16) : '')
 
+  // Targeting state
+  const [appliesNationally, setAppliesNationally] = useState(hero?.targeting?.appliesNationally ?? false)
+  const [includeUnknownLocation, setIncludeUnknownLocation] = useState(hero?.targeting?.includeUnknownLocation ?? true)
+  const [postcodeInput, setPostcodeInput] = useState(() => {
+    const val = hero?.targeting?.postcodes
+    return Array.isArray(val) ? (val as string[]).join(', ') : ''
+  })
+  const [selectedSegments, setSelectedSegments] = useState<string[]>(() => {
+    const val = hero?.targeting?.movingStatuses
+    return Array.isArray(val) ? (val as string[]) : []
+  })
+
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -63,6 +84,13 @@ export function HeroForm({ hero }: Props) {
       ctaLabel: ctaLabel || null, ctaType, ctaTarget: ctaTarget || null,
       status, priority: Number(priority), isFallback,
       startsAt: startsAt || null, endsAt: endsAt || null,
+      targeting: {
+        appliesNationally,
+        includeUnknownLocation,
+        postcodes: postcodeInput.split(',').map((s) => s.trim()).filter(Boolean),
+        postcodeRanges: [],
+        movingStatuses: selectedSegments,
+      },
     }
 
     const res = await fetch(
@@ -158,6 +186,57 @@ export function HeroForm({ hero }: Props) {
         <input type="checkbox" checked={isFallback} onChange={(e) => setIsFallback(e.target.checked)} />
         Fallback (vis når ingen targetede heroer matcher)
       </label>
+
+      <hr style={{ margin: 'var(--space-4) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />
+      <h3 style={{ fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: 'var(--space-3)' }}>Targeting</h3>
+
+      <div style={{ display: 'flex', gap: 'var(--space-6)', flexWrap: 'wrap', marginBottom: 'var(--space-3)' }}>
+        <label style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', fontSize: 'var(--font-sm)', cursor: 'pointer' }}>
+          <input type="checkbox" checked={appliesNationally} onChange={(e) => setAppliesNationally(e.target.checked)} />
+          Nasjonalt (vis for alle)
+        </label>
+        <label style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', fontSize: 'var(--font-sm)', cursor: 'pointer' }}>
+          <input type="checkbox" checked={includeUnknownLocation} onChange={(e) => setIncludeUnknownLocation(e.target.checked)} />
+          Inkluder ukjent lokasjon
+        </label>
+      </div>
+
+      <div className={styles.field}>
+        <label className={styles.label}>Segment</label>
+        <div style={{ display: 'flex', gap: 'var(--space-6)', flexWrap: 'wrap' }}>
+          {[
+            { value: 'recently_moved', label: 'Nylig flyttet' },
+            { value: 'moved_past', label: 'Tidligere flyttet' },
+            { value: 'not_moving', label: 'Ikke-flytter' },
+          ].map(({ value, label }) => (
+            <label key={value} style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', fontSize: 'var(--font-sm)', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={selectedSegments.includes(value)}
+                onChange={(e) => setSelectedSegments(
+                  e.target.checked
+                    ? [...selectedSegments, value]
+                    : selectedSegments.filter((s) => s !== value),
+                )}
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+        <p className={styles.hint}>Tom = alle segmenter</p>
+      </div>
+
+      <div className={styles.field}>
+        <label className={styles.label}>Postnummer (kommaseparert)</label>
+        <input
+          className={styles.input}
+          value={postcodeInput}
+          onChange={(e) => setPostcodeInput(e.target.value)}
+          placeholder="f.eks. 0150, 0151, 0152"
+          disabled={appliesNationally}
+        />
+        <p className={styles.hint}>Tom = alle postnummer. Overstyres av &laquo;Nasjonalt&raquo;.</p>
+      </div>
 
       {error && <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-sm)' }}>{error}</p>}
 

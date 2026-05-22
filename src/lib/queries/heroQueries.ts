@@ -1,10 +1,12 @@
 // CR-002: Fase 2 — Fordeler i app
-// Hero queries for the home screen carousel.
+// CR-005: Fase 5 — Targeting filter + fallback hero logic added
 
 import { prisma } from '@/lib/db/client'
+import { matchesSession } from '@/lib/targeting'
+import type { TargetingSession } from '@/lib/targeting'
 import type { HeroCard } from '@/types/app'
 
-export async function getActiveHeroes(): Promise<HeroCard[]> {
+export async function getActiveHeroes(session?: TargetingSession | null): Promise<HeroCard[]> {
   const now = new Date()
   const heroes = await prisma.hero.findMany({
     where: {
@@ -15,9 +17,19 @@ export async function getActiveHeroes(): Promise<HeroCard[]> {
         { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },
       ],
     },
+    include: { targeting: true },
     orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
   })
-  return heroes.map((h) => ({
+
+  const ctx: TargetingSession = session ?? { postcode: null, movingStatus: 'unknown' }
+
+  const nonFallback = heroes.filter((h) => !h.isFallback)
+  const fallback = heroes.filter((h) => h.isFallback)
+
+  const matched = nonFallback.filter((h) => matchesSession(h.targeting, ctx))
+  const visible = matched.length > 0 ? matched : fallback
+
+  return visible.map((h) => ({
     id: h.id,
     title: h.title,
     description: h.description,

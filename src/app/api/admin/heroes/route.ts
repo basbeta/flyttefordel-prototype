@@ -12,6 +12,14 @@ async function authCheck(request: NextRequest) {
   return verifyAdminJWT(token)
 }
 
+const targetingSchema = z.object({
+  appliesNationally: z.boolean().default(false),
+  includeUnknownLocation: z.boolean().default(true),
+  postcodes: z.array(z.string()).default([]),
+  postcodeRanges: z.array(z.object({ from: z.string(), to: z.string() })).default([]),
+  movingStatuses: z.array(z.string()).default([]),
+})
+
 const heroSchema = z.object({
   title: z.string().min(1),
   description: z.string().nullable().optional(),
@@ -25,6 +33,7 @@ const heroSchema = z.object({
   isFallback: z.boolean().default(false),
   startsAt: z.string().nullable().optional(),
   endsAt: z.string().nullable().optional(),
+  targeting: targetingSchema.optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -34,12 +43,23 @@ export async function POST(request: NextRequest) {
   const parsed = heroSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
-  const { startsAt, endsAt, ...heroData } = parsed.data
+  const { targeting, startsAt, endsAt, ...heroData } = parsed.data
   const hero = await prisma.hero.create({
     data: {
       ...heroData,
       startsAt: startsAt ? new Date(startsAt) : null,
       endsAt: endsAt ? new Date(endsAt) : null,
+      ...(targeting ? {
+        targeting: {
+          create: {
+            appliesNationally: targeting.appliesNationally,
+            includeUnknownLocation: targeting.includeUnknownLocation,
+            postcodes: targeting.postcodes,
+            postcodeRanges: targeting.postcodeRanges,
+            movingStatuses: targeting.movingStatuses,
+          },
+        },
+      } : {}),
     },
   })
   return NextResponse.json({ id: hero.id }, { status: 201 })

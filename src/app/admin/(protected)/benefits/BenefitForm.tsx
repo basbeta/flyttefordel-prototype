@@ -8,6 +8,14 @@ import styles from '@/components/admin/AdminTable.module.css'
 
 type Category = { id: string; name: string; slug: string }
 
+type TargetingData = {
+  appliesNationally: boolean
+  includeUnknownLocation: boolean
+  postcodes: unknown
+  postcodeRanges: unknown
+  movingStatuses: unknown
+}
+
 type BenefitData = {
   id: string
   title: string
@@ -33,6 +41,7 @@ type BenefitData = {
     ctaLabel: string | null
     opensInNewTab: boolean
   } | null
+  targeting?: TargetingData | null
 }
 
 type Props = {
@@ -85,6 +94,18 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
   const [ctaLabel, setCtaLabel] = useState(benefit?.redemption?.ctaLabel ?? '')
   const [opensInNewTab, setOpensInNewTab] = useState(benefit?.redemption?.opensInNewTab ?? true)
 
+  // Targeting state
+  const [appliesNationally, setAppliesNationally] = useState(benefit?.targeting?.appliesNationally ?? false)
+  const [includeUnknownLocation, setIncludeUnknownLocation] = useState(benefit?.targeting?.includeUnknownLocation ?? true)
+  const [postcodeInput, setPostcodeInput] = useState(() => {
+    const val = benefit?.targeting?.postcodes
+    return Array.isArray(val) ? (val as string[]).join(', ') : ''
+  })
+  const [selectedSegments, setSelectedSegments] = useState<string[]>(() => {
+    const val = benefit?.targeting?.movingStatuses
+    return Array.isArray(val) ? (val as string[]) : []
+  })
+
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -111,6 +132,13 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
         qrValue: qrValue || null,
         ctaLabel: ctaLabel || null,
         opensInNewTab,
+      },
+      targeting: {
+        appliesNationally,
+        includeUnknownLocation,
+        postcodes: postcodeInput.split(',').map((s) => s.trim()).filter(Boolean),
+        postcodeRanges: [],
+        movingStatuses: selectedSegments,
       },
     }
 
@@ -263,6 +291,57 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
       <div className={styles.field}>
         <label className={styles.label}>Vilkår</label>
         <textarea className={styles.textarea} rows={2} value={termsText} onChange={(e) => setTermsText(e.target.value)} />
+      </div>
+
+      <hr style={{ margin: 'var(--space-4) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />
+      <h3 style={{ fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: 'var(--space-3)' }}>Targeting</h3>
+
+      <div style={{ display: 'flex', gap: 'var(--space-6)', flexWrap: 'wrap', marginBottom: 'var(--space-3)' }}>
+        <label style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', fontSize: 'var(--font-sm)', cursor: 'pointer' }}>
+          <input type="checkbox" checked={appliesNationally} onChange={(e) => setAppliesNationally(e.target.checked)} />
+          Nasjonalt (vis for alle)
+        </label>
+        <label style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', fontSize: 'var(--font-sm)', cursor: 'pointer' }}>
+          <input type="checkbox" checked={includeUnknownLocation} onChange={(e) => setIncludeUnknownLocation(e.target.checked)} />
+          Inkluder ukjent lokasjon
+        </label>
+      </div>
+
+      <div className={styles.field}>
+        <label className={styles.label}>Segment</label>
+        <div style={{ display: 'flex', gap: 'var(--space-6)', flexWrap: 'wrap' }}>
+          {[
+            { value: 'recently_moved', label: 'Nylig flyttet' },
+            { value: 'moved_past', label: 'Tidligere flyttet' },
+            { value: 'not_moving', label: 'Ikke-flytter' },
+          ].map(({ value, label }) => (
+            <label key={value} style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center', fontSize: 'var(--font-sm)', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={selectedSegments.includes(value)}
+                onChange={(e) => setSelectedSegments(
+                  e.target.checked
+                    ? [...selectedSegments, value]
+                    : selectedSegments.filter((s) => s !== value),
+                )}
+              />
+              {label}
+            </label>
+          ))}
+        </div>
+        <p className={styles.hint}>Tom = alle segmenter</p>
+      </div>
+
+      <div className={styles.field}>
+        <label className={styles.label}>Postnummer (kommaseparert)</label>
+        <input
+          className={styles.input}
+          value={postcodeInput}
+          onChange={(e) => setPostcodeInput(e.target.value)}
+          placeholder="f.eks. 0150, 0151, 0152"
+          disabled={appliesNationally}
+        />
+        <p className={styles.hint}>Tom = alle postnummer. Overstyres av &laquo;Nasjonalt&raquo;.</p>
       </div>
 
       {error && <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-sm)' }}>{error}</p>}

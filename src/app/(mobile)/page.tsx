@@ -17,8 +17,8 @@ export const metadata: Metadata = { title: 'Hjem' }
 export default async function HomePage() {
   const session = await getOrCreateSession()
   const [heroes, benefits] = await Promise.all([
-    getActiveHeroes(),
-    getActiveBenefits(undefined, session?.sessionId),
+    getActiveHeroes(session),
+    getActiveBenefits(undefined, session),
   ])
 
   return (

@@ -20,7 +20,7 @@ export default async function NearbyPage() {
   // For demo: postcode filter is applied as a placeholder — the targeting module
   // (CR-004) will implement real geographic filtering against TargetingRule.
   // For now we show all active benefits when postcode is set, as a visual demo.
-  const benefits = await getActiveBenefits(undefined, session?.sessionId)
+  const benefits = await getActiveBenefits(undefined, session)
 
   return (
     <>

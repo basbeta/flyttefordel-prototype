@@ -86,9 +86,8 @@ export async function getAdminBenefitById(id: string) {
     include: {
       advertiser: true,
       category: true,
-      redemption: {
-        include: { codePool: true, leadForm: true },
-      },
+      redemption: { include: { codePool: true, leadForm: true } },
+      targeting: true,
     },
   })
 }
@@ -127,7 +126,7 @@ export async function getAdminHeroes() {
 }
 
 export async function getAdminHeroById(id: string) {
-  return prisma.hero.findFirst({ where: { id, deletedAt: null } })
+  return prisma.hero.findFirst({ where: { id, deletedAt: null }, include: { targeting: true } })
 }
 
 // ---- Kategorier (for dropdowns) ----

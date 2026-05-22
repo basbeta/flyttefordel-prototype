@@ -12,6 +12,14 @@ async function authCheck(request: NextRequest) {
   return verifyAdminJWT(token)
 }
 
+const targetingSchema = z.object({
+  appliesNationally: z.boolean().default(false),
+  includeUnknownLocation: z.boolean().default(true),
+  postcodes: z.array(z.string()).default([]),
+  postcodeRanges: z.array(z.object({ from: z.string(), to: z.string() })).default([]),
+  movingStatuses: z.array(z.string()).default([]),
+})
+
 const benefitSchema = z.object({
   title: z.string().min(1),
   slug: z.string().min(1),
@@ -36,6 +44,7 @@ const benefitSchema = z.object({
     ctaLabel: z.string().nullable().optional(),
     opensInNewTab: z.boolean().default(true),
   }).optional(),
+  targeting: targetingSchema.optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -45,7 +54,7 @@ export async function POST(request: NextRequest) {
   const parsed = benefitSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
-  const { redemption, startsAt, endsAt, ...benefitData } = parsed.data
+  const { redemption, targeting, startsAt, endsAt, ...benefitData } = parsed.data
 
   const benefit = await prisma.benefit.create({
     data: {
@@ -63,6 +72,17 @@ export async function POST(request: NextRequest) {
             qrValue: redemption.qrValue,
             ctaLabel: redemption.ctaLabel,
             opensInNewTab: redemption.opensInNewTab,
+          },
+        },
+      } : {}),
+      ...(targeting ? {
+        targeting: {
+          create: {
+            appliesNationally: targeting.appliesNationally,
+            includeUnknownLocation: targeting.includeUnknownLocation,
+            postcodes: targeting.postcodes,
+            postcodeRanges: targeting.postcodeRanges,
+            movingStatuses: targeting.movingStatuses,
           },
         },
       } : {}),

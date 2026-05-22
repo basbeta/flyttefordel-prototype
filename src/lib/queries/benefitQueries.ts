@@ -1,12 +1,17 @@
 // CR-002: Fase 2 — Fordeler i app
 // CR-003: Fase 3 — isSaved join added (requires sessionId)
+// CR-005: Fase 5 — Targeting filter added (in-memory after DB fetch)
 // Public-facing benefit queries — maps Prisma objects to API response types.
 // Pages call these directly as Server Components. Never import prisma directly in components.
 
 import QRCode from 'qrcode'
 import { prisma } from '@/lib/db/client'
+import { matchesSession } from '@/lib/targeting'
+import type { TargetingSession } from '@/lib/targeting'
 import type { BenefitCard, BenefitDetail, CategorySummary, BenefitRedemptionConfig, LeadFormField } from '@/types/app'
 import type { BenefitRedemptionType, Prisma } from '@prisma/client'
+
+type BenefitListSession = TargetingSession & { sessionId: string }
 
 // ---- Categories ----
 
@@ -28,7 +33,7 @@ export async function getActiveCategories(): Promise<CategorySummary[]> {
 
 export async function getActiveBenefits(
   categorySlug?: string,
-  sessionId?: string,
+  session?: BenefitListSession | null,
 ): Promise<BenefitCard[]> {
   const now = new Date()
   const [benefits, savedIds] = await Promise.all([
@@ -45,19 +50,25 @@ export async function getActiveBenefits(
       include: {
         advertiser: { select: { id: true, name: true, slug: true, logoUrl: true, websiteUrl: true } },
         category: { select: { id: true, name: true, slug: true, icon: true, sortOrder: true } },
+        targeting: true,
       },
       orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
     }),
-    sessionId
+    session?.sessionId
       ? prisma.savedBenefit
           .findMany({
-            where: { sessionId, deletedAt: null },
+            where: { sessionId: session.sessionId, deletedAt: null },
             select: { benefitId: true },
           })
           .then((rows) => new Set(rows.map((r) => r.benefitId)))
       : Promise.resolve(new Set<string>()),
   ])
-  return benefits.map((b) => ({ ...mapBenefitCard(b), isSaved: savedIds.has(b.id) }))
+  const targetingCtx: TargetingSession = session
+    ? { postcode: session.postcode, movingStatus: session.movingStatus }
+    : { postcode: null, movingStatus: 'unknown' }
+  return benefits
+    .filter((b) => matchesSession(b.targeting, targetingCtx))
+    .map((b) => ({ ...mapBenefitCard(b), isSaved: savedIds.has(b.id) }))
 }
 
 // ---- Benefit detail ----

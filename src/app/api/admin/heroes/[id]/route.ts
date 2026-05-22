@@ -12,6 +12,14 @@ async function authCheck(request: NextRequest) {
   return verifyAdminJWT(token)
 }
 
+const targetingSchema = z.object({
+  appliesNationally: z.boolean().default(false),
+  includeUnknownLocation: z.boolean().default(true),
+  postcodes: z.array(z.string()).default([]),
+  postcodeRanges: z.array(z.object({ from: z.string(), to: z.string() })).default([]),
+  movingStatuses: z.array(z.string()).default([]),
+})
+
 const patchSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().nullable().optional(),
@@ -25,6 +33,7 @@ const patchSchema = z.object({
   isFallback: z.boolean().optional(),
   startsAt: z.string().nullable().optional(),
   endsAt: z.string().nullable().optional(),
+  targeting: targetingSchema.optional(),
 })
 
 type Params = { params: { id: string } }
@@ -39,13 +48,33 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const existing = await prisma.hero.findFirst({ where: { id: params.id, deletedAt: null } })
   if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
-  const { startsAt, endsAt, ...heroData } = parsed.data
+  const { targeting, startsAt, endsAt, ...heroData } = parsed.data
   await prisma.hero.update({
     where: { id: params.id },
     data: {
       ...heroData,
       ...(startsAt !== undefined ? { startsAt: startsAt ? new Date(startsAt) : null } : {}),
       ...(endsAt !== undefined ? { endsAt: endsAt ? new Date(endsAt) : null } : {}),
+      ...(targeting ? {
+        targeting: {
+          upsert: {
+            create: {
+              appliesNationally: targeting.appliesNationally,
+              includeUnknownLocation: targeting.includeUnknownLocation,
+              postcodes: targeting.postcodes,
+              postcodeRanges: targeting.postcodeRanges,
+              movingStatuses: targeting.movingStatuses,
+            },
+            update: {
+              appliesNationally: targeting.appliesNationally,
+              includeUnknownLocation: targeting.includeUnknownLocation,
+              postcodes: targeting.postcodes,
+              postcodeRanges: targeting.postcodeRanges,
+              movingStatuses: targeting.movingStatuses,
+            },
+          },
+        },
+      } : {}),
     },
   })
   return NextResponse.json({ ok: true })
