@@ -5,6 +5,7 @@ import type {
   AdminDashboardStats,
   AdminBenefitRow,
   AdminAdvertiserRow,
+  AdminCategoryRow,
   AdminCodePoolRow,
   AdminLeadRow,
 } from '@/types/admin'
@@ -137,6 +138,30 @@ export async function getAdminCategories() {
     orderBy: { sortOrder: 'asc' },
     select: { id: true, name: true, slug: true },
   })
+}
+
+// ---- Kategorier (full CRUD-visning) ----
+
+export async function getAdminCategoriesFull(): Promise<AdminCategoryRow[]> {
+  const categories = await prisma.category.findMany({
+    include: { _count: { select: { benefits: true } } },
+    orderBy: { sortOrder: 'asc' },
+  })
+  return categories.map((c) => ({
+    id: c.id,
+    name: c.name,
+    slug: c.slug,
+    description: c.description,
+    icon: c.icon,
+    sortOrder: c.sortOrder,
+    isActive: c.isActive,
+    benefitCount: c._count.benefits,
+    createdAt: c.createdAt.toISOString(),
+  }))
+}
+
+export async function getAdminCategoryById(id: string) {
+  return prisma.category.findFirst({ where: { id } })
 }
 
 // ---- Koder ----

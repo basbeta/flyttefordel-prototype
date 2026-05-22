@@ -3,7 +3,7 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-CR-006 FULLFØRT OG I PROD — Unik kode-tildeling live på https://flyttefordel-prototype.vercel.app. 6 CRs fullført (CR-001–CR-006). Klar for planlegging av neste CR.
+CR-007 IMPLEMENTERT — Kategori-administrasjon fullstendig CRUD i admin. 7 CRs fullført (CR-001–CR-007). Klart for push og prod-deploy.
 
 ## Current Objectives
 Ingen aktive objectives. Åpent støttespørsmål: «gratis kaffe»-fordel vises ikke i appen (ISSUE-007).
@@ -21,11 +21,13 @@ Ingen aktive blockers.
 - CR-004: Fase 4 — Admin-grensesnitt (Status: Done)
 - CR-005: Fase 5 — Targeting-logikk (Status: Done — committed afab783)
 - CR-006: Unik kode-tildeling (Status: Done — committed af43de6)
+- CR-007: Kategori-administrasjon i admin (Status: Done)
 
 ## Recently Modified Systems
-- `src/lib/codes/claimCode.ts` — ny modul: atomisk kode-tildeling, idempotency per sesjon (2026-05-22)
-- `src/lib/codes/claimCode.test.ts` — 4 unit-tester for claimCode (2026-05-22)
-- `src/app/api/benefits/[slug]/claim-code/route.ts` — fullstendig implementasjon, erstattet CR-002 stub (2026-05-22)
+- `src/types/admin.ts` — AdminCategoryRow lagt til (2026-05-22, CR-007)
+- `src/lib/queries/adminQueries.ts` — getAdminCategoriesFull() + getAdminCategoryById() (2026-05-22, CR-007)
+- `src/app/api/admin/categories/` — ny: GET+POST+PATCH+DELETE for kategorier (2026-05-22, CR-007)
+- `src/app/admin/(protected)/categories/` — CRUD-sider: liste, ny, rediger, deaktiver (2026-05-22, CR-007)
 
 ## Produksjon
 - **PWA**: https://flyttefordel-prototype.vercel.app
@@ -33,11 +35,10 @@ Ingen aktive blockers.
 - Admin-brukere: `kvinnesland@gmail.com` og `calle.duvdal@bas.no` — passord: `Demopassord`
 
 ## Validation Status
-✓ `npx tsc --noEmit` — ingen feil (2026-05-22, etter CR-006)
-✓ `npx vitest run` — 22/22 tester bestått (2026-05-22, CR-006)
-✓ Vercel production deploy — CR-006 live (2026-05-22, commit 373d0ad, pushet til prod)
-✓ Prod-verifisering PASS — targeting filtrerer korrekt (2026-05-22, CR-005)
-⚠ ISSUE-007: «gratis kaffe»-fordel (ID 3a48a477) vises ikke i appen — årsak ukjent, ikke verifisert
+✓ `npx tsc --noEmit` — ingen feil (2026-05-22, etter CR-007)
+✓ `npx vitest run` — 28/28 tester bestått (2026-05-22, CR-007)
+⏳ Vercel production deploy — CR-007 ikke pushet ennå
+✓ ISSUE-007 resolved — «gratis kaffe» startsAt/endsAt satt til null (2026-05-22)
 
 ## Notes
 - `<img>` brukes i stedet for `next/image` — lint warning, akseptabelt for demo

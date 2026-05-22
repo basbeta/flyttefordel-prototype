@@ -27,7 +27,7 @@ FASE 3 FULLFØRT — Anonyme sesjoner, lagrede fordeler, profil og nær-deg ferd
 | `/lib/targeting` | Fase 5 ✓ | Fordel/hero targeting-logikk |
 | `/lib/tracking` | Fase 2 ✓ | trackEvent — fire-and-forget BenefitEvent |
 | `/lib/validation` | Ikke startet | Zod-schemas (lead-validering inline per nå) |
-| `/lib/codes` | Ikke startet | Atomisk unik kode-tildeling |
+| `/lib/codes` | Fase 6 ✓ | Atomisk unik kode-tildeling via $transaction |
 | `/styles` | Fase 1 ✓ | Design tokens og globals |
 
 ## Dependency Rules
@@ -50,4 +50,4 @@ Forretningslogikk er DB-agnostisk — kun Prisma-abstraksjon.
 Next.js 14 + TypeScript | Supabase (PostgreSQL + Auth + Storage) | Prisma ORM | Vercel Hobby
 
 ## Last Structural Change
-2026-05-22 — CR-005: lib/targeting/ (ny modul), targeting-join i benefitQueries/heroQueries, targeting upsert i admin API, Targeting-seksjon i BenefitForm/HeroForm.
+2026-05-22 — CR-007: admin/categories CRUD (ny: CategoryForm, DeactivateCategoryButton, new/page, [id]/page), nye API-ruter GET+POST+PATCH+DELETE, getAdminCategoriesFull/getAdminCategoryById i adminQueries, AdminCategoryRow i types/admin.

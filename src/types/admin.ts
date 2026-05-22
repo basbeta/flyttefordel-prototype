@@ -83,6 +83,20 @@ export type AdminCodePoolRow = {
   isActive: boolean
 }
 
+// ---- Kategorier (admin-visning) ----
+
+export type AdminCategoryRow = {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  icon: string | null
+  sortOrder: number
+  isActive: boolean
+  benefitCount: number
+  createdAt: string
+}
+
 // ---- Leads (admin-visning) ----
 // formData er aldri loggført i klartekst (NFR-003).
 

@@ -81,3 +81,10 @@
 | 2026-05-22 | Session-7 | sessions/ + change-requests/ | CR-006 markert Done, CURRENT-STATE og LEDGER oppdatert | CR-006 | — |
 | 2026-05-22 | Session-7 | git | Push til origin/master (753a7a3→373d0ad) — CR-006 live i prod | CR-006 | deploy ✓ |
 | 2026-05-22 | Session-7 | sessions/ | End-session: CURRENT-STATE, LEDGER, OPEN-ISSUES oppdatert | — | — |
+| 2026-05-22 | Session-8 | sessions/ | Start-session: ISSUE-007 diagnosed + resolved (startsAt/endsAt satt til null via Prisma) | — | — |
+| 2026-05-22 | Session-8 | change-requests/ | Opprettet og godkjent CR-007: Kategori-administrasjon i admin | CR-007 | — |
+| 2026-05-22 | Session-8 | src/types/admin.ts | Lagt til AdminCategoryRow | CR-007 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/lib/queries/adminQueries.ts | getAdminCategoriesFull() + getAdminCategoryById() | CR-007 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/app/api/admin/categories/ | route.ts (GET + POST) + [id]/route.ts (PATCH + DELETE/deaktiver) | CR-007 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/app/admin/(protected)/categories/ | page.tsx (oppgradert til CRUD-tabell), CategoryForm.tsx, DeactivateCategoryButton.tsx, new/page.tsx, [id]/page.tsx | CR-007 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/app/api/admin/categories/ | route.test.ts — 6 unit-tester (409 duplikat, 400 ugyldig slug, 201 opprett, 404 PATCH/DELETE, soft delete) | CR-007 | vitest ✓ 28/28 |

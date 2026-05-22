@@ -17,21 +17,19 @@ Resolution: [how it was resolved]
 
 ## Open Issues
 
-ISSUE-007
-Status: Open
-Priority: Medium
-Area: consumer app / benefit visibility
-Description: Fordelen «gratis kaffe» (ID 3a48a477-a6b2-490c-bba8-2b5842881a50) vises ikke i appen. Fordelen er synlig i admin på /admin/benefits/3a48a477-a6b2-490c-bba8-2b5842881a50. Årsak ikke bekreftet.
-Sannsynlige årsaker (i prioritert rekkefølge):
-  1. Status ≠ active (kan stå som draft/scheduled/paused)
-  2. Targeting-regel med includeUnknownLocation: false og bruker uten postnummer
-  3. startsAt i fremtiden eller endsAt passert
-Blocker for: prod-demo av «gratis kaffe»-fordelen
-Opened: 2026-05-22
-Resolved: —
-Resolution: —
+(ingen)
 
 ## Resolved Issues
+
+ISSUE-007
+Status: Resolved
+Priority: Medium
+Area: consumer app / benefit visibility
+Description: Fordelen «gratis kaffe» (ID 3a48a477-a6b2-490c-bba8-2b5842881a50) viste ikke i appen.
+Blocker for: prod-demo av «gratis kaffe»-fordelen
+Opened: 2026-05-22
+Resolved: 2026-05-22
+Resolution: Root cause var startsAt=2026-05-22T16:09 UTC — fordelen hadde ikke nådd starttidspunktet da ISSUE ble åpnet (ca. 16:00 UTC). endsAt=2026-05-25 ville dessuten utløpe om 3 dager. Begge felter satt til null via Prisma slik at fordelen alltid er aktiv uten dato-begrensning. Ingen kodeendring nødvendig.
 
 ISSUE-001
 Status: Resolved
