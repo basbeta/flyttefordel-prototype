@@ -28,26 +28,38 @@ export async function POST(request: NextRequest, { params }: Params) {
   const pool = await prisma.codePool.findFirst({ where: { id: params.poolId } })
   if (!pool) return NextResponse.json({ message: 'Pool ikke funnet' }, { status: 404 })
 
-  const uniqueCodes = Array.from(new Set(parsed.data.codes))
+  const deduped = Array.from(new Set(parsed.data.codes))
+
+  // Finn koder som allerede eksisterer i denne poolen for å unngå duplikater.
+  // Ingen unique constraint i schema — må sjekke manuelt.
+  const existing = await prisma.code.findMany({
+    where: { codePoolId: params.poolId, codeValue: { in: deduped } },
+    select: { codeValue: true },
+  })
+  const existingSet = new Set(existing.map((c) => c.codeValue))
+  const newCodes = deduped.filter((c) => !existingSet.has(c))
+
+  if (newCodes.length === 0) {
+    return NextResponse.json({ added: 0, skipped: deduped.length }, { status: 200 })
+  }
 
   await prisma.$transaction([
     prisma.code.createMany({
-      data: uniqueCodes.map((codeValue) => ({
+      data: newCodes.map((codeValue) => ({
         codePoolId: params.poolId,
         benefitId: pool.benefitId,
         codeValue,
         status: 'available',
       })),
-      skipDuplicates: true,
     }),
     prisma.codePool.update({
       where: { id: params.poolId },
       data: {
-        totalCodes: { increment: uniqueCodes.length },
-        availableCodes: { increment: uniqueCodes.length },
+        totalCodes: { increment: newCodes.length },
+        availableCodes: { increment: newCodes.length },
       },
     }),
   ])
 
-  return NextResponse.json({ added: uniqueCodes.length }, { status: 201 })
+  return NextResponse.json({ added: newCodes.length, skipped: deduped.length - newCodes.length }, { status: 201 })
 }

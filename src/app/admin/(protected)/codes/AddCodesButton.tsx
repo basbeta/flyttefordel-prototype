@@ -28,8 +28,11 @@ export function AddCodesButton({ poolId, poolName }: Props) {
     setSaving(false)
 
     if (res.ok) {
-      const data = (await res.json()) as { added: number }
-      setResult(`${data.added} koder lagt til.`)
+      const data = (await res.json()) as { added: number; skipped: number }
+      const msg = data.skipped > 0
+        ? `${data.added} koder lagt til. ${data.skipped} duplikat(er) hoppet over.`
+        : `${data.added} koder lagt til.`
+      setResult(msg)
       setCodesText('')
       router.refresh()
     } else {
