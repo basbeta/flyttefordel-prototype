@@ -88,3 +88,11 @@
 | 2026-05-22 | Session-8 | src/app/api/admin/categories/ | route.ts (GET + POST) + [id]/route.ts (PATCH + DELETE/deaktiver) | CR-007 | tsc ✓ |
 | 2026-05-22 | Session-8 | src/app/admin/(protected)/categories/ | page.tsx (oppgradert til CRUD-tabell), CategoryForm.tsx, DeactivateCategoryButton.tsx, new/page.tsx, [id]/page.tsx | CR-007 | tsc ✓ |
 | 2026-05-22 | Session-8 | src/app/api/admin/categories/ | route.test.ts — 6 unit-tester (409 duplikat, 400 ugyldig slug, 201 opprett, 404 PATCH/DELETE, soft delete) | CR-007 | vitest ✓ 28/28 |
+| 2026-05-22 | Session-8 | change-requests/ | Opprettet og godkjent CR-008: Analytics dashboard | CR-008 | — |
+| 2026-05-22 | Session-8 | src/types/admin.ts | Lagt til AdminAnalyticsRow + AdminAnalyticsData | CR-008 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/lib/queries/adminQueries.ts | getAnalytics(period) — Prisma groupBy på BenefitEvent, periode-filter, konverteringsberegning | CR-008 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/components/admin/AdminSidebar.tsx | Analytics nav-lenke lagt til | CR-008 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/app/admin/(protected)/page.tsx | Analytics hurtiglenkest lagt til | CR-008 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/app/admin/(protected)/analytics/ | page.tsx (SummaryCard + per-fordel-tabell + CSS konv.bar) + PeriodFilter.tsx | CR-008 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/lib/queries/analytics.test.ts | 3 unit-tester: aggregering, div-by-zero, globale summer | CR-008 | vitest ✓ 31/31 |
+| 2026-05-22 | Session-8 | git | Commit 220f558: feat(CR-008) — analytics dashboard | CR-008 | push ✓ |
