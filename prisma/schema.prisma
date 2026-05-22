@@ -219,6 +219,11 @@ model Benefit {
   consentText      String?               @map("consent_text")
   isFeatured       Boolean               @default(false) @map("is_featured")
   isTimeLimited    Boolean               @default(false) @map("is_time_limited")
+  // CR-010: Økonomifelter — alle nullable, inntektsmodell er valgfri per kampanje.
+  campaignFee      Decimal?              @map("campaign_fee") @db.Decimal(10, 2)
+  pricePerView     Decimal?              @map("price_per_view") @db.Decimal(10, 4)
+  pricePerLead     Decimal?              @map("price_per_lead") @db.Decimal(10, 2)
+  pricePerRedemption Decimal?            @map("price_per_redemption") @db.Decimal(10, 2)
   createdBy        String?               @map("created_by") @db.Uuid
   updatedBy        String?               @map("updated_by") @db.Uuid
   createdAt        DateTime              @default(now()) @map("created_at")

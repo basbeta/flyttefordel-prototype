@@ -57,6 +57,67 @@ export type AdminBenefitDetail = AdminBenefitRow & {
   usageInstruction: string | null
   consentText: string | null
   imageUrl: string | null
+  // CR-010: Økonomifelter
+  campaignFee: number | null
+  pricePerView: number | null
+  pricePerLead: number | null
+  pricePerRedemption: number | null
+}
+
+// CR-010: Lønnsomhetsanalyse
+
+export type AdminBenefitProfitability = {
+  id: string
+  title: string
+  slug: string
+  advertiserName: string
+  redemptionType: string
+  views: number
+  leads: number
+  redemptions: number
+  campaignFee: number | null
+  pricePerView: number | null
+  pricePerLead: number | null
+  pricePerRedemption: number | null
+  revenue: number
+  hasPricing: boolean
+}
+
+export type AdminAdvertiserProfitability = {
+  id: string
+  name: string
+  campaignCount: number
+  totalViews: number
+  totalLeads: number
+  totalRedemptions: number
+  totalRevenue: number
+  avgCPL: number | null
+  avgCPV: number | null
+}
+
+export type AdminTypeProfitability = {
+  redemptionType: string
+  campaignCount: number
+  totalViews: number
+  totalLeads: number
+  totalRedemptions: number
+  totalRevenue: number
+  avgConversionRate: number
+}
+
+export type AdminSessionLTV = {
+  bucket: string
+  sessionCount: number
+  avgRevenue: number
+}
+
+export type AdminProfitabilityData = {
+  benefits: AdminBenefitProfitability[]
+  advertisers: AdminAdvertiserProfitability[]
+  byType: AdminTypeProfitability[]
+  totalRevenue: number
+  pricedCampaigns: number
+  totalCampaigns: number
 }
 
 // ---- Annonsører (admin-visning) ----

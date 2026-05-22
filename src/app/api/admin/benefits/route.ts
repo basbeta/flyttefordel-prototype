@@ -45,6 +45,11 @@ const benefitSchema = z.object({
     opensInNewTab: z.boolean().default(true),
   }).optional(),
   targeting: targetingSchema.optional(),
+  // CR-010: Økonomifelter
+  campaignFee: z.number().nonnegative().nullable().optional(),
+  pricePerView: z.number().nonnegative().nullable().optional(),
+  pricePerLead: z.number().nonnegative().nullable().optional(),
+  pricePerRedemption: z.number().nonnegative().nullable().optional(),
 })
 
 export async function POST(request: NextRequest) {

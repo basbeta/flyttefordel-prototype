@@ -42,6 +42,11 @@ type BenefitData = {
     opensInNewTab: boolean
   } | null
   targeting?: TargetingData | null
+  // CR-010
+  campaignFee?: number | null
+  pricePerView?: number | null
+  pricePerLead?: number | null
+  pricePerRedemption?: number | null
 }
 
 type Props = {
@@ -94,6 +99,12 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
   const [ctaLabel, setCtaLabel] = useState(benefit?.redemption?.ctaLabel ?? '')
   const [opensInNewTab, setOpensInNewTab] = useState(benefit?.redemption?.opensInNewTab ?? true)
 
+  // CR-010: Økonomifelter
+  const [campaignFee, setCampaignFee] = useState(benefit?.campaignFee != null ? String(benefit.campaignFee) : '')
+  const [pricePerView, setPricePerView] = useState(benefit?.pricePerView != null ? String(benefit.pricePerView) : '')
+  const [pricePerLead, setPricePerLead] = useState(benefit?.pricePerLead != null ? String(benefit.pricePerLead) : '')
+  const [pricePerRedemption, setPricePerRedemption] = useState(benefit?.pricePerRedemption != null ? String(benefit.pricePerRedemption) : '')
+
   // Targeting state
   const [appliesNationally, setAppliesNationally] = useState(benefit?.targeting?.appliesNationally ?? false)
   const [includeUnknownLocation, setIncludeUnknownLocation] = useState(benefit?.targeting?.includeUnknownLocation ?? true)
@@ -133,6 +144,11 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
         ctaLabel: ctaLabel || null,
         opensInNewTab,
       },
+      // CR-010: send null when empty, number when filled
+      campaignFee: campaignFee !== '' ? Number(campaignFee) : null,
+      pricePerView: pricePerView !== '' ? Number(pricePerView) : null,
+      pricePerLead: pricePerLead !== '' ? Number(pricePerLead) : null,
+      pricePerRedemption: pricePerRedemption !== '' ? Number(pricePerRedemption) : null,
       targeting: {
         appliesNationally,
         includeUnknownLocation,
@@ -347,6 +363,29 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
           disabled={appliesNationally}
         />
         <p className={styles.hint}>Tom = alle postnummer. Overstyres av &laquo;Nasjonalt&raquo;.</p>
+      </div>
+
+      <hr style={{ margin: 'var(--space-4) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />
+      <h3 style={{ fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: 'var(--space-3)' }}>Økonomi</h3>
+      <div className={styles.formRow}>
+        <div className={styles.field}>
+          <label className={styles.label}>Kampanjepris (NOK)</label>
+          <input className={styles.input} type="number" min="0" step="0.01" value={campaignFee} onChange={(e) => setCampaignFee(e.target.value)} placeholder="Fast pris" />
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label}>Pris per visning (NOK)</label>
+          <input className={styles.input} type="number" min="0" step="0.0001" value={pricePerView} onChange={(e) => setPricePerView(e.target.value)} placeholder="CPV" />
+        </div>
+      </div>
+      <div className={styles.formRow}>
+        <div className={styles.field}>
+          <label className={styles.label}>Pris per lead (NOK)</label>
+          <input className={styles.input} type="number" min="0" step="0.01" value={pricePerLead} onChange={(e) => setPricePerLead(e.target.value)} placeholder="CPL" />
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label}>Pris per innløsning (NOK)</label>
+          <input className={styles.input} type="number" min="0" step="0.01" value={pricePerRedemption} onChange={(e) => setPricePerRedemption(e.target.value)} placeholder="CPR" />
+        </div>
       </div>
 
       {error && <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-sm)' }}>{error}</p>}

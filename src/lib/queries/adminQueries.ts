@@ -10,6 +10,7 @@ import type {
   AdminCodePoolRow,
   AdminCodePoolDetail,
   AdminLeadRow,
+  AdminProfitabilityData,
 } from '@/types/admin'
 import type { BenefitStatus, LeadStatus } from '@prisma/client'
 
@@ -104,6 +105,123 @@ export async function getAnalytics(period: '7d' | '30d' | 'all'): Promise<AdminA
     totalViews: rows.reduce((s, r) => s + r.views, 0),
     totalRedemptions: rows.reduce((s, r) => s + r.codeRevealed, 0),
     totalLeads: rows.reduce((s, r) => s + r.leads, 0),
+  }
+}
+
+// ---- Lønnsomhetsanalyse (CR-010) ----
+
+export async function getProfitabilityData(): Promise<AdminProfitabilityData> {
+  const [benefits, events] = await Promise.all([
+    prisma.benefit.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true, title: true, slug: true, redemptionType: true,
+        campaignFee: true, pricePerView: true, pricePerLead: true, pricePerRedemption: true,
+        advertiser: { select: { id: true, name: true } },
+      },
+      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
+    }),
+    prisma.benefitEvent.groupBy({
+      by: ['benefitId', 'eventType'],
+      where: { benefitId: { not: null } },
+      _count: { id: true },
+    }),
+  ])
+
+  const eventMap = new Map<string, Record<string, number>>()
+  for (const e of events) {
+    if (!e.benefitId) continue
+    if (!eventMap.has(e.benefitId)) eventMap.set(e.benefitId, {})
+    eventMap.get(e.benefitId)![e.eventType] = e._count.id
+  }
+
+  function toNum(d: { toNumber(): number } | null | undefined): number | null {
+    return d == null ? null : d.toNumber()
+  }
+
+  function calcRevenue(
+    views: number, leads: number, redemptions: number,
+    fee: number | null, cpv: number | null, cpl: number | null, cpr: number | null,
+  ): number {
+    return (fee ?? 0) + views * (cpv ?? 0) + leads * (cpl ?? 0) + redemptions * (cpr ?? 0)
+  }
+
+  const benefitRows = benefits.map((b) => {
+    const m = eventMap.get(b.id) ?? {}
+    const views = m['benefit_viewed'] ?? 0
+    const leads = m['lead_submitted'] ?? 0
+    const redemptions = m['code_revealed'] ?? 0
+    const fee = toNum(b.campaignFee)
+    const cpv = toNum(b.pricePerView)
+    const cpl = toNum(b.pricePerLead)
+    const cpr = toNum(b.pricePerRedemption)
+    const hasPricing = fee != null || cpv != null || cpl != null || cpr != null
+    return {
+      id: b.id, title: b.title, slug: b.slug,
+      advertiserName: b.advertiser.name,
+      redemptionType: b.redemptionType,
+      views, leads, redemptions,
+      campaignFee: fee, pricePerView: cpv, pricePerLead: cpl, pricePerRedemption: cpr,
+      revenue: calcRevenue(views, leads, redemptions, fee, cpv, cpl, cpr),
+      hasPricing,
+      _advertiserId: b.advertiser.id,
+    }
+  })
+
+  // Per annonsør
+  const advertiserMap = new Map<string, { name: string; rows: typeof benefitRows }>()
+  for (const r of benefitRows) {
+    if (!advertiserMap.has(r._advertiserId)) {
+      advertiserMap.set(r._advertiserId, { name: r.advertiserName, rows: [] })
+    }
+    advertiserMap.get(r._advertiserId)!.rows.push(r)
+  }
+
+  const advertisers = Array.from(advertiserMap.entries()).map(([id, { name, rows }]) => {
+    const totalViews = rows.reduce((s, r) => s + r.views, 0)
+    const totalLeads = rows.reduce((s, r) => s + r.leads, 0)
+    const totalRedemptions = rows.reduce((s, r) => s + r.redemptions, 0)
+    const totalRevenue = rows.reduce((s, r) => s + r.revenue, 0)
+    const pricedRows = rows.filter((r) => r.hasPricing)
+    const leadRevenue = pricedRows.reduce((s, r) => s + r.leads * (r.pricePerLead ?? 0), 0)
+    const viewRevenue = pricedRows.reduce((s, r) => s + r.views * (r.pricePerView ?? 0), 0)
+    return {
+      id, name,
+      campaignCount: rows.length,
+      totalViews, totalLeads, totalRedemptions, totalRevenue,
+      avgCPL: totalLeads > 0 ? Math.round((leadRevenue / totalLeads) * 100) / 100 : null,
+      avgCPV: totalViews > 0 ? Math.round((viewRevenue / totalViews) * 10000) / 10000 : null,
+    }
+  }).sort((a, b) => b.totalRevenue - a.totalRevenue)
+
+  // Per annonseType
+  const typeMap = new Map<string, typeof benefitRows>()
+  for (const r of benefitRows) {
+    if (!typeMap.has(r.redemptionType)) typeMap.set(r.redemptionType, [])
+    typeMap.get(r.redemptionType)!.push(r)
+  }
+
+  const byType = Array.from(typeMap.entries()).map(([type, rows]) => {
+    const totalViews = rows.reduce((s, r) => s + r.views, 0)
+    const totalLeads = rows.reduce((s, r) => s + r.leads, 0)
+    const totalRedemptions = rows.reduce((s, r) => s + r.redemptions, 0)
+    const totalRevenue = rows.reduce((s, r) => s + r.revenue, 0)
+    const codeRows = rows.filter((r) => r.views > 0)
+    const avgConversionRate = codeRows.length > 0
+      ? Math.round(codeRows.reduce((s, r) => s + (r.redemptions / r.views) * 100, 0) / codeRows.length)
+      : 0
+    return { redemptionType: type, campaignCount: rows.length, totalViews, totalLeads, totalRedemptions, totalRevenue, avgConversionRate }
+  }).sort((a, b) => b.totalRevenue - a.totalRevenue)
+
+  const cleanBenefitRows = benefitRows.map(({ _advertiserId: _, ...rest }) => rest)
+
+  return {
+    benefits: cleanBenefitRows.sort((a, b) => b.revenue - a.revenue),
+    advertisers,
+    byType,
+    totalRevenue: benefitRows.reduce((s, r) => s + r.revenue, 0),
+    pricedCampaigns: benefitRows.filter((r) => r.hasPricing).length,
+    totalCampaigns: benefitRows.length,
   }
 }
 

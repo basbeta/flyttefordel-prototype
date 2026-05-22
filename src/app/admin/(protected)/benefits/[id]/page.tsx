@@ -22,13 +22,22 @@ export default async function EditBenefitPage({ params }: Props) {
   ])
   if (!benefit) notFound()
 
+  // CR-010: Convert Prisma Decimal → number for BenefitForm
+  const benefitForForm = {
+    ...benefit,
+    campaignFee: benefit.campaignFee?.toNumber() ?? null,
+    pricePerView: benefit.pricePerView?.toNumber() ?? null,
+    pricePerLead: benefit.pricePerLead?.toNumber() ?? null,
+    pricePerRedemption: benefit.pricePerRedemption?.toNumber() ?? null,
+  }
+
   return (
     <div>
       <div className={styles.pageHeader}>
         <h1 className={styles.pageTitle}>Rediger fordel</h1>
         <Link href="/admin/benefits" className={styles.secondaryBtn}>← Tilbake</Link>
       </div>
-      <BenefitForm advertisers={advertisers} categories={categories} benefit={benefit} />
+      <BenefitForm advertisers={advertisers} categories={categories} benefit={benefitForForm} />
     </div>
   )
 }
