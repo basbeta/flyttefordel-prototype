@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db/client'
 import { ANON_ID_HEADER } from '@/lib/session'
+import { trackEvent } from '@/lib/tracking/trackEvent'
 
 type Params = { params: { slug: string } }
 
@@ -58,6 +59,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     })
   }
 
+  void trackEvent('benefit_saved', benefit.id)
   return NextResponse.json({ saved: true }, { status: 201 })
 }
 
@@ -70,10 +72,11 @@ export async function DELETE(request: NextRequest, { params }: Params) {
   if (!session) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
   if (!benefit) return NextResponse.json({ message: 'Fordel ikke funnet' }, { status: 404 })
 
-  await prisma.savedBenefit.updateMany({
+  const { count } = await prisma.savedBenefit.updateMany({
     where: { sessionId: session.id, benefitId: benefit.id, deletedAt: null },
     data: { deletedAt: new Date() },
   })
 
+  if (count > 0) void trackEvent('benefit_unsaved', benefit.id)
   return new NextResponse(null, { status: 204 })
 }

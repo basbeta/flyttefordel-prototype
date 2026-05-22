@@ -13,6 +13,7 @@ export type TrackableEventType =
   | 'lead_form_started'
   | 'lead_submitted'
   | 'benefit_saved'
+  | 'benefit_unsaved'
   | 'hero_clicked'
 
 export async function trackEvent(
