@@ -1,19 +1,19 @@
-// AdminShell — outer wrapper for all backoffice pages.
-// Desktop-first: sidebar left, content right.
-// Auth guard will be added in CR-002.
+// CR-002: AdminShell — outer wrapper for all backoffice pages.
+// CR-004: Logout button added.
 
 import { AdminSidebar } from './AdminSidebar'
+import { LogoutButton } from './LogoutButton'
 import styles from './AdminShell.module.css'
 
-type AdminShellProps = {
-  children: React.ReactNode
-}
-
-export function AdminShell({ children }: AdminShellProps) {
+export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <div className={styles.shell}>
       <AdminSidebar />
       <div className={styles.main}>
+        <header className={styles.topbar}>
+          <div />
+          <LogoutButton />
+        </header>
         <div className={styles.content}>{children}</div>
       </div>
     </div>
