@@ -312,9 +312,16 @@ export async function getAdminLeads(filters?: {
     take: 500,
   })
 
+  const benefitIds = Array.from(new Set(leads.map((l) => l.benefitId)))
+  const benefits = await prisma.benefit.findMany({
+    where: { id: { in: benefitIds } },
+    select: { id: true, title: true },
+  })
+  const benefitMap = new Map(benefits.map((b) => [b.id, b.title]))
+
   return leads.map((l) => ({
     id: l.id,
-    benefitTitle: '—', // benefitId on lead, not a relation — resolve separately if needed
+    benefitTitle: benefitMap.get(l.benefitId) ?? '—',
     advertiserName: l.advertiser.name,
     status: l.status,
     consentAcceptedAt: l.consentAcceptedAt.toISOString(),

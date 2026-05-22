@@ -19,9 +19,9 @@ export function LeadsTable({ leads }: Props) {
   const router = useRouter()
 
   function exportCsv() {
-    const header = ['ID', 'Annonsør', 'Status', 'Samtykke', 'Opprettet']
+    const header = ['ID', 'Fordel', 'Annonsør', 'Status', 'Samtykke', 'Opprettet']
     const rows = leads.map((l) => [
-      l.id, l.advertiserName, l.status,
+      l.id, l.benefitTitle, l.advertiserName, l.status,
       l.consentAcceptedAt, l.createdAt,
     ])
     const csv = [header, ...rows].map((r) => r.join(';')).join('\n')
@@ -61,6 +61,7 @@ export function LeadsTable({ leads }: Props) {
           <table className={styles.table}>
             <thead>
               <tr>
+                <th>Fordel</th>
                 <th>Annonsør</th>
                 <th>Status</th>
                 <th>Samtykke</th>
@@ -71,7 +72,8 @@ export function LeadsTable({ leads }: Props) {
             <tbody>
               {leads.map((l) => (
                 <tr key={l.id}>
-                  <td>{l.advertiserName}</td>
+                  <td style={{ fontWeight: 500 }}>{l.benefitTitle}</td>
+                  <td style={{ color: 'var(--color-text-muted)' }}>{l.advertiserName}</td>
                   <td>
                     <span className={`${styles.statusBadge} ${l.status === 'new' ? styles['status-active'] : styles['status-archived']}`}>
                       {STATUS_LABELS[l.status] ?? l.status}
