@@ -8,6 +8,7 @@ import type {
   AdminAdvertiserRow,
   AdminCategoryRow,
   AdminCodePoolRow,
+  AdminCodePoolDetail,
   AdminLeadRow,
 } from '@/types/admin'
 import type { BenefitStatus, LeadStatus } from '@prisma/client'
@@ -246,6 +247,50 @@ export async function getAdminCodePools(): Promise<AdminCodePoolRow[]> {
     lowStockThreshold: p.lowStockThreshold,
     isActive: p.isActive,
   }))
+}
+
+// CR-009: Detaljvisning av én kode-pool med alle koder.
+export async function getAdminCodePoolDetail(poolId: string): Promise<AdminCodePoolDetail | null> {
+  const pool = await prisma.codePool.findFirst({
+    where: { id: poolId },
+    include: {
+      redemption: {
+        include: { benefit: { select: { id: true, title: true } } },
+      },
+      codes: {
+        orderBy: [{ status: 'asc' }, { createdAt: 'asc' }],
+        select: {
+          id: true,
+          codeValue: true,
+          status: true,
+          assignedSessionId: true,
+          assignedAt: true,
+          createdAt: true,
+        },
+      },
+    },
+  })
+  if (!pool) return null
+
+  return {
+    id: pool.id,
+    name: pool.name,
+    benefitId: pool.redemption[0]?.benefit.id ?? '',
+    benefitTitle: pool.redemption[0]?.benefit.title ?? '—',
+    description: pool.description,
+    totalCodes: pool.totalCodes,
+    availableCodes: pool.availableCodes,
+    lowStockThreshold: pool.lowStockThreshold,
+    isActive: pool.isActive,
+    codes: pool.codes.map((c) => ({
+      id: c.id,
+      codeValue: c.codeValue,
+      status: c.status,
+      assignedSessionId: c.assignedSessionId,
+      assignedAt: c.assignedAt?.toISOString() ?? null,
+      createdAt: c.createdAt.toISOString(),
+    })),
+  }
 }
 
 // ---- Leads ----

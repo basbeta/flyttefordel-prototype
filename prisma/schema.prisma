@@ -295,6 +295,8 @@ model Code {
   assignedUser    User?        @relation(fields: [assignedUserId], references: [id])
   assignedSession UserSession? @relation(fields: [assignedSessionId], references: [id])
 
+  // CR-009: DB-nivå garantert unikhet per pool — forhindrer duplikater ved race conditions.
+  @@unique([codePoolId, codeValue])
   @@map("codes")
 }
 

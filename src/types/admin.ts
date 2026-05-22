@@ -83,6 +83,22 @@ export type AdminCodePoolRow = {
   isActive: boolean
 }
 
+// CR-009: Detaljvisning av én pool — inkluderer alle koder.
+export type AdminCodeRow = {
+  id: string
+  codeValue: string
+  status: import('@prisma/client').CodeStatus
+  assignedSessionId: string | null
+  assignedAt: string | null
+  createdAt: string
+}
+
+export type AdminCodePoolDetail = AdminCodePoolRow & {
+  benefitId: string
+  description: string | null
+  codes: AdminCodeRow[]
+}
+
 // ---- Analytics ----
 
 export type AdminAnalyticsRow = {

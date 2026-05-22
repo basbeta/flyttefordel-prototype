@@ -1,4 +1,5 @@
 // CR-004: Admin — legg til koder i pool.
+// CR-009: Forenklet med skipDuplicates: true (DB unique constraint på plass).
 
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
@@ -30,36 +31,35 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   const deduped = Array.from(new Set(parsed.data.codes))
 
-  // Finn koder som allerede eksisterer i denne poolen for å unngå duplikater.
-  // Ingen unique constraint i schema — må sjekke manuelt.
-  const existing = await prisma.code.findMany({
-    where: { codePoolId: params.poolId, codeValue: { in: deduped } },
-    select: { codeValue: true },
-  })
-  const existingSet = new Set(existing.map((c) => c.codeValue))
-  const newCodes = deduped.filter((c) => !existingSet.has(c))
-
-  if (newCodes.length === 0) {
-    return NextResponse.json({ added: 0, skipped: deduped.length }, { status: 200 })
-  }
-
-  await prisma.$transaction([
-    prisma.code.createMany({
-      data: newCodes.map((codeValue) => ({
+  const result = await prisma.$transaction(async (tx) => {
+    const created = await tx.code.createMany({
+      data: deduped.map((codeValue) => ({
         codePoolId: params.poolId,
         benefitId: pool.benefitId,
         codeValue,
         status: 'available',
       })),
-    }),
-    prisma.codePool.update({
-      where: { id: params.poolId },
-      data: {
-        totalCodes: { increment: newCodes.length },
-        availableCodes: { increment: newCodes.length },
-      },
-    }),
-  ])
+      skipDuplicates: true,
+    })
 
-  return NextResponse.json({ added: newCodes.length, skipped: deduped.length - newCodes.length }, { status: 201 })
+    if (created.count > 0) {
+      await tx.codePool.update({
+        where: { id: params.poolId },
+        data: {
+          totalCodes: { increment: created.count },
+          availableCodes: { increment: created.count },
+        },
+      })
+    }
+
+    return created.count
+  })
+
+  const added = result
+  const skipped = deduped.length - added
+
+  if (added === 0) {
+    return NextResponse.json({ added: 0, skipped }, { status: 200 })
+  }
+  return NextResponse.json({ added, skipped }, { status: 201 })
 }
