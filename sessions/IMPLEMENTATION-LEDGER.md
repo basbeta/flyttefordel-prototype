@@ -42,3 +42,17 @@
 | 2026-05-22 | Session-4 | src/app/api/ | benefits/[slug]/save/route.ts (POST/DELETE), session/profile/route.ts (PATCH) | CR-003 | tsc ✓ |
 | 2026-05-22 | Session-4 | src/app/(mobile)/ | page.tsx + benefits/page.tsx + benefits/[slug]/page.tsx oppdatert med sessionId | CR-003 | tsc ✓ |
 | 2026-05-22 | Session-4 | src/app/(mobile)/ | saved/page.tsx, nearby/page.tsx, profile/page.tsx + ProfileForm.tsx + CSS | CR-003 | tsc ✓ dev ✓ |
+| 2026-05-22 | Session-5 | change-requests/ | Opprettet og godkjent CR-004: Fase 4 — Admin-grensesnitt | CR-004 | — |
+| 2026-05-22 | Session-5 | src/lib/admin/ | auth.ts — JWT-signering, verifisering, requireAdminAuth, validateAdminCredentials | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | src/middleware.ts | Admin JWT-guard for /admin/**, beholder anon-sesjon for consumer-app | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | src/lib/queries/ | adminQueries.ts — dashboard, benefits, advertisers, heroes, categories, codes, leads | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | src/components/admin/ | AdminShell: topbar + LogoutButton; AdminTable.module.css: delte stiler | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | src/app/admin/login/ | Login-side + LoginForm (POST /api/admin/auth/login) | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | src/app/admin/(protected)/ | Layout med requireAdminAuth(); dashboard (4 StatCard, hurtiglenker, kode-alarm) | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | src/app/admin/(protected)/benefits/ | Liste (statusfilter), ny, rediger, BenefitForm, BenefitStatusActions | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | src/app/admin/(protected)/advertisers/ | Liste, ny, rediger, AdvertiserForm | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | src/app/admin/(protected)/heroes/ | Liste, ny, rediger, HeroForm | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | src/app/admin/(protected)/leads/ | Liste (read-only), CSV-eksport, merk-eksportert, LeadsTable | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | src/app/admin/(protected)/codes/ | Kode-pool-liste, AddCodesButton (legg til koder inline) | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | src/app/api/admin/ | auth/login, auth/logout, benefits CRUD+status, advertisers CRUD, heroes CRUD, leads/status, codes/[poolId] | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | git | Commit 5ae64ad: feat(CR-004): admin backoffice — 48 filer, 2927 linjer | CR-004 | push ✓ |
