@@ -3,10 +3,10 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-CR-006 FULLFØRT — Unik kode-tildeling implementert og reviewet. 6 CRs fullført (CR-001–CR-006). Klar for push til prod eller neste CR.
+CR-006 FULLFØRT OG I PROD — Unik kode-tildeling live på https://flyttefordel-prototype.vercel.app. 6 CRs fullført (CR-001–CR-006). Klar for planlegging av neste CR.
 
 ## Current Objectives
-Ingen aktive objectives. CR-006 fullført, klar for prod-deploy.
+Ingen aktive objectives. Åpent støttespørsmål: «gratis kaffe»-fordel vises ikke i appen (ISSUE-007).
 
 ## Current Branch
 master
@@ -35,9 +35,9 @@ Ingen aktive blockers.
 ## Validation Status
 ✓ `npx tsc --noEmit` — ingen feil (2026-05-22, etter CR-006)
 ✓ `npx vitest run` — 22/22 tester bestått (2026-05-22, CR-006)
-✓ Vercel production deploy — CR-005 live (2026-05-22, commit 753a7a3)
-✓ Prod-verifisering PASS — targeting filtrerer korrekt (2026-05-22)
-⏳ CR-006 ikke pushet til prod ennå (commit af43de6 + W4-fix)
+✓ Vercel production deploy — CR-006 live (2026-05-22, commit 373d0ad, pushet til prod)
+✓ Prod-verifisering PASS — targeting filtrerer korrekt (2026-05-22, CR-005)
+⚠ ISSUE-007: «gratis kaffe»-fordel (ID 3a48a477) vises ikke i appen — årsak ukjent, ikke verifisert
 
 ## Notes
 - `<img>` brukes i stedet for `next/image` — lint warning, akseptabelt for demo
@@ -48,9 +48,10 @@ Ingen aktive blockers.
 - vitest er lagt til som devDependency — `npm test` kjører alle unit-tester
 
 ## Next Recommended Actions
-1. Push CR-006 til prod: `git push` → Vercel auto-deploy
-2. Verifiser i prod: opprett fordel med `redemptionType = unique_code`, legg til koder i pool, test claim-flyt
+1. Løs ISSUE-007: åpne «gratis kaffe»-fordelen i admin og verifiser status (må være `active`), targeting (sjekk `includeUnknownLocation`), og datoer (startsAt/endsAt)
+2. Verifiser CR-006 i prod: opprett fordel med `redemptionType = unique_code`, legg til koder i pool via admin /codes, test claim-flyt i appen
 3. Planlegg neste CR — kandidater:
    a. CR-007: Kategori-administrasjon i admin (CRUD for Category-tabellen)
    b. CR-008: Analytics dashboard (BenefitEvent-aggregering, charts)
+   c. CR-009: Rate limiting på claim-endepunkt (ISSUE-007-relatert risiko)
 4. Vurder Supabase oppgradering til betalt tier for å eliminere pause-problemet
