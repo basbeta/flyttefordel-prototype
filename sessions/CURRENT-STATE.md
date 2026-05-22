@@ -3,10 +3,10 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-FASE 4 FULLFØRT — Admin-grensesnitt med JWT-auth, fordeler/annonsører/heroer/leads/koder-CRUD implementert og pushet. Vercel deployer automatisk fra master.
+FASE 4 FULLFØRT, FASE 5 PLANLAGT — Admin-backoffice i prod (Vercel). CR-005 opprettet og klar for implementering.
 
 ## Current Objectives
-Ingen aktive objectives. Alle fire faser er fullført.
+1. Implementere CR-005: Targeting-logikk (neste sesjon)
 
 ## Current Branch
 master
@@ -19,32 +19,32 @@ Ingen aktive blockers.
 - CR-002: Fase 2 — Fordeler i app (Status: Done)
 - CR-003: Fase 3 — Anonyme sesjoner, lagrede fordeler, profil (Status: Done)
 - CR-004: Fase 4 — Admin-grensesnitt (Status: Done)
+- CR-005: Fase 5 — Targeting-logikk (Status: Draft — klar for godkjenning og implementering)
 
 ## Recently Modified Systems
-- `src/middleware.ts` — JWT-guard for /admin/**, anon-sesjon for consumer-app (2026-05-22)
-- `src/lib/admin/auth.ts` — signAdminJWT, verifyAdminJWT, requireAdminAuth, validateAdminCredentials (2026-05-22)
-- `src/lib/queries/adminQueries.ts` — alle admin-dataspørringer (2026-05-22)
-- `src/app/admin/(protected)/` — dashboard, fordeler, annonsører, heroer, leads, koder, kategorier, innstillinger (2026-05-22)
-- `src/app/admin/login/` — innloggingsside (2026-05-22)
-- `src/app/api/admin/` — alle admin-API-ruter (auth, benefits, advertisers, heroes, leads, codes) (2026-05-22)
-- `src/components/admin/AdminShell.tsx` — topbar + logout-knapp (2026-05-22)
-- `src/components/admin/AdminTable.module.css` — delte admin-stiler (2026-05-22)
+- `src/lib/admin/auth.ts` — ADMIN_EMAILS støtter kommaseparert liste med admin-eposter (2026-05-22)
+- `change-requests/CR-005-targeting.md` — opprettet, klar for godkjenning (2026-05-22)
+
+## Produksjon
+- **PWA**: https://flyttefordel-prototype.vercel.app
+- **Admin**: https://flyttefordel-prototype.vercel.app/admin
+- Admin-brukere: `kvinnesland@gmail.com` og `calle.duvdal@bas.no` — passord: `Demopassord`
 
 ## Validation Status
 ✓ `npx tsc --noEmit` — ingen feil (2026-05-22)
-✓ `git push origin master` — pushet, Vercel deployer automatisk
+✓ Vercel production deploy — bygget rent, 37 ruter, 0 TypeScript-feil
 
 ## Notes
-- `<img>` brukes i stedet for `next/image` — lint warning, akseptabelt for demo (byttes ved MVP)
-- Targeting ikke aktivt — alle aktive fordeler vises for alle brukere (utsatt til fremtidig CR)
-- Supabase free tier pauser etter 1 uke inaktivitet — se lib/db/client.ts
-- Admin-auth: JWT signert med ADMIN_JWT_SECRET env var (kun .env.local, aldri i kode)
-- Admin-innlogging: ADMIN_EMAIL + ADMIN_PASSWORD env vars — MÅ settes i Vercel dashboard
-- `prisma db push` brukes for schema-endringer
-- NEXT_PUBLIC_ANON_KEY og SUPABASE_SERVICE_ROLE_KEY er fortsatt placeholder
+- `<img>` brukes i stedet for `next/image` — lint warning, akseptabelt for demo
+- Targeting ikke aktivt ennå — alle aktive fordeler vises for alle brukere (CR-005)
+- Supabase free tier pauser etter 1 uke uten aktivitet — se lib/db/client.ts
+- Admin-auth: ADMIN_EMAILS (kommaseparert), ADMIN_PASSWORD, ADMIN_JWT_SECRET — alle satt i Vercel
+- `prisma db push` brukes for schema-endringer (migrate dev er interaktiv)
+- TargetingRule-tabellen er allerede i prod — ingen DB-migrering nødvendig for CR-005
 
 ## Next Recommended Actions
-1. Sett ADMIN_EMAIL, ADMIN_PASSWORD og ADMIN_JWT_SECRET i Vercel-prosjektets environment variables
-2. Test admin-innlogging på produksjons-URL via Vercel
-3. Legg til seed-data via admin-grensesnitt (annonsør → fordel → aktiver)
-4. Vurder CR-005: Targeting-logikk basert på postnummer og flyttestatus
+1. Godkjenn CR-005 og kjør `/implement CR-005`
+2. Start med `src/lib/targeting/index.ts` (matchesSession — ren funksjon, lett å teste)
+3. Integrer i benefitQueries og heroQueries
+4. Legg til targeting-seksjon i BenefitForm og HeroForm
+5. Test: opprett fordel med postnummer-targeting i admin, verifiser at den filtreres riktig i consumer-app

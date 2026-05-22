@@ -34,6 +34,24 @@ RATIONALE: Eksplisitt dokumentasjon og løse koblinger reduserer migreringskostn
 CONSEQUENCES: Noe ekstra kommentararbeid under utvikling. Betaler seg ved migrering.
 DECIDED BY: human
 
+DATE: 2026-05-22
+DECISION: Multi-admin via kommaseparert env var
+CONTEXT: Demo-fase trenger to admin-brukere (kvinnesland@gmail.com og calle.duvdal@bas.no) med samme passord. DB-basert AdminUser-tabell er overkill for demo.
+DECISION: ADMIN_EMAILS env var aksepterer kommaseparert liste. validateAdminCredentials sjekker om epost er i listen. Felles passord via ADMIN_PASSWORD.
+ALTERNATIVES CONSIDERED: To separate env vars (ADMIN_EMAIL_2); DB-basert lookup.
+RATIONALE: Enklest mulig løsning for demo. Erstattes med DB-basert auth ved MVP uansett (dokumentert i auth.ts).
+CONSEQUENCES: Alle admin-brukere deler passord. Akseptabelt for demo-fase.
+DECIDED BY: human + Claude
+
+DATE: 2026-05-22
+DECISION: Targeting evalueres i minne, ikke i SQL
+CONTEXT: TargetingRule har JSON-felter (postcodes, postcodeRanges, movingStatuses) som er vanskelige å filtrere i Prisma uten raw SQL.
+DECISION: Hent alle aktive fordeler/heroer med targeting-relasjoner inkludert, evaluer matchesSession() i Node.js etter henting.
+ALTERNATIVES CONSIDERED: Raw SQL WHERE-klausul; Prisma $queryRaw.
+RATIONALE: Antall aktive fordeler forventes under 500 for demo. In-memory evaluering er enklere, testbar som ren funksjon, og tilstrekkelig ytelse. Kan byttes til SQL-filter ved behov uten API-endringer.
+CONSEQUENCES: Ytelsesgrense ved stort fordelsvolum (10 000+). Ikke relevant for demo.
+DECIDED BY: Claude
+
 DATE: 2026-05-20
 DECISION: Adopt governed AI-native repository structure
 CONTEXT: AI-assisted development across multiple sessions requires explicit session continuity, change traceability, and governance to prevent architectural drift.

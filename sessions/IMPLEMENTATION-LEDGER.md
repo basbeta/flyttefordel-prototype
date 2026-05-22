@@ -56,3 +56,7 @@
 | 2026-05-22 | Session-5 | src/app/admin/(protected)/codes/ | Kode-pool-liste, AddCodesButton (legg til koder inline) | CR-004 | tsc ✓ |
 | 2026-05-22 | Session-5 | src/app/api/admin/ | auth/login, auth/logout, benefits CRUD+status, advertisers CRUD, heroes CRUD, leads/status, codes/[poolId] | CR-004 | tsc ✓ |
 | 2026-05-22 | Session-5 | git | Commit 5ae64ad: feat(CR-004): admin backoffice — 48 filer, 2927 linjer | CR-004 | push ✓ |
+| 2026-05-22 | Session-5 | src/lib/admin/auth.ts | ADMIN_EMAILS: kommaseparert liste for multi-admin støtte | CR-004 | tsc ✓ |
+| 2026-05-22 | Session-5 | Vercel | Env vars satt: DATABASE_URL, DIRECT_URL, ADMIN_JWT_SECRET, ADMIN_EMAIL, ADMIN_EMAILS, ADMIN_PASSWORD | CR-004 | deploy ✓ |
+| 2026-05-22 | Session-5 | Vercel | Production deploy bekreftet — PWA + admin live, 37 ruter | CR-004 | deploy ✓ |
+| 2026-05-22 | Session-5 | change-requests/ | Opprettet CR-005: Fase 5 — Targeting-logikk (Status: Draft) | CR-005 | — |
