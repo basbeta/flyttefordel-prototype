@@ -18,7 +18,7 @@ Resolution: [how it was resolved]
 ## Open Issues
 
 ISSUE-008
-Status: Open
+Status: Resolved
 Priority: Medium
 Area: src/app/api/admin/codes/, src/app/admin/(protected)/codes/, src/lib/codes/
 Description: Kode-pool-systemet mangler fullstendig fraud prevention og revisjon av admin-UI.
@@ -30,8 +30,10 @@ Description: Kode-pool-systemet mangler fullstendig fraud prevention og revisjon
   5. Ingen varsling ved lav pool-beholdning (lowStockThreshold finnes i schema men brukes ikke til varsling).
 Blocker for: produksjon med ekte annonsørkoder (demo-koder OK inntil videre)
 Opened: 2026-05-22
-Resolved: —
-Resolution: —
+Resolved: 2026-05-22
+Resolution: CR-009 løste punkt 1 (DB unique constraint), 2 (admin detaljside viser sessionId+assignedAt),
+  og 4 (deaktiver enkelt-kode). Punkt 3 (rate limiting) og 5 (varsling) er utsatt til fremtidig CR
+  — de krever henholdsvis Redis og e-post-infrastruktur som er out of scope for demo.
 
 ## Resolved Issues
 

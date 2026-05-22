@@ -96,3 +96,13 @@
 | 2026-05-22 | Session-8 | src/app/admin/(protected)/analytics/ | page.tsx (SummaryCard + per-fordel-tabell + CSS konv.bar) + PeriodFilter.tsx | CR-008 | tsc ✓ |
 | 2026-05-22 | Session-8 | src/lib/queries/analytics.test.ts | 3 unit-tester: aggregering, div-by-zero, globale summer | CR-008 | vitest ✓ 31/31 |
 | 2026-05-22 | Session-8 | git | Commit 220f558: feat(CR-008) — analytics dashboard | CR-008 | push ✓ |
+| 2026-05-22 | Session-8 | change-requests/ | Opprettet og godkjent CR-009: Fraud prevention — kode-audit og DB-integritet | CR-009 | — |
+| 2026-05-22 | Session-8 | prisma/schema.prisma | @@unique([codePoolId, codeValue]) på Code — db push kjørt mot prod | CR-009 | db push ✓ |
+| 2026-05-22 | Session-8 | src/types/admin.ts | Lagt til AdminCodeRow + AdminCodePoolDetail | CR-009 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/lib/queries/adminQueries.ts | getAdminCodePoolDetail(poolId) | CR-009 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/app/api/admin/codes/[poolId]/route.ts | Forenklet med skipDuplicates: true (DB constraint aktiv) | CR-009 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/app/api/admin/codes/[poolId]/[codeId]/route.ts | Ny: PATCH disable-kode + availableCodes-justering | CR-009 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/app/admin/(protected)/codes/[poolId]/ | Ny: detaljside (page.tsx + DisableCodeButton.tsx) | CR-009 | tsc ✓ |
+| 2026-05-22 | Session-8 | src/app/api/admin/codes/[poolId]/[codeId]/route.test.ts | 4 unit-tester: 404, disable available, disable assigned, already disabled | CR-009 | vitest ✓ 35/35 |
+| 2026-05-22 | Session-8 | sessions/ | ISSUE-008 lukket, OPEN-ISSUES + CURRENT-STATE oppdatert | CR-009 | — |
+| 2026-05-22 | Session-8 | git | Commit c1cf64c: feat(CR-009) — fraud prevention | CR-009 | push ✓ |
