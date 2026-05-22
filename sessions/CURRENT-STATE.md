@@ -3,10 +3,10 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-CR-009 IMPLEMENTERT — Fraud prevention og kode-detaljside fullstendig. 9 CRs fullført (CR-001–CR-009).
+CR-010 IMPLEMENTERT — Lønnsomhetsanalyse fullstendig. 10 CRs fullført (CR-001–CR-010).
 
 ## Current Objectives
-Ingen aktive objectives. ISSUE-008 lukket.
+Ingen aktive objectives.
 
 ## Current Branch
 master
@@ -24,14 +24,18 @@ Ingen aktive blockers.
 - CR-007: Kategori-administrasjon i admin (Status: Done)
 - CR-008: Analytics dashboard (Status: Done — committed 220f558)
 - CR-009: Fraud prevention — kode-audit og DB-integritet (Status: Done — committed c1cf64c)
+- CR-010: Lønnsomhetsanalyse (Status: Done — committed e5f0c81)
 
 ## Recently Modified Systems
-- `prisma/schema.prisma` — @@unique([codePoolId, codeValue]) på Code (2026-05-22, CR-009)
-- `src/types/admin.ts` — AdminCodeRow + AdminCodePoolDetail lagt til (2026-05-22, CR-009)
-- `src/lib/queries/adminQueries.ts` — getAdminCodePoolDetail(poolId) (2026-05-22, CR-009)
-- `src/app/api/admin/codes/[poolId]/route.ts` — forenklet med skipDuplicates: true (2026-05-22, CR-009)
-- `src/app/api/admin/codes/[poolId]/[codeId]/route.ts` — ny: PATCH disable (2026-05-22, CR-009)
-- `src/app/admin/(protected)/codes/[poolId]/` — ny: detaljside + DisableCodeButton (2026-05-22, CR-009)
+- `prisma/schema.prisma` — 4 Decimal prisfelter på Benefit (2026-05-22, CR-010)
+- `src/types/admin.ts` — AdminBenefitProfitability, AdminAdvertiserProfitability, AdminTypeProfitability (2026-05-22, CR-010)
+- `src/lib/queries/adminQueries.ts` — getProfitabilityData() (2026-05-22, CR-010)
+- `src/app/api/admin/benefits/route.ts` — prisfelter i POST Zod-schema (2026-05-22, CR-010)
+- `src/app/api/admin/benefits/[id]/route.ts` — prisfelter i PATCH Zod-schema (2026-05-22, CR-010)
+- `src/app/admin/(protected)/benefits/BenefitForm.tsx` — Økonomi-seksjon med 4 prisfelter (2026-05-22, CR-010)
+- `src/app/admin/(protected)/benefits/[id]/page.tsx` — Decimal→number konvertering (2026-05-22, CR-010)
+- `src/app/admin/(protected)/profitability/page.tsx` — NY: lønnsomhetsside (2026-05-22, CR-010)
+- `src/components/admin/AdminSidebar.tsx` — Lønnsomhet nav-lenke (2026-05-22, CR-010)
 
 ## Produksjon
 - **PWA**: https://flyttefordel-prototype.vercel.app
@@ -39,10 +43,10 @@ Ingen aktive blockers.
 - Admin-brukere: `kvinnesland@gmail.com` og `calle.duvdal@bas.no` — passord: `Demopassord`
 
 ## Validation Status
-✓ `npx tsc --noEmit` — ingen feil (2026-05-22, etter CR-009)
-✓ `npx vitest run` — 35/35 tester bestått (2026-05-22, CR-009)
-✓ `prisma db push` — unique constraint lagt til uten duplikat-feil (2026-05-22, CR-009)
-✓ Vercel production deploy — CR-009 pushet (commit c1cf64c)
+✓ `npx tsc --noEmit` — ingen feil (2026-05-22, etter CR-010)
+✓ `npx vitest run` — 41/41 tester bestått (2026-05-22, CR-010)
+✓ `prisma db push` — 4 Decimal prisfelter lagt til (2026-05-22, CR-010)
+✓ Vercel production deploy — CR-010 pushet (commit e5f0c81)
 ✓ ISSUE-007 resolved — «gratis kaffe» startsAt/endsAt satt til null (2026-05-22)
 ✓ ISSUE-008 resolved — DB unique constraint + deaktiver-kode + detaljside (2026-05-22, CR-009)
 
@@ -55,10 +59,11 @@ Ingen aktive blockers.
 - vitest er lagt til som devDependency — `npm test` kjører alle unit-tester
 
 ## Next Recommended Actions
-1. Verifiser CR-009 i prod: åpne /admin/codes, klikk «Se koder» på en pool, test «Deaktiver»-knapp
-2. Verifiser CR-008 i prod: åpne /admin/analytics og sjekk at data vises korrekt per periode
+1. Verifiser CR-010 i prod: åpne /admin/profitability og sjekk at tabellene vises
+2. Legg inn prisfelter på en fordel i /admin/benefits for å verifisere at inntekt beregnes
 3. Planlegg neste CR — kandidater:
-   a. Rate limiting på claim-endepunkt (serverless-kompatibel, krever Upstash Redis eller lignende)
-   b. Bruker-autentisering (Supabase Auth e-post-innlogging) — CR-010
+   a. Rate limiting på claim-endepunkt (serverless-kompatibel, krever Upstash Redis)
+   b. Bruker-autentisering (Supabase Auth e-post-innlogging)
    c. Notifikasjoner ved lav pool-beholdning (e-post / webhook)
+   d. Per-sesjon LTV-estimat på /admin/profitability (AdminSessionLTV — type definert, query ikke implementert)
 4. Vurder Supabase oppgradering til betalt tier for å eliminere pause-problemet

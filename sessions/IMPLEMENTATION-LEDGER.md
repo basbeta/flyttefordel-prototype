@@ -106,3 +106,19 @@
 | 2026-05-22 | Session-8 | src/app/api/admin/codes/[poolId]/[codeId]/route.test.ts | 4 unit-tester: 404, disable available, disable assigned, already disabled | CR-009 | vitest ✓ 35/35 |
 | 2026-05-22 | Session-8 | sessions/ | ISSUE-008 lukket, OPEN-ISSUES + CURRENT-STATE oppdatert | CR-009 | — |
 | 2026-05-22 | Session-8 | git | Commit c1cf64c: feat(CR-009) — fraud prevention | CR-009 | push ✓ |
+| 2026-05-22 | Session-9 | Bug sweep | trackEvent await (void→await i save/unsave routes), try/catch i alle klient-komponenter, decodeURIComponent i lead route, benefitTitle bulk-lookup i leads | — | tsc ✓ |
+| 2026-05-22 | Session-9 | src/app/api/benefits/[slug]/save/route.ts | benefit_saved + benefit_unsaved tracking (await, ikke void) | — | tsc ✓ |
+| 2026-05-22 | Session-9 | src/app/(mobile)/benefits/[slug]/page.tsx | benefit_viewed tracking lagt til | — | tsc ✓ |
+| 2026-05-22 | Session-9 | src/app/api/benefits/[slug]/lead/route.ts | lead_submitted tracking lagt til + decodeURIComponent fix | — | tsc ✓ |
+| 2026-05-22 | Session-9 | change-requests/ | Opprettet og godkjent CR-010: Lønnsomhetsanalyse | CR-010 | — |
+| 2026-05-22 | Session-9 | prisma/schema.prisma | 4 Decimal prisfelter på Benefit: campaignFee, pricePerView, pricePerLead, pricePerRedemption — db push kjørt | CR-010 | db push ✓ |
+| 2026-05-22 | Session-9 | src/types/admin.ts | AdminBenefitProfitability, AdminAdvertiserProfitability, AdminTypeProfitability, AdminSessionLTV, AdminProfitabilityData | CR-010 | tsc ✓ |
+| 2026-05-22 | Session-9 | src/lib/queries/adminQueries.ts | getProfitabilityData() — 2 parallelle queries, calcRevenue(), per-annonsør og per-type aggregering | CR-010 | tsc ✓ |
+| 2026-05-22 | Session-9 | src/app/api/admin/benefits/route.ts | prisfelter i POST Zod-schema | CR-010 | tsc ✓ |
+| 2026-05-22 | Session-9 | src/app/api/admin/benefits/[id]/route.ts | prisfelter i PATCH Zod-schema | CR-010 | tsc ✓ |
+| 2026-05-22 | Session-9 | src/app/admin/(protected)/benefits/BenefitForm.tsx | Økonomi-seksjon med 4 prisfelter, stat-init med String() | CR-010 | tsc ✓ |
+| 2026-05-22 | Session-9 | src/app/admin/(protected)/benefits/[id]/page.tsx | Decimal→number konvertering via .toNumber() før prop-passing | CR-010 | tsc ✓ |
+| 2026-05-22 | Session-9 | src/app/admin/(protected)/profitability/page.tsx | Ny: lønnsomhetsside — 3 tabeller (per-fordel, per-annonsør, per-type) + sammendragskort | CR-010 | tsc ✓ |
+| 2026-05-22 | Session-9 | src/components/admin/AdminSidebar.tsx | Lønnsomhet nav-lenke lagt til | CR-010 | tsc ✓ |
+| 2026-05-22 | Session-9 | src/lib/queries/profitability.test.ts | 10 unit-tester: revenue-formelen (alle kombinasjoner), per-annonsør aggregering, snitt-CPL | CR-010 | vitest ✓ 41/41 |
+| 2026-05-22 | Session-9 | git | Commit e5f0c81: feat(CR-010) — lønnsomhetsanalyse | CR-010 | push ✓ |
