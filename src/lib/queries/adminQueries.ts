@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/db/client'
 import type {
   AdminDashboardStats,
+  AdminAnalyticsData,
   AdminBenefitRow,
   AdminAdvertiserRow,
   AdminCategoryRow,
@@ -43,6 +44,65 @@ export async function getAdminDashboardStats(): Promise<AdminDashboardStats> {
     expiringSoonCount: expiringSoon,
     newLeadsCount: newLeads,
     lowCodePools: lowPools,
+  }
+}
+
+// ---- Analytics ----
+
+export async function getAnalytics(period: '7d' | '30d' | 'all'): Promise<AdminAnalyticsData> {
+  const now = new Date()
+  const since =
+    period === '7d' ? new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) :
+    period === '30d' ? new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) :
+    null
+
+  const dateFilter = since ? { createdAt: { gte: since } } : {}
+
+  const [benefits, events] = await Promise.all([
+    prisma.benefit.findMany({
+      where: { status: 'active', deletedAt: null },
+      select: { id: true, title: true, slug: true },
+      orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
+    }),
+    prisma.benefitEvent.groupBy({
+      by: ['benefitId', 'eventType'],
+      where: { benefitId: { not: null }, ...dateFilter },
+      _count: { id: true },
+    }),
+  ])
+
+  const eventMap = new Map<string, Record<string, number>>()
+  for (const e of events) {
+    if (!e.benefitId) continue
+    if (!eventMap.has(e.benefitId)) eventMap.set(e.benefitId, {})
+    eventMap.get(e.benefitId)![e.eventType] = e._count.id
+  }
+
+  const rows = benefits.map((b) => {
+    const m = eventMap.get(b.id) ?? {}
+    const views = m['benefit_viewed'] ?? 0
+    const codeRevealed = m['code_revealed'] ?? 0
+    const codeCopied = m['code_copied'] ?? 0
+    const leads = m['lead_submitted'] ?? 0
+    const saved = m['benefit_saved'] ?? 0
+    return {
+      id: b.id,
+      title: b.title,
+      slug: b.slug,
+      views,
+      codeRevealed,
+      codeCopied,
+      leads,
+      saved,
+      conversionRate: views > 0 ? Math.round((codeRevealed / views) * 100) : 0,
+    }
+  }).sort((a, b) => b.views - a.views)
+
+  return {
+    rows,
+    totalViews: rows.reduce((s, r) => s + r.views, 0),
+    totalRedemptions: rows.reduce((s, r) => s + r.codeRevealed, 0),
+    totalLeads: rows.reduce((s, r) => s + r.leads, 0),
   }
 }
 

@@ -17,7 +17,21 @@ Resolution: [how it was resolved]
 
 ## Open Issues
 
-(ingen)
+ISSUE-008
+Status: Open
+Priority: Medium
+Area: src/app/api/admin/codes/, src/app/admin/(protected)/codes/, src/lib/codes/
+Description: Kode-pool-systemet mangler fullstendig fraud prevention og revisjon av admin-UI.
+  Konkrete hull identifisert:
+  1. Ingen unique constraint på codeValue i Code-tabellen — duplikater kan oppstå ved race conditions selv med app-nivå sjekk (midlertidig fix landed i e893845, men DB-nivå constraint mangler).
+  2. Ingen logging/audit trail for kode-tildeling (hvem fikk hvilken kode, tid, sesjon).
+  3. Ingen rate limiting på /api/benefits/[slug]/claim-code — én bruker kan forsøke masse claims.
+  4. Admin-UI for koder mangler: historikk over tildelte koder, oversikt per sesjon/bruker, mulighet for å deaktivere enkelt-koder.
+  5. Ingen varsling ved lav pool-beholdning (lowStockThreshold finnes i schema men brukes ikke til varsling).
+Blocker for: produksjon med ekte annonsørkoder (demo-koder OK inntil videre)
+Opened: 2026-05-22
+Resolved: —
+Resolution: —
 
 ## Resolved Issues
 

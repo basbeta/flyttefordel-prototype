@@ -83,6 +83,27 @@ export type AdminCodePoolRow = {
   isActive: boolean
 }
 
+// ---- Analytics ----
+
+export type AdminAnalyticsRow = {
+  id: string
+  title: string
+  slug: string
+  views: number
+  codeRevealed: number
+  codeCopied: number
+  leads: number
+  saved: number
+  conversionRate: number
+}
+
+export type AdminAnalyticsData = {
+  rows: AdminAnalyticsRow[]
+  totalViews: number
+  totalRedemptions: number
+  totalLeads: number
+}
+
 // ---- Kategorier (admin-visning) ----
 
 export type AdminCategoryRow = {

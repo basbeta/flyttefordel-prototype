@@ -22,6 +22,7 @@ Ingen aktive blockers.
 - CR-005: Fase 5 — Targeting-logikk (Status: Done — committed afab783)
 - CR-006: Unik kode-tildeling (Status: Done — committed af43de6)
 - CR-007: Kategori-administrasjon i admin (Status: Done)
+- CR-008: Analytics dashboard (Status: Draft)
 
 ## Recently Modified Systems
 - `src/types/admin.ts` — AdminCategoryRow lagt til (2026-05-22, CR-007)

@@ -45,6 +45,7 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/advertisers/new" className={styles.quickLink}>+ Ny annonsør</Link>
           <Link href="/admin/heroes/new" className={styles.quickLink}>+ Ny hero</Link>
           <Link href="/admin/leads" className={styles.quickLink}>Se leads</Link>
+          <Link href="/admin/analytics" className={styles.quickLink}>Analytics</Link>
         </div>
       </div>
     </div>
