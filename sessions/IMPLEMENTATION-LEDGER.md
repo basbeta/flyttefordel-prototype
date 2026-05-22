@@ -60,3 +60,13 @@
 | 2026-05-22 | Session-5 | Vercel | Env vars satt: DATABASE_URL, DIRECT_URL, ADMIN_JWT_SECRET, ADMIN_EMAIL, ADMIN_EMAILS, ADMIN_PASSWORD | CR-004 | deploy ✓ |
 | 2026-05-22 | Session-5 | Vercel | Production deploy bekreftet — PWA + admin live, 37 ruter | CR-004 | deploy ✓ |
 | 2026-05-22 | Session-5 | change-requests/ | Opprettet CR-005: Fase 5 — Targeting-logikk (Status: Draft) | CR-005 | — |
+| 2026-05-22 | Session-6 | src/lib/targeting/ | index.ts: matchesSession() — ren funksjon, ingen I/O | CR-005 | tsc ✓ |
+| 2026-05-22 | Session-6 | src/lib/targeting/ | index.test.ts: 18 unit-tester (null-regel, nasjonalt, ukjent lok., postnummer, range, segment, AND) | CR-005 | vitest ✓ |
+| 2026-05-22 | Session-6 | src/lib/queries/ | benefitQueries: targeting-join + in-memory filter; session-param fra sessionId til full SessionData | CR-005 | tsc ✓ |
+| 2026-05-22 | Session-6 | src/lib/queries/ | heroQueries: targeting-join + fallback-hero-logikk (isFallback heroes vises om ingen targetede matcher) | CR-005 | tsc ✓ |
+| 2026-05-22 | Session-6 | src/lib/queries/ | adminQueries: getAdminBenefitById og getAdminHeroById inkluderer targeting | CR-005 | tsc ✓ |
+| 2026-05-22 | Session-6 | src/app/admin/(protected)/ | BenefitForm + HeroForm: Targeting-seksjon (nasjonalt, ukjent lok., segment, postnummer) | CR-005 | tsc ✓ |
+| 2026-05-22 | Session-6 | src/app/api/admin/ | benefits POST+PATCH + heroes POST+PATCH: targeting upsert via Prisma nested write | CR-005 | tsc ✓ |
+| 2026-05-22 | Session-6 | src/app/(mobile)/ | page.tsx, benefits/page.tsx, nearby/page.tsx: sender full session til queries | CR-005 | tsc ✓ |
+| 2026-05-22 | Session-6 | package.json | Lagt til vitest som devDependency og "test"-script | CR-005 | — |
+| 2026-05-22 | Session-6 | git | Commit afab783: feat(CR-005) — 17 filer, 1604 insertions | CR-005 | tsc ✓ vitest ✓ |

@@ -21,10 +21,10 @@ FASE 3 FULLFØRT — Anonyme sesjoner, lagrede fordeler, profil og nær-deg ferd
 | `/components/shared` | Fase 1 ✓ | Button |
 | `/lib/auth` | Utsatt | Supabase Auth (e-postinnlogging) — utsatt, krever NEXT_PUBLIC_ANON_KEY |
 | `/lib/session` | Fase 3 ✓ | Anonym sesjon via cookie + DB UserSession upsert |
-| `/lib/targeting` | Ikke startet | Targeting-logikk — CR-004 |
+| `/lib/targeting` | Fase 5 ✓ | matchesSession() — ren funksjon, ingen I/O. Importeres av queries. |
 | `/lib/db` | Fase 1 ✓ | Prisma client + schema |
 | `/lib/queries` | Fase 2 ✓ | benefitQueries, heroQueries |
-| `/lib/targeting` | Ikke startet | Fordel/hero targeting-logikk |
+| `/lib/targeting` | Fase 5 ✓ | Fordel/hero targeting-logikk |
 | `/lib/tracking` | Fase 2 ✓ | trackEvent — fire-and-forget BenefitEvent |
 | `/lib/validation` | Ikke startet | Zod-schemas (lead-validering inline per nå) |
 | `/lib/codes` | Ikke startet | Atomisk unik kode-tildeling |
@@ -50,4 +50,4 @@ Forretningslogikk er DB-agnostisk — kun Prisma-abstraksjon.
 Next.js 14 + TypeScript | Supabase (PostgreSQL + Auth + Storage) | Prisma ORM | Vercel Hobby
 
 ## Last Structural Change
-2026-05-22 — CR-003: middleware.ts, lib/session/, saved/nearby/profile-sider, save/profile API. UserSession @unique + postcode + movingStatus.
+2026-05-22 — CR-005: lib/targeting/ (ny modul), targeting-join i benefitQueries/heroQueries, targeting upsert i admin API, Targeting-seksjon i BenefitForm/HeroForm.

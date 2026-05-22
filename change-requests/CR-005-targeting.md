@@ -1,6 +1,6 @@
 # CR-005: Fase 5 — Targeting-logikk
 
-Status: Approved
+Status: Done
 Created: 2026-05-22
 
 ## Business Goal
