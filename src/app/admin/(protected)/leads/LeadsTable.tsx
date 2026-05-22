@@ -34,12 +34,16 @@ export function LeadsTable({ leads }: Props) {
   }
 
   async function markExported(id: string) {
-    await fetch(`/api/admin/leads/${id}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'exported' as LeadStatus }),
-    })
-    router.refresh()
+    try {
+      const res = await fetch(`/api/admin/leads/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'exported' as LeadStatus }),
+      })
+      if (res.ok) router.refresh()
+    } catch {
+      // Network error — do nothing, user can retry
+    }
   }
 
   return (

@@ -19,12 +19,16 @@ export function BenefitStatusActions({ id, currentStatus }: { id: string; curren
   const actions = TRANSITIONS[currentStatus] ?? []
 
   async function changeStatus(next: BenefitStatus) {
-    await fetch(`/api/admin/benefits/${id}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: next }),
-    })
-    router.refresh()
+    try {
+      const res = await fetch(`/api/admin/benefits/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: next }),
+      })
+      if (res.ok) router.refresh()
+    } catch {
+      // Network error — do nothing, user can retry
+    }
   }
 
   return (

@@ -93,21 +93,26 @@ export function HeroForm({ hero }: Props) {
       },
     }
 
-    const res = await fetch(
-      isEdit ? `/api/admin/heroes/${hero.id}` : '/api/admin/heroes',
-      {
-        method: isEdit ? 'PATCH' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      },
-    )
+    try {
+      const res = await fetch(
+        isEdit ? `/api/admin/heroes/${hero.id}` : '/api/admin/heroes',
+        {
+          method: isEdit ? 'PATCH' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        },
+      )
 
-    if (res.ok) {
-      router.push('/admin/heroes')
-      router.refresh()
-    } else {
-      const data = (await res.json()) as { message?: string }
-      setError(data.message ?? 'Noe gikk galt')
+      if (res.ok) {
+        router.push('/admin/heroes')
+        router.refresh()
+      } else {
+        const data = (await res.json()) as { message?: string }
+        setError(data.message ?? 'Noe gikk galt')
+        setSaving(false)
+      }
+    } catch {
+      setError('Nettverksfeil — prøv igjen')
       setSaving(false)
     }
   }

@@ -19,12 +19,17 @@ export function DeactivateCategoryButton({ id, name, benefitCount }: Props) {
     if (!confirm(warning)) return
 
     setLoading(true)
-    const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' })
-    if (res.ok) {
-      router.refresh()
-    } else {
-      const data = (await res.json()) as { message?: string }
-      alert(data.message ?? 'Noe gikk galt')
+    try {
+      const res = await fetch(`/api/admin/categories/${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        router.refresh()
+      } else {
+        const data = (await res.json()) as { message?: string }
+        alert(data.message ?? 'Noe gikk galt')
+        setLoading(false)
+      }
+    } catch {
+      alert('Nettverksfeil — prøv igjen')
       setLoading(false)
     }
   }

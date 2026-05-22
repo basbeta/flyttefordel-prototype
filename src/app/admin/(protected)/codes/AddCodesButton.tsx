@@ -20,24 +20,28 @@ export function AddCodesButton({ poolId, poolName }: Props) {
 
     setSaving(true)
     setResult(null)
-    const res = await fetch(`/api/admin/codes/${poolId}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ codes }),
-    })
-    setSaving(false)
-
-    if (res.ok) {
-      const data = (await res.json()) as { added: number; skipped: number }
-      const msg = data.skipped > 0
-        ? `${data.added} koder lagt til. ${data.skipped} duplikat(er) hoppet over.`
-        : `${data.added} koder lagt til.`
-      setResult(msg)
-      setCodesText('')
-      router.refresh()
-    } else {
-      const data = (await res.json()) as { message?: string }
-      setResult(data.message ?? 'Feil ved lagring')
+    try {
+      const res = await fetch(`/api/admin/codes/${poolId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codes }),
+      })
+      if (res.ok) {
+        const data = (await res.json()) as { added: number; skipped: number }
+        const msg = data.skipped > 0
+          ? `${data.added} koder lagt til. ${data.skipped} duplikat(er) hoppet over.`
+          : `${data.added} koder lagt til.`
+        setResult(msg)
+        setCodesText('')
+        router.refresh()
+      } else {
+        const data = (await res.json()) as { message?: string }
+        setResult(data.message ?? 'Feil ved lagring')
+      }
+    } catch {
+      setResult('Nettverksfeil — prøv igjen')
+    } finally {
+      setSaving(false)
     }
   }
 

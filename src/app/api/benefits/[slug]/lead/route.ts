@@ -24,7 +24,7 @@ export async function POST(request: Request, { params }: { params: { slug: strin
     }
 
     const benefit = await prisma.benefit.findFirst({
-      where: { slug: params.slug, status: 'active', deletedAt: null },
+      where: { slug: decodeURIComponent(params.slug), status: 'active', deletedAt: null },
       select: { id: true, advertiserId: true, consentText: true },
     })
 
