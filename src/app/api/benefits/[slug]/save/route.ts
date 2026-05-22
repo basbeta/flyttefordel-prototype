@@ -59,7 +59,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     })
   }
 
-  void trackEvent('benefit_saved', benefit.id)
+  await trackEvent('benefit_saved', benefit.id)
   return NextResponse.json({ saved: true }, { status: 201 })
 }
 
@@ -77,6 +77,6 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     data: { deletedAt: new Date() },
   })
 
-  if (count > 0) void trackEvent('benefit_unsaved', benefit.id)
+  if (count > 0) await trackEvent('benefit_unsaved', benefit.id)
   return new NextResponse(null, { status: 204 })
 }
