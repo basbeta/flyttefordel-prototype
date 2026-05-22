@@ -70,3 +70,6 @@
 | 2026-05-22 | Session-6 | src/app/(mobile)/ | page.tsx, benefits/page.tsx, nearby/page.tsx: sender full session til queries | CR-005 | tsc ✓ |
 | 2026-05-22 | Session-6 | package.json | Lagt til vitest som devDependency og "test"-script | CR-005 | — |
 | 2026-05-22 | Session-6 | git | Commit afab783: feat(CR-005) — 17 filer, 1604 insertions | CR-005 | tsc ✓ vitest ✓ |
+| 2026-05-22 | Session-6 | git | Commit 753a7a3: chore end-session + CR-005 Done | CR-005 | — |
+| 2026-05-22 | Session-6 | Vercel | git push → auto-deploy CR-005 til prod (commit 753a7a3) | CR-005 | deploy ✓ |
+| 2026-05-22 | Session-6 | Prod-verifisering | /verify PASS: ingen sesjon→5 kort, postnummer 7777→6 kort, feil postnummer→5 kort | CR-005 | prod ✓ |
