@@ -25,7 +25,6 @@ import { prisma } from '@/lib/db/client'
 import { POST } from './route'
 import { PATCH, DELETE } from './[id]/route'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockPrisma = prisma as unknown as { category: Record<string, ReturnType<typeof vi.fn>> }
 
 function makeRequest(method: string, body: unknown, url = 'http://localhost/api/admin/categories') {

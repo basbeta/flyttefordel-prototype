@@ -11,7 +11,6 @@ vi.mock('@/lib/db/client', () => ({
 
 import { prisma } from '@/lib/db/client'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockPrisma = prisma as unknown as {
   code: { findFirst: ReturnType<typeof vi.fn> }
   $transaction: ReturnType<typeof vi.fn>
@@ -47,8 +46,7 @@ describe('claimCode', () => {
   it('claims first available code from pool', async () => {
     mockPrisma.code.findFirst.mockResolvedValueOnce(null)
     const { tx } = makeTx({ id: 'code-1', codeValue: 'NEW456' })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mockPrisma.$transaction.mockImplementationOnce((fn: (tx: any) => Promise<string>) => fn(tx))
+        mockPrisma.$transaction.mockImplementationOnce((fn: (tx: any) => Promise<string>) => fn(tx))
 
     const result = await claimCode(POOL_ID, SESSION_ID)
 
@@ -58,8 +56,7 @@ describe('claimCode', () => {
   it('throws NoCodesAvailableError when pool is empty', async () => {
     mockPrisma.code.findFirst.mockResolvedValueOnce(null)
     const { tx } = makeTx(null)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mockPrisma.$transaction.mockImplementationOnce((fn: (tx: any) => Promise<string>) => fn(tx))
+        mockPrisma.$transaction.mockImplementationOnce((fn: (tx: any) => Promise<string>) => fn(tx))
 
     await expect(claimCode(POOL_ID, SESSION_ID)).rejects.toThrow(NoCodesAvailableError)
   })
@@ -67,8 +64,7 @@ describe('claimCode', () => {
   it('decrements availableCodes on successful claim', async () => {
     mockPrisma.code.findFirst.mockResolvedValueOnce(null)
     const { tx, poolUpdate } = makeTx({ id: 'code-2', codeValue: 'CODE789' })
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mockPrisma.$transaction.mockImplementationOnce((fn: (tx: any) => Promise<string>) => fn(tx))
+        mockPrisma.$transaction.mockImplementationOnce((fn: (tx: any) => Promise<string>) => fn(tx))
 
     await claimCode(POOL_ID, SESSION_ID)
 
