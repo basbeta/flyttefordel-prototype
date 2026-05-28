@@ -122,3 +122,9 @@
 | 2026-05-22 | Session-9 | src/components/admin/AdminSidebar.tsx | Lønnsomhet nav-lenke lagt til | CR-010 | tsc ✓ |
 | 2026-05-22 | Session-9 | src/lib/queries/profitability.test.ts | 10 unit-tester: revenue-formelen (alle kombinasjoner), per-annonsør aggregering, snitt-CPL | CR-010 | vitest ✓ 41/41 |
 | 2026-05-22 | Session-9 | git | Commit e5f0c81: feat(CR-010) — lønnsomhetsanalyse | CR-010 | push ✓ |
+| 2026-05-28 | Session-10 | change-requests/ | Opprettet CR-011: Rate limiting på claim-endepunkt (Draft) | CR-011 | — |
+| 2026-05-28 | Session-10 | change-requests/ | Opprettet CR-012: Bruker-autentisering Supabase Auth (Draft) | CR-012 | — |
+| 2026-05-28 | Session-10 | change-requests/ | Opprettet CR-013: Varsling ved lav kode-beholdning (Draft) | CR-013 | — |
+| 2026-05-28 | Session-10 | change-requests/ | Opprettet CR-014: Per-sesjon LTV-estimat /admin/profitability (Draft) | CR-014 | — |
+| 2026-05-28 | Session-10 | sessions/ | CURRENT-STATE oppdatert med CR-011–014 og ny anbefalingsrekkefølge | — | — |
+| 2026-05-28 | Session-10 | git | Commit 33b84cb: chore CR-011–014 opprettet — pushet til claude/serene-mayer-hfrhU | — | push ✓ |

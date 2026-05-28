@@ -3,13 +3,14 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-CR-010 IMPLEMENTERT — Lønnsomhetsanalyse fullstendig. 10 CRs fullført (CR-001–CR-010).
+PLANLEGGINGSFASE — CR-011–CR-014 opprettet (Draft). Klar for implementering.
+10 CRs fullført (CR-001–CR-010). 4 nye CRer i backlog.
 
 ## Current Objectives
-Ingen aktive objectives.
+Implementer CR-014 (sesjon-LTV) — ingen infra-avhengigheter.
 
 ## Current Branch
-master
+claude/serene-mayer-hfrhU (feature-branch, ikke merget til master)
 
 ## Blockers
 Ingen aktive blockers.
