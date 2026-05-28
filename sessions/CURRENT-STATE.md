@@ -25,6 +25,10 @@ Ingen aktive blockers.
 - CR-008: Analytics dashboard (Status: Done — committed 220f558)
 - CR-009: Fraud prevention — kode-audit og DB-integritet (Status: Done — committed c1cf64c)
 - CR-010: Lønnsomhetsanalyse (Status: Done — committed e5f0c81)
+- CR-011: Rate limiting på claim-endepunkt (Status: Draft — avventer Upstash Redis)
+- CR-012: Bruker-autentisering (Supabase Auth e-post) (Status: Draft — avventer NEXT_PUBLIC_ANON_KEY)
+- CR-013: Varsling ved lav kode-beholdning (Status: Draft — avventer Resend API-nøkkel)
+- CR-014: Per-sesjon LTV-estimat på /admin/profitability (Status: Draft — ingen avhengigheter)
 
 ## Recently Modified Systems
 - `prisma/schema.prisma` — 4 Decimal prisfelter på Benefit (2026-05-22, CR-010)
@@ -59,11 +63,8 @@ Ingen aktive blockers.
 - vitest er lagt til som devDependency — `npm test` kjører alle unit-tester
 
 ## Next Recommended Actions
-1. Verifiser CR-010 i prod: åpne /admin/profitability og sjekk at tabellene vises
-2. Legg inn prisfelter på en fordel i /admin/benefits for å verifisere at inntekt beregnes
-3. Planlegg neste CR — kandidater:
-   a. Rate limiting på claim-endepunkt (serverless-kompatibel, krever Upstash Redis)
-   b. Bruker-autentisering (Supabase Auth e-post-innlogging)
-   c. Notifikasjoner ved lav pool-beholdning (e-post / webhook)
-   d. Per-sesjon LTV-estimat på /admin/profitability (AdminSessionLTV — type definert, query ikke implementert)
-4. Vurder Supabase oppgradering til betalt tier for å eliminere pause-problemet
+1. Implementer CR-014 (sesjon-LTV) — ingen infra-avhengigheter, kan starte umiddelbart
+2. Implementer CR-011 (rate limiting) — krever Upstash Redis-konto + env vars
+3. Implementer CR-013 (lav-beholdning-varsling) — krever Resend-konto + env vars
+4. Implementer CR-012 (bruker-autentisering) — krever NEXT_PUBLIC_SUPABASE_ANON_KEY i Vercel
+5. Vurder Supabase oppgradering til betalt tier for å eliminere pause-problemet
