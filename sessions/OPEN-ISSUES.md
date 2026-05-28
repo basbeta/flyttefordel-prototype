@@ -17,6 +17,57 @@ Resolution: [how it was resolved]
 
 ## Open Issues
 
+ISSUE-009
+Status: Open
+Priority: High
+Area: docs/ (PRD 01–05)
+Description: Fire interne inkonsiстenser identifisert i de reviderte PRD-dokumentene (PRD 01–05):
+
+  1. BUNNMENYSTRUKTUR (PRD 03 vs PRD 04):
+     PRD 03 seksjon 4 lister 5 nav-elementer inkl. «Mine fordeler» som fast punkt.
+     PRD 04 seksjon 4 lister 4 elementer og behandler «Mine fordeler» som valgfri/sekundær.
+     Konsekvens: Uavklart om «Mine fordeler» er topp-nav eller modul.
+
+  2. ANONYM FORHÅNDSVISNING (PRD 02 vs PRD 04):
+     PRD 02 seksjon 2.1+4.4: kategorisk «ingen anonym bruk».
+     PRD 04 seksjon 13.1: lister «Eventuell enkel forhåndsvisning av fordeler» FØR innlogging.
+     PRD 03 seksjon 16: lar dette stå som åpent spørsmål.
+     Konsekvens: Direkte motstrid — én av versjonene er feil.
+
+  3. SMS-INNLOGGING MANGLER I PRD 04 (PRD 01+02 vs PRD 04):
+     PRD 01 seksjon 7.1 og PRD 02 seksjon 4.1: SMS er obligatorisk alternativ («skal støttes»).
+     PRD 04 minimumskrav (seksjon 9): nevner bare Vipps. SMS ikke fanget opp.
+     Konsekvens: PRD 04s akseptansekriterier er ufullstendige.
+
+  4. «MINE FORDELER» PRIORITET (PRD 03 vs PRD 04 vs PRD 05):
+     PRD 03: topp-navigasjon (ett av fem punkter).
+     PRD 04: bør-ha, kan ligge under Profil.
+     PRD 05 seksjon 16: bør-ha, ikke må-ha.
+     Konsekvens: Tre dokumenter gir tre ulike prioritetsnivåer.
+
+Blocker for: Nye CRer for innlogging/auth (CR-012-varianter), navigasjonsstruktur, og
+  eventuell arkitekturrevisjon av anonym-sesjon-modellen.
+Opened: 2026-05-28
+Resolved:
+Resolution:
+
+ISSUE-010
+Status: Open
+Priority: Medium
+Area: Arkitektur — sessions/auth-modell
+Description: Arkitekturavvik mellom nåværende prototype og nye PRD-er.
+  Nåværende prototype (CR-001–CR-010) er bygget på anonyme cookie-sesjoner (ingen obligatorisk innlogging).
+  Nye PRD-er (PRD 02) krever obligatorisk Vipps/SMS-innlogging fra første skjerm — ingen anonym tilgang.
+  Dette er ikke bare en feature å legge til; det krever at sessions-arkitekturen restruktureres:
+    - lib/session/ må erstattes med eller suppleres av Vipps/SMS-auth
+    - middleware.ts må håndheve innloggingskrav for consumer-app
+    - UserSession-modellen må kobles til autentisert bruker, ikke anon_id
+    - Targeting og queries bruker i dag sessionId — dette må migreres
+Blocker for: MVP-lansering iht. nye PRD-krav
+Opened: 2026-05-28
+Resolved:
+Resolution:
+
 ISSUE-008
 Status: Resolved
 Priority: Medium

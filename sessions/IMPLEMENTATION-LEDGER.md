@@ -128,3 +128,7 @@
 | 2026-05-28 | Session-10 | change-requests/ | Opprettet CR-014: Per-sesjon LTV-estimat /admin/profitability (Draft) | CR-014 | — |
 | 2026-05-28 | Session-10 | sessions/ | CURRENT-STATE oppdatert med CR-011–014 og ny anbefalingsrekkefølge | — | — |
 | 2026-05-28 | Session-10 | git | Commit 33b84cb: chore CR-011–014 opprettet — pushet til claude/serene-mayer-hfrhU | — | push ✓ |
+| 2026-05-28 | Session-11 | docs/ | Mottatt reviderte PRD 01–05 (Fordelsklubben/Flyttefordel MVP) — ikke lagret i repo ennå | — | — |
+| 2026-05-28 | Session-11 | PRD-analyse | Intern koherenssjekk av PRD 01–05 — 4 inkonsiстenser identifisert (ISSUE-009) | — | — |
+| 2026-05-28 | Session-11 | sessions/ | OPEN-ISSUES: ISSUE-009 (PRD-inkonsiстenser) + ISSUE-010 (arkitekturavvik) åpnet | — | — |
+| 2026-05-28 | Session-11 | sessions/ | CURRENT-STATE: fase oppdatert til PRD-revisjon, blockers oppdatert | — | — |

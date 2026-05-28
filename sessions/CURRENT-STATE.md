@@ -3,17 +3,17 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-PLANLEGGINGSFASE — CR-011–CR-014 opprettet (Draft). Klar for implementering.
-10 CRs fullført (CR-001–CR-010). 4 nye CRer i backlog.
+PRD-REVISJON — Nye PRD-versjoner (01–05) mottatt og gjennomgått for intern koherens.
+Implementeringsarbeid på vent til PRD-inkonsiстenser er avklart av produkteier.
 
 ## Current Objectives
-Implementer CR-014 (sesjon-LTV) — ingen infra-avhengigheter.
+Avklar 4 PRD-inkonsiстenser (ISSUE-009) før neste implementeringssesjon.
 
 ## Current Branch
 claude/serene-mayer-hfrhU (feature-branch, ikke merget til master)
 
 ## Blockers
-Ingen aktive blockers.
+ISSUE-009 (PRD-inkonsiстenser) — bør avklares før ny CR opprettes for MVP-auth/innlogging.
 
 ## Active Change Requests
 - CR-001: Fase 1 — Grunnmur (Status: Done)
@@ -63,9 +63,21 @@ Ingen aktive blockers.
 - `prisma db push` brukes for schema-endringer (migrate dev er interaktiv)
 - vitest er lagt til som devDependency — `npm test` kjører alle unit-tester
 
+## New PRD Documents (2026-05-28)
+Nye versjoner av PRD 01–05 mottatt. Gjennomgått for intern koherens. Fire inkonsiстenser
+identifisert — se ISSUE-009. PRD-ene beskriver en vesentlig annen arkitektur enn nåværende
+prototype (fullt påkrevd innlogging, Vipps + SMS, ingen anonyme sesjoner).
+
+Nye PRDs lagres i `docs/` (ikke gjort ennå — avventer beslutning om filstruktur).
+
+## Arkitekturavvik — ny PRD vs nåværende prototype
+Nåværende prototype (CR-001–CR-010) er bygget rundt anonyme cookie-sesjoner.
+Nye PRD-er (særlig PRD 02) krever obligatorisk innlogging med Vipps/SMS fra start.
+Dette er en breaking endring som vil kreve ny CR og vesentlig arkitekturarbeid.
+
 ## Next Recommended Actions
-1. Implementer CR-014 (sesjon-LTV) — ingen infra-avhengigheter, kan starte umiddelbart
-2. Implementer CR-011 (rate limiting) — krever Upstash Redis-konto + env vars
-3. Implementer CR-013 (lav-beholdning-varsling) — krever Resend-konto + env vars
-4. Implementer CR-012 (bruker-autentisering) — krever NEXT_PUBLIC_SUPABASE_ANON_KEY i Vercel
-5. Vurder Supabase oppgradering til betalt tier for å eliminere pause-problemet
+1. Avklar PRD-inkonsiстenser (ISSUE-009) — produkteier bestemmer
+2. Lagre reviderte PRD-dokumenter i docs/ med versjonsnummer
+3. Vurder ny «Arkitektur-gap»-CR for å beskrive delta mellom prototype og MVP-PRD
+4. Implementer CR-014 (sesjon-LTV) — kan gjøres parallelt, uavhengig av PRD-avklaring
+5. Implementer CR-011 (rate limiting) — krever Upstash Redis-konto + env vars
