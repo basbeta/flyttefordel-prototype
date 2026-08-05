@@ -17,30 +17,35 @@ type Params = { params: { poolId: string; codeId: string } }
 export async function PATCH(request: NextRequest, { params }: Params) {
   if (!await authCheck(request)) return NextResponse.json({ message: 'Ikke autentisert' }, { status: 401 })
 
-  const code = await prisma.code.findFirst({
-    where: { id: params.codeId, codePoolId: params.poolId },
-    select: { id: true, status: true },
-  })
-  if (!code) return NextResponse.json({ message: 'Kode ikke funnet' }, { status: 404 })
+  try {
+    const code = await prisma.code.findFirst({
+      where: { id: params.codeId, codePoolId: params.poolId },
+      select: { id: true, status: true },
+    })
+    if (!code) return NextResponse.json({ message: 'Kode ikke funnet' }, { status: 404 })
 
-  if (code.status === 'disabled') {
-    return NextResponse.json({ message: 'Kode er allerede deaktivert' }, { status: 200 })
+    if (code.status === 'disabled') {
+      return NextResponse.json({ message: 'Kode er allerede deaktivert' }, { status: 200 })
+    }
+
+    const wasAvailable = code.status === 'available'
+
+    await prisma.$transaction([
+      prisma.code.update({
+        where: { id: code.id },
+        data: { status: 'disabled' },
+      }),
+      ...(wasAvailable
+        ? [prisma.codePool.update({
+            where: { id: params.poolId },
+            data: { availableCodes: { decrement: 1 } },
+          })]
+        : []),
+    ])
+
+    return NextResponse.json({ disabled: true, availableAdjusted: wasAvailable })
+  } catch (err) {
+    console.error('[admin/codes/[poolId]/[codeId] PATCH] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
   }
-
-  const wasAvailable = code.status === 'available'
-
-  await prisma.$transaction([
-    prisma.code.update({
-      where: { id: code.id },
-      data: { status: 'disabled' },
-    }),
-    ...(wasAvailable
-      ? [prisma.codePool.update({
-          where: { id: params.poolId },
-          data: { availableCodes: { decrement: 1 } },
-        })]
-      : []),
-  ])
-
-  return NextResponse.json({ disabled: true, availableAdjusted: wasAvailable })
 }

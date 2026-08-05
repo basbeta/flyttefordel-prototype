@@ -27,56 +27,66 @@ async function resolveBenefit(slug: string) {
 }
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const [session, benefit] = await Promise.all([
-    resolveSession(request),
-    resolveBenefit(params.slug),
-  ])
+  try {
+    const [session, benefit] = await Promise.all([
+      resolveSession(request),
+      resolveBenefit(params.slug),
+    ])
 
-  if (!session) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
-  if (!benefit) return NextResponse.json({ message: 'Fordel ikke funnet' }, { status: 404 })
+    if (!session) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
+    if (!benefit) return NextResponse.json({ message: 'Fordel ikke funnet' }, { status: 404 })
 
-  const existing = await prisma.savedBenefit.findFirst({
-    where: { sessionId: session.id, benefitId: benefit.id, deletedAt: null },
-    select: { id: true },
-  })
-
-  if (existing) return NextResponse.json({ saved: true }, { status: 200 })
-
-  // Restore soft-deleted record if it exists, otherwise create fresh
-  const softDeleted = await prisma.savedBenefit.findFirst({
-    where: { sessionId: session.id, benefitId: benefit.id, deletedAt: { not: null } },
-    select: { id: true },
-  })
-
-  if (softDeleted) {
-    await prisma.savedBenefit.update({
-      where: { id: softDeleted.id },
-      data: { deletedAt: null },
+    const existing = await prisma.savedBenefit.findFirst({
+      where: { sessionId: session.id, benefitId: benefit.id, deletedAt: null },
+      select: { id: true },
     })
-  } else {
-    await prisma.savedBenefit.create({
-      data: { sessionId: session.id, benefitId: benefit.id },
+
+    if (existing) return NextResponse.json({ saved: true }, { status: 200 })
+
+    // Restore soft-deleted record if it exists, otherwise create fresh
+    const softDeleted = await prisma.savedBenefit.findFirst({
+      where: { sessionId: session.id, benefitId: benefit.id, deletedAt: { not: null } },
+      select: { id: true },
     })
+
+    if (softDeleted) {
+      await prisma.savedBenefit.update({
+        where: { id: softDeleted.id },
+        data: { deletedAt: null },
+      })
+    } else {
+      await prisma.savedBenefit.create({
+        data: { sessionId: session.id, benefitId: benefit.id },
+      })
+    }
+
+    await trackEvent('benefit_saved', benefit.id)
+    return NextResponse.json({ saved: true }, { status: 201 })
+  } catch (err) {
+    console.error('[benefits/[slug]/save POST] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
   }
-
-  await trackEvent('benefit_saved', benefit.id)
-  return NextResponse.json({ saved: true }, { status: 201 })
 }
 
 export async function DELETE(request: NextRequest, { params }: Params) {
-  const [session, benefit] = await Promise.all([
-    resolveSession(request),
-    resolveBenefit(params.slug),
-  ])
+  try {
+    const [session, benefit] = await Promise.all([
+      resolveSession(request),
+      resolveBenefit(params.slug),
+    ])
 
-  if (!session) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
-  if (!benefit) return NextResponse.json({ message: 'Fordel ikke funnet' }, { status: 404 })
+    if (!session) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
+    if (!benefit) return NextResponse.json({ message: 'Fordel ikke funnet' }, { status: 404 })
 
-  const { count } = await prisma.savedBenefit.updateMany({
-    where: { sessionId: session.id, benefitId: benefit.id, deletedAt: null },
-    data: { deletedAt: new Date() },
-  })
+    const { count } = await prisma.savedBenefit.updateMany({
+      where: { sessionId: session.id, benefitId: benefit.id, deletedAt: null },
+      data: { deletedAt: new Date() },
+    })
 
-  if (count > 0) await trackEvent('benefit_unsaved', benefit.id)
-  return new NextResponse(null, { status: 204 })
+    if (count > 0) await trackEvent('benefit_unsaved', benefit.id)
+    return new NextResponse(null, { status: 204 })
+  } catch (err) {
+    console.error('[benefits/[slug]/save DELETE] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }

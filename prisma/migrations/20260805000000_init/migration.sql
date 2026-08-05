@@ -1,3 +1,9 @@
+-- CR-011: Corrected baseline migration for the Hetzner/Coolify migration.
+-- Replaces the stale 20260522100321_init migration, which predated CR-003/CR-009/CR-010
+-- schema changes applied via `prisma db push` and never captured in a migration file.
+-- Generated via: npx prisma migrate diff --from-empty --to-schema-datamodel ./prisma/schema.prisma --script
+-- Verified to match prisma/schema.prisma exactly as of 2026-08-05.
+
 -- CreateEnum
 CREATE TYPE "UserMovingStatus" AS ENUM ('recently_moved', 'moved_past', 'not_moving', 'unknown');
 
@@ -49,6 +55,8 @@ CREATE TABLE "user_sessions" (
     "id" UUID NOT NULL,
     "user_id" UUID,
     "anonymous_id" TEXT NOT NULL,
+    "postcode" TEXT,
+    "moving_status" "UserMovingStatus",
     "device_type" TEXT,
     "platform" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -116,6 +124,10 @@ CREATE TABLE "benefits" (
     "consent_text" TEXT,
     "is_featured" BOOLEAN NOT NULL DEFAULT false,
     "is_time_limited" BOOLEAN NOT NULL DEFAULT false,
+    "campaign_fee" DECIMAL(10,2),
+    "price_per_view" DECIMAL(10,4),
+    "price_per_lead" DECIMAL(10,2),
+    "price_per_redemption" DECIMAL(10,2),
     "created_by" UUID,
     "updated_by" UUID,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -303,6 +315,9 @@ CREATE TABLE "audit_log" (
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "user_sessions_anonymous_id_key" ON "user_sessions"("anonymous_id");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "advertisers_slug_key" ON "advertisers"("slug");
 
 -- CreateIndex
@@ -313,6 +328,9 @@ CREATE UNIQUE INDEX "benefits_slug_key" ON "benefits"("slug");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "benefit_redemptions_benefit_id_key" ON "benefit_redemptions"("benefit_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "codes_code_pool_id_code_value_key" ON "codes"("code_pool_id", "code_value");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "targeting_rules_benefit_id_key" ON "targeting_rules"("benefit_id");

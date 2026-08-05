@@ -45,50 +45,60 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const parsed = patchSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
-  const existing = await prisma.hero.findFirst({ where: { id: params.id, deletedAt: null } })
-  if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
+  try {
+    const existing = await prisma.hero.findFirst({ where: { id: params.id, deletedAt: null } })
+    if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
-  const { targeting, startsAt, endsAt, ...heroData } = parsed.data
-  await prisma.hero.update({
-    where: { id: params.id },
-    data: {
-      ...heroData,
-      ...(startsAt !== undefined ? { startsAt: startsAt ? new Date(startsAt) : null } : {}),
-      ...(endsAt !== undefined ? { endsAt: endsAt ? new Date(endsAt) : null } : {}),
-      ...(targeting ? {
-        targeting: {
-          upsert: {
-            create: {
-              appliesNationally: targeting.appliesNationally,
-              includeUnknownLocation: targeting.includeUnknownLocation,
-              postcodes: targeting.postcodes,
-              postcodeRanges: targeting.postcodeRanges,
-              movingStatuses: targeting.movingStatuses,
-            },
-            update: {
-              appliesNationally: targeting.appliesNationally,
-              includeUnknownLocation: targeting.includeUnknownLocation,
-              postcodes: targeting.postcodes,
-              postcodeRanges: targeting.postcodeRanges,
-              movingStatuses: targeting.movingStatuses,
+    const { targeting, startsAt, endsAt, ...heroData } = parsed.data
+    await prisma.hero.update({
+      where: { id: params.id },
+      data: {
+        ...heroData,
+        ...(startsAt !== undefined ? { startsAt: startsAt ? new Date(startsAt) : null } : {}),
+        ...(endsAt !== undefined ? { endsAt: endsAt ? new Date(endsAt) : null } : {}),
+        ...(targeting ? {
+          targeting: {
+            upsert: {
+              create: {
+                appliesNationally: targeting.appliesNationally,
+                includeUnknownLocation: targeting.includeUnknownLocation,
+                postcodes: targeting.postcodes,
+                postcodeRanges: targeting.postcodeRanges,
+                movingStatuses: targeting.movingStatuses,
+              },
+              update: {
+                appliesNationally: targeting.appliesNationally,
+                includeUnknownLocation: targeting.includeUnknownLocation,
+                postcodes: targeting.postcodes,
+                postcodeRanges: targeting.postcodeRanges,
+                movingStatuses: targeting.movingStatuses,
+              },
             },
           },
-        },
-      } : {}),
-    },
-  })
-  return NextResponse.json({ ok: true })
+        } : {}),
+      },
+    })
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[admin/heroes/[id] PATCH] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }
 
 export async function DELETE(request: NextRequest, { params }: Params) {
   if (!await authCheck(request)) return NextResponse.json({ message: 'Ikke autentisert' }, { status: 401 })
 
-  const existing = await prisma.hero.findFirst({ where: { id: params.id, deletedAt: null } })
-  if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
+  try {
+    const existing = await prisma.hero.findFirst({ where: { id: params.id, deletedAt: null } })
+    if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
-  await prisma.hero.update({
-    where: { id: params.id },
-    data: { deletedAt: new Date(), status: 'archived' },
-  })
-  return NextResponse.json({ ok: true })
+    await prisma.hero.update({
+      where: { id: params.id },
+      data: { deletedAt: new Date(), status: 'archived' },
+    })
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[admin/heroes/[id] DELETE] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }

@@ -31,9 +31,14 @@ export async function POST(request: NextRequest) {
   const parsed = advertiserSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
-  const existing = await prisma.advertiser.findFirst({ where: { slug: parsed.data.slug } })
-  if (existing) return NextResponse.json({ message: 'Slug er allerede i bruk' }, { status: 409 })
+  try {
+    const existing = await prisma.advertiser.findFirst({ where: { slug: parsed.data.slug } })
+    if (existing) return NextResponse.json({ message: 'Slug er allerede i bruk' }, { status: 409 })
 
-  const advertiser = await prisma.advertiser.create({ data: parsed.data })
-  return NextResponse.json({ id: advertiser.id }, { status: 201 })
+    const advertiser = await prisma.advertiser.create({ data: parsed.data })
+    return NextResponse.json({ id: advertiser.id }, { status: 201 })
+  } catch (err) {
+    console.error('[admin/advertisers POST] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }

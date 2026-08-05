@@ -43,24 +43,29 @@ export async function POST(request: NextRequest) {
   const parsed = heroSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
-  const { targeting, startsAt, endsAt, ...heroData } = parsed.data
-  const hero = await prisma.hero.create({
-    data: {
-      ...heroData,
-      startsAt: startsAt ? new Date(startsAt) : null,
-      endsAt: endsAt ? new Date(endsAt) : null,
-      ...(targeting ? {
-        targeting: {
-          create: {
-            appliesNationally: targeting.appliesNationally,
-            includeUnknownLocation: targeting.includeUnknownLocation,
-            postcodes: targeting.postcodes,
-            postcodeRanges: targeting.postcodeRanges,
-            movingStatuses: targeting.movingStatuses,
+  try {
+    const { targeting, startsAt, endsAt, ...heroData } = parsed.data
+    const hero = await prisma.hero.create({
+      data: {
+        ...heroData,
+        startsAt: startsAt ? new Date(startsAt) : null,
+        endsAt: endsAt ? new Date(endsAt) : null,
+        ...(targeting ? {
+          targeting: {
+            create: {
+              appliesNationally: targeting.appliesNationally,
+              includeUnknownLocation: targeting.includeUnknownLocation,
+              postcodes: targeting.postcodes,
+              postcodeRanges: targeting.postcodeRanges,
+              movingStatuses: targeting.movingStatuses,
+            },
           },
-        },
-      } : {}),
-    },
-  })
-  return NextResponse.json({ id: hero.id }, { status: 201 })
+        } : {}),
+      },
+    })
+    return NextResponse.json({ id: hero.id }, { status: 201 })
+  } catch (err) {
+    console.error('[admin/heroes POST] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }

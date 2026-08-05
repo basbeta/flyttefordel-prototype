@@ -18,29 +18,29 @@ export async function POST(request: NextRequest, { params }: Params) {
   const anonymousId = request.headers.get(ANON_ID_HEADER)
   if (!anonymousId) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
 
-  const session = await prisma.userSession.findUnique({
-    where: { anonymousId },
-    select: { id: true },
-  })
-  if (!session) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
-
-  const benefit = await prisma.benefit.findFirst({
-    where: { slug: decodeURIComponent(params.slug), status: 'active', deletedAt: null },
-    select: {
-      id: true,
-      redemptionType: true,
-      redemption: { select: { codePoolId: true } },
-    },
-  })
-
-  if (!benefit) {
-    return NextResponse.json({ message: 'Fordel ikke funnet' }, { status: 404 })
-  }
-  if (benefit.redemptionType !== 'unique_code' || !benefit.redemption?.codePoolId) {
-    return NextResponse.json({ message: 'Fordelen støtter ikke unik kode-tildeling' }, { status: 404 })
-  }
-
   try {
+    const session = await prisma.userSession.findUnique({
+      where: { anonymousId },
+      select: { id: true },
+    })
+    if (!session) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
+
+    const benefit = await prisma.benefit.findFirst({
+      where: { slug: decodeURIComponent(params.slug), status: 'active', deletedAt: null },
+      select: {
+        id: true,
+        redemptionType: true,
+        redemption: { select: { codePoolId: true } },
+      },
+    })
+
+    if (!benefit) {
+      return NextResponse.json({ message: 'Fordel ikke funnet' }, { status: 404 })
+    }
+    if (benefit.redemptionType !== 'unique_code' || !benefit.redemption?.codePoolId) {
+      return NextResponse.json({ message: 'Fordelen støtter ikke unik kode-tildeling' }, { status: 404 })
+    }
+
     const result = await claimCode(benefit.redemption.codePoolId, session.id)
     void trackEvent('code_revealed', benefit.id)
     return NextResponse.json({ code: result.codeValue, alreadyClaimed: result.alreadyClaimed })

@@ -56,7 +56,7 @@ export default async function AdminHeroesPage() {
                   <td>{h.priority}</td>
                   <td>{h.isFallback ? 'Ja' : '—'}</td>
                   <td style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-xs)' }}>
-                    {h.endsAt ? new Date(h.endsAt).toLocaleDateString('nb-NO') : '—'}
+                    {h.endsAt ? new Date(h.endsAt).toLocaleDateString('nb-NO', { timeZone: 'Europe/Oslo' }) : '—'}
                   </td>
                   <td>
                     <div className={styles.actionMenu}>

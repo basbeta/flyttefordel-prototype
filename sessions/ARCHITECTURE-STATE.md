@@ -19,7 +19,7 @@ FASE 3 FULLFØRT — Anonyme sesjoner, lagrede fordeler, profil og nær-deg ferd
 | `/components/mobile` | Fase 2 ✓ | HeroCarousel, BenefitCard, CategoryFilter, MobileShell, BottomNavigation, TopBar |
 | `/components/admin` | Fase 1 ✓ | AdminShell, AdminSidebar (placeholder) |
 | `/components/shared` | Fase 1 ✓ | Button |
-| `/lib/auth` | Utsatt | Supabase Auth (e-postinnlogging) — utsatt, krever NEXT_PUBLIC_ANON_KEY |
+| `/lib/auth` | Utsatt | E-postinnlogging for consumer-app — utsatt. CR-011: kan ikke lenger bygges på Supabase Auth (`@supabase/supabase-js` fjernet, aldri koblet til) — velg ny leverandør når dette prioriteres. |
 | `/lib/session` | Fase 3 ✓ | Anonym sesjon via cookie + DB UserSession upsert |
 | `/lib/targeting` | Fase 5 ✓ | matchesSession() — ren funksjon, ingen I/O. Importeres av queries. |
 | `/lib/db` | Fase 1 ✓ | Prisma client + schema |
@@ -41,13 +41,21 @@ Forretningslogikk er DB-agnostisk — kun Prisma-abstraksjon.
 ## External Dependencies
 - Next.js 14 (App Router)
 - Prisma 5.x + @prisma/client
-- @supabase/supabase-js (auth og storage — ikke DB)
 - Zod (validering)
 - qrcode (QR-generering)
 - papaparse (CSV-parsing)
+- CR-011: `@supabase/supabase-js` fjernet — var installert men aldri importert noe sted i `src/`.
 
 ## Tech Stack
-Next.js 14 + TypeScript | Supabase (PostgreSQL + Auth + Storage) | Prisma ORM | Vercel Hobby
+Next.js 14 + TypeScript | Selvhostet PostgreSQL (Hetzner/Coolify) | Prisma ORM | Coolify på Hetzner
 
 ## Last Structural Change
-2026-05-22 — CR-007: admin/categories CRUD (ny: CategoryForm, DeactivateCategoryButton, new/page, [id]/page), nye API-ruter GET+POST+PATCH+DELETE, getAdminCategoriesFull/getAdminCategoryById i adminQueries, AdminCategoryRow i types/admin.
+2026-08-05 — CR-011 (Hetzner/Coolify-migrering, kodedel ferdig — infra-oppsett og cutover gjenstår):
+Dockerfile lagt til (node:22-alpine, single-stage). Baseline-migrasjon i `prisma/migrations/`
+regenerert fra `schema.prisma` (den gamle `20260522100321_init` var utdatert — manglet CR-003/CR-009/
+CR-010-endringer som kun var kjørt via `db push`). `connect_timeout`/`socket_timeout` lagt til på
+Prisma-tilkoblingen i `src/lib/db/client.ts`. Alle 19 API-ruter under `src/app/api/` garanterer nå
+JSON-feilrespons ved uventet feil. `timeZone: 'Europe/Oslo'` lagt til på 6 datoformateringssteder.
+`@supabase/supabase-js` fjernet. Se `change-requests/CR-011-hetzner-coolify-migration.md`.
+
+Tidligere: 2026-05-22 — CR-007: admin/categories CRUD (ny: CategoryForm, DeactivateCategoryButton, new/page, [id]/page), nye API-ruter GET+POST+PATCH+DELETE, getAdminCategoriesFull/getAdminCategoryById i adminQueries, AdminCategoryRow i types/admin.

@@ -61,75 +61,85 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const parsed = patchSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
-  const existing = await prisma.benefit.findFirst({ where: { id: params.id, deletedAt: null } })
-  if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
+  try {
+    const existing = await prisma.benefit.findFirst({ where: { id: params.id, deletedAt: null } })
+    if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
-  const { redemption, targeting, startsAt, endsAt, ...benefitData } = parsed.data
+    const { redemption, targeting, startsAt, endsAt, ...benefitData } = parsed.data
 
-  await prisma.benefit.update({
-    where: { id: params.id },
-    data: {
-      ...benefitData,
-      ...(startsAt !== undefined ? { startsAt: startsAt ? new Date(startsAt) : null } : {}),
-      ...(endsAt !== undefined ? { endsAt: endsAt ? new Date(endsAt) : null } : {}),
-      ...(redemption ? {
-        redemption: {
-          upsert: {
-            create: {
-              type: benefitData.redemptionType ?? existing.redemptionType,
-              genericCode: redemption.genericCode,
-              externalUrl: redemption.externalUrl,
-              qrValue: redemption.qrValue,
-              ctaLabel: redemption.ctaLabel,
-              opensInNewTab: redemption.opensInNewTab ?? true,
-            },
-            update: {
-              ...(benefitData.redemptionType ? { type: benefitData.redemptionType } : {}),
-              genericCode: redemption.genericCode,
-              externalUrl: redemption.externalUrl,
-              qrValue: redemption.qrValue,
-              ctaLabel: redemption.ctaLabel,
-              ...(redemption.opensInNewTab !== undefined ? { opensInNewTab: redemption.opensInNewTab } : {}),
+    await prisma.benefit.update({
+      where: { id: params.id },
+      data: {
+        ...benefitData,
+        ...(startsAt !== undefined ? { startsAt: startsAt ? new Date(startsAt) : null } : {}),
+        ...(endsAt !== undefined ? { endsAt: endsAt ? new Date(endsAt) : null } : {}),
+        ...(redemption ? {
+          redemption: {
+            upsert: {
+              create: {
+                type: benefitData.redemptionType ?? existing.redemptionType,
+                genericCode: redemption.genericCode,
+                externalUrl: redemption.externalUrl,
+                qrValue: redemption.qrValue,
+                ctaLabel: redemption.ctaLabel,
+                opensInNewTab: redemption.opensInNewTab ?? true,
+              },
+              update: {
+                ...(benefitData.redemptionType ? { type: benefitData.redemptionType } : {}),
+                genericCode: redemption.genericCode,
+                externalUrl: redemption.externalUrl,
+                qrValue: redemption.qrValue,
+                ctaLabel: redemption.ctaLabel,
+                ...(redemption.opensInNewTab !== undefined ? { opensInNewTab: redemption.opensInNewTab } : {}),
+              },
             },
           },
-        },
-      } : {}),
-      ...(targeting ? {
-        targeting: {
-          upsert: {
-            create: {
-              appliesNationally: targeting.appliesNationally,
-              includeUnknownLocation: targeting.includeUnknownLocation,
-              postcodes: targeting.postcodes,
-              postcodeRanges: targeting.postcodeRanges,
-              movingStatuses: targeting.movingStatuses,
-            },
-            update: {
-              appliesNationally: targeting.appliesNationally,
-              includeUnknownLocation: targeting.includeUnknownLocation,
-              postcodes: targeting.postcodes,
-              postcodeRanges: targeting.postcodeRanges,
-              movingStatuses: targeting.movingStatuses,
+        } : {}),
+        ...(targeting ? {
+          targeting: {
+            upsert: {
+              create: {
+                appliesNationally: targeting.appliesNationally,
+                includeUnknownLocation: targeting.includeUnknownLocation,
+                postcodes: targeting.postcodes,
+                postcodeRanges: targeting.postcodeRanges,
+                movingStatuses: targeting.movingStatuses,
+              },
+              update: {
+                appliesNationally: targeting.appliesNationally,
+                includeUnknownLocation: targeting.includeUnknownLocation,
+                postcodes: targeting.postcodes,
+                postcodeRanges: targeting.postcodeRanges,
+                movingStatuses: targeting.movingStatuses,
+              },
             },
           },
-        },
-      } : {}),
-    },
-  })
+        } : {}),
+      },
+    })
 
-  return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[admin/benefits/[id] PATCH] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }
 
 export async function DELETE(request: NextRequest, { params }: Params) {
   if (!await authCheck(request)) return NextResponse.json({ message: 'Ikke autentisert' }, { status: 401 })
 
-  const existing = await prisma.benefit.findFirst({ where: { id: params.id, deletedAt: null } })
-  if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
+  try {
+    const existing = await prisma.benefit.findFirst({ where: { id: params.id, deletedAt: null } })
+    if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
-  await prisma.benefit.update({
-    where: { id: params.id },
-    data: { deletedAt: new Date(), status: 'deleted' },
-  })
+    await prisma.benefit.update({
+      where: { id: params.id },
+      data: { deletedAt: new Date(), status: 'deleted' },
+    })
 
-  return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[admin/benefits/[id] DELETE] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }

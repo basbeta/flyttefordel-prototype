@@ -35,23 +35,28 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ message: parsed.error.errors[0]?.message ?? 'Ugyldig input' }, { status: 400 })
   }
 
-  const session = await prisma.userSession.upsert({
-    where: { anonymousId },
-    update: {
-      ...(parsed.data.postcode !== undefined ? { postcode: parsed.data.postcode } : {}),
-      ...(parsed.data.movingStatus !== undefined ? { movingStatus: parsed.data.movingStatus } : {}),
-      lastSeenAt: new Date(),
-    },
-    create: {
-      anonymousId,
-      ...(parsed.data.postcode !== undefined ? { postcode: parsed.data.postcode } : {}),
-      ...(parsed.data.movingStatus !== undefined ? { movingStatus: parsed.data.movingStatus } : {}),
-    },
-    select: { id: true, postcode: true, movingStatus: true },
-  })
+  try {
+    const session = await prisma.userSession.upsert({
+      where: { anonymousId },
+      update: {
+        ...(parsed.data.postcode !== undefined ? { postcode: parsed.data.postcode } : {}),
+        ...(parsed.data.movingStatus !== undefined ? { movingStatus: parsed.data.movingStatus } : {}),
+        lastSeenAt: new Date(),
+      },
+      create: {
+        anonymousId,
+        ...(parsed.data.postcode !== undefined ? { postcode: parsed.data.postcode } : {}),
+        ...(parsed.data.movingStatus !== undefined ? { movingStatus: parsed.data.movingStatus } : {}),
+      },
+      select: { id: true, postcode: true, movingStatus: true },
+    })
 
-  return NextResponse.json({
-    postcode: session.postcode,
-    movingStatus: session.movingStatus ?? 'unknown',
-  })
+    return NextResponse.json({
+      postcode: session.postcode,
+      movingStatus: session.movingStatus ?? 'unknown',
+    })
+  } catch (err) {
+    console.error('[session/profile PATCH] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }

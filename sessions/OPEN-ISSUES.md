@@ -17,6 +17,22 @@ Resolution: [how it was resolved]
 
 ## Open Issues
 
+ISSUE-009
+Status: Open
+Priority: High
+Area: package.json / dependencies
+Description: `npm ci` (run for the first time with a real local Node install, during CR-011)
+  surfaced 12 vulnerabilities (1 critical, 10 high, 1 low), including a known CVE in
+  `next@14.2.3` with a patched version available (npm warning references
+  nextjs.org/blog/security-update-2025-12-11). Not fixed as part of CR-011 — that CR is an
+  infra migration, not a dependency upgrade, and the migration playbook (docs/
+  MIGRATION-PLAYBOOK-HETZNER-COOLIFY.md §6) explicitly says to treat a breaking/major
+  dependency bump as its own reviewed CR rather than bundling it in.
+Blocker for: none yet, but should not be left indefinitely given severity (critical present)
+Opened: 2026-08-05
+Resolved:
+Resolution:
+
 ISSUE-008
 Status: Resolved
 Priority: Medium

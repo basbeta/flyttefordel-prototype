@@ -59,40 +59,45 @@ export async function POST(request: NextRequest) {
   const parsed = benefitSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
-  const { redemption, targeting, startsAt, endsAt, ...benefitData } = parsed.data
+  try {
+    const { redemption, targeting, startsAt, endsAt, ...benefitData } = parsed.data
 
-  const benefit = await prisma.benefit.create({
-    data: {
-      ...benefitData,
-      visibility: 'public',
-      autoExpire: true,
-      startsAt: startsAt ? new Date(startsAt) : null,
-      endsAt: endsAt ? new Date(endsAt) : null,
-      ...(redemption ? {
-        redemption: {
-          create: {
-            type: benefitData.redemptionType,
-            genericCode: redemption.genericCode,
-            externalUrl: redemption.externalUrl,
-            qrValue: redemption.qrValue,
-            ctaLabel: redemption.ctaLabel,
-            opensInNewTab: redemption.opensInNewTab,
+    const benefit = await prisma.benefit.create({
+      data: {
+        ...benefitData,
+        visibility: 'public',
+        autoExpire: true,
+        startsAt: startsAt ? new Date(startsAt) : null,
+        endsAt: endsAt ? new Date(endsAt) : null,
+        ...(redemption ? {
+          redemption: {
+            create: {
+              type: benefitData.redemptionType,
+              genericCode: redemption.genericCode,
+              externalUrl: redemption.externalUrl,
+              qrValue: redemption.qrValue,
+              ctaLabel: redemption.ctaLabel,
+              opensInNewTab: redemption.opensInNewTab,
+            },
           },
-        },
-      } : {}),
-      ...(targeting ? {
-        targeting: {
-          create: {
-            appliesNationally: targeting.appliesNationally,
-            includeUnknownLocation: targeting.includeUnknownLocation,
-            postcodes: targeting.postcodes,
-            postcodeRanges: targeting.postcodeRanges,
-            movingStatuses: targeting.movingStatuses,
+        } : {}),
+        ...(targeting ? {
+          targeting: {
+            create: {
+              appliesNationally: targeting.appliesNationally,
+              includeUnknownLocation: targeting.includeUnknownLocation,
+              postcodes: targeting.postcodes,
+              postcodeRanges: targeting.postcodeRanges,
+              movingStatuses: targeting.movingStatuses,
+            },
           },
-        },
-      } : {}),
-    },
-  })
+        } : {}),
+      },
+    })
 
-  return NextResponse.json({ id: benefit.id }, { status: 201 })
+    return NextResponse.json({ id: benefit.id }, { status: 201 })
+  } catch (err) {
+    console.error('[admin/benefits POST] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }

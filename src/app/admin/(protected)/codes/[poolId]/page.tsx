@@ -77,10 +77,10 @@ export default async function CodePoolDetailPage({ params }: Props) {
                       {c.assignedSessionId ? `…${c.assignedSessionId.slice(-8)}` : '—'}
                     </td>
                     <td style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-xs)' }}>
-                      {c.assignedAt ? new Date(c.assignedAt).toLocaleString('nb') : '—'}
+                      {c.assignedAt ? new Date(c.assignedAt).toLocaleString('nb', { timeZone: 'Europe/Oslo' }) : '—'}
                     </td>
                     <td style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-xs)' }}>
-                      {new Date(c.createdAt).toLocaleString('nb')}
+                      {new Date(c.createdAt).toLocaleString('nb', { timeZone: 'Europe/Oslo' })}
                     </td>
                     <td>
                       <DisableCodeButton codeId={c.id} poolId={pool.id} status={c.status} />

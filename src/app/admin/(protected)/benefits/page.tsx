@@ -78,7 +78,7 @@ export default async function AdminBenefitsPage({ searchParams }: Props) {
                   <td>{b.categoryName}</td>
                   <td>{b.priority}</td>
                   <td style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-xs)' }}>
-                    {b.endsAt ? new Date(b.endsAt).toLocaleDateString('nb-NO') : '—'}
+                    {b.endsAt ? new Date(b.endsAt).toLocaleDateString('nb-NO', { timeZone: 'Europe/Oslo' }) : '—'}
                   </td>
                   <td>
                     <BenefitStatusActions id={b.id} currentStatus={b.status} />

@@ -21,14 +21,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: 'Feil e-post eller passord' }, { status: 401 })
   }
 
-  const token = await signAdminJWT({ email: parsed.data.email, role: 'admin' })
+  try {
+    const token = await signAdminJWT({ email: parsed.data.email, role: 'admin' })
 
-  const response = NextResponse.json({ ok: true })
-  response.cookies.set(ADMIN_TOKEN_COOKIE, token, {
-    httpOnly: true,
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 8,
-    path: '/',
-  })
-  return response
+    const response = NextResponse.json({ ok: true })
+    response.cookies.set(ADMIN_TOKEN_COOKIE, token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 8,
+      path: '/',
+    })
+    return response
+  } catch (err) {
+    console.error('[admin/auth/login POST] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }

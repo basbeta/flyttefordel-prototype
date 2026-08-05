@@ -24,8 +24,14 @@ const categorySchema = z.object({
 
 export async function GET(request: NextRequest) {
   if (!await authCheck(request)) return NextResponse.json({ message: 'Ikke autentisert' }, { status: 401 })
-  const categories = await getAdminCategoriesFull()
-  return NextResponse.json(categories)
+
+  try {
+    const categories = await getAdminCategoriesFull()
+    return NextResponse.json(categories)
+  } catch (err) {
+    console.error('[admin/categories GET] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -35,9 +41,14 @@ export async function POST(request: NextRequest) {
   const parsed = categorySchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
-  const existing = await prisma.category.findFirst({ where: { slug: parsed.data.slug } })
-  if (existing) return NextResponse.json({ message: 'Slug er allerede i bruk' }, { status: 409 })
+  try {
+    const existing = await prisma.category.findFirst({ where: { slug: parsed.data.slug } })
+    if (existing) return NextResponse.json({ message: 'Slug er allerede i bruk' }, { status: 409 })
 
-  const category = await prisma.category.create({ data: parsed.data })
-  return NextResponse.json({ id: category.id }, { status: 201 })
+    const category = await prisma.category.create({ data: parsed.data })
+    return NextResponse.json({ id: category.id }, { status: 201 })
+  } catch (err) {
+    console.error('[admin/categories POST] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }

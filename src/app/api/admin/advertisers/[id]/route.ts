@@ -33,27 +33,37 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const parsed = patchSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
-  const existing = await prisma.advertiser.findFirst({ where: { id: params.id, deletedAt: null } })
-  if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
+  try {
+    const existing = await prisma.advertiser.findFirst({ where: { id: params.id, deletedAt: null } })
+    if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
-  if (parsed.data.slug && parsed.data.slug !== existing.slug) {
-    const slugConflict = await prisma.advertiser.findFirst({ where: { slug: parsed.data.slug } })
-    if (slugConflict) return NextResponse.json({ message: 'Slug er allerede i bruk' }, { status: 409 })
+    if (parsed.data.slug && parsed.data.slug !== existing.slug) {
+      const slugConflict = await prisma.advertiser.findFirst({ where: { slug: parsed.data.slug } })
+      if (slugConflict) return NextResponse.json({ message: 'Slug er allerede i bruk' }, { status: 409 })
+    }
+
+    await prisma.advertiser.update({ where: { id: params.id }, data: parsed.data })
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[admin/advertisers/[id] PATCH] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
   }
-
-  await prisma.advertiser.update({ where: { id: params.id }, data: parsed.data })
-  return NextResponse.json({ ok: true })
 }
 
 export async function DELETE(request: NextRequest, { params }: Params) {
   if (!await authCheck(request)) return NextResponse.json({ message: 'Ikke autentisert' }, { status: 401 })
 
-  const existing = await prisma.advertiser.findFirst({ where: { id: params.id, deletedAt: null } })
-  if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
+  try {
+    const existing = await prisma.advertiser.findFirst({ where: { id: params.id, deletedAt: null } })
+    if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
-  await prisma.advertiser.update({
-    where: { id: params.id },
-    data: { deletedAt: new Date(), isActive: false },
-  })
-  return NextResponse.json({ ok: true })
+    await prisma.advertiser.update({
+      where: { id: params.id },
+      data: { deletedAt: new Date(), isActive: false },
+    })
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[admin/advertisers/[id] DELETE] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }

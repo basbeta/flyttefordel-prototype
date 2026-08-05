@@ -25,15 +25,20 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const parsed = statusSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
-  const existing = await prisma.lead.findFirst({ where: { id: params.id, deletedAt: null } })
-  if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
+  try {
+    const existing = await prisma.lead.findFirst({ where: { id: params.id, deletedAt: null } })
+    if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
-  await prisma.lead.update({
-    where: { id: params.id },
-    data: {
-      status: parsed.data.status,
-      ...(parsed.data.status === 'deleted' ? { deletedAt: new Date() } : {}),
-    },
-  })
-  return NextResponse.json({ ok: true })
+    await prisma.lead.update({
+      where: { id: params.id },
+      data: {
+        status: parsed.data.status,
+        ...(parsed.data.status === 'deleted' ? { deletedAt: new Date() } : {}),
+      },
+    })
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[admin/leads/[id]/status PATCH] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }

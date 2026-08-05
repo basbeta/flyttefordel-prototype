@@ -80,10 +80,10 @@ export function LeadsTable({ leads }: Props) {
                     </span>
                   </td>
                   <td style={{ fontSize: 'var(--font-xs)', color: 'var(--color-text-muted)' }}>
-                    {new Date(l.consentAcceptedAt).toLocaleDateString('nb-NO')}
+                    {new Date(l.consentAcceptedAt).toLocaleDateString('nb-NO', { timeZone: 'Europe/Oslo' })}
                   </td>
                   <td style={{ fontSize: 'var(--font-xs)', color: 'var(--color-text-muted)' }}>
-                    {new Date(l.createdAt).toLocaleString('nb-NO')}
+                    {new Date(l.createdAt).toLocaleString('nb-NO', { timeZone: 'Europe/Oslo' })}
                   </td>
                   <td>
                     {l.status === 'new' && (

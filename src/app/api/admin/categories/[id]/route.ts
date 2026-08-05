@@ -30,25 +30,35 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const parsed = patchSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
-  const existing = await prisma.category.findFirst({ where: { id: params.id } })
-  if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
+  try {
+    const existing = await prisma.category.findFirst({ where: { id: params.id } })
+    if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
-  if (parsed.data.slug && parsed.data.slug !== existing.slug) {
-    const slugConflict = await prisma.category.findFirst({ where: { slug: parsed.data.slug } })
-    if (slugConflict) return NextResponse.json({ message: 'Slug er allerede i bruk' }, { status: 409 })
+    if (parsed.data.slug && parsed.data.slug !== existing.slug) {
+      const slugConflict = await prisma.category.findFirst({ where: { slug: parsed.data.slug } })
+      if (slugConflict) return NextResponse.json({ message: 'Slug er allerede i bruk' }, { status: 409 })
+    }
+
+    await prisma.category.update({ where: { id: params.id }, data: parsed.data })
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[admin/categories/[id] PATCH] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
   }
-
-  await prisma.category.update({ where: { id: params.id }, data: parsed.data })
-  return NextResponse.json({ ok: true })
 }
 
 // Deaktivering — isActive = false. Ingen hard delete siden Category mangler deletedAt.
 export async function DELETE(request: NextRequest, { params }: Params) {
   if (!await authCheck(request)) return NextResponse.json({ message: 'Ikke autentisert' }, { status: 401 })
 
-  const existing = await prisma.category.findFirst({ where: { id: params.id } })
-  if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
+  try {
+    const existing = await prisma.category.findFirst({ where: { id: params.id } })
+    if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
-  await prisma.category.update({ where: { id: params.id }, data: { isActive: false } })
-  return NextResponse.json({ ok: true })
+    await prisma.category.update({ where: { id: params.id }, data: { isActive: false } })
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('[admin/categories/[id] DELETE] Uventet feil:', err)
+    return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })
+  }
 }
