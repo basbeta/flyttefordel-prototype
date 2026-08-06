@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import styles from '@/components/admin/AdminTable.module.css'
+import { ImageUploadField } from '@/components/admin/ImageUploadField'
 
 type AdvertiserData = {
   id: string
@@ -16,6 +17,7 @@ type AdvertiserData = {
   contactPhone: string | null
   internalNotes: string | null
   isActive: boolean
+  logoUrl?: string | null
 }
 
 type Props = { advertiser?: AdvertiserData }
@@ -41,6 +43,7 @@ export function AdvertiserForm({ advertiser }: Props) {
   const [contactPhone, setContactPhone] = useState(advertiser?.contactPhone ?? '')
   const [internalNotes, setInternalNotes] = useState(advertiser?.internalNotes ?? '')
   const [isActive, setIsActive] = useState(advertiser?.isActive ?? true)
+  const [logoUrl, setLogoUrl] = useState(advertiser?.logoUrl ?? '')
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -64,6 +67,7 @@ export function AdvertiserForm({ advertiser }: Props) {
       contactPhone: contactPhone || null,
       internalNotes: internalNotes || null,
       isActive,
+      logoUrl: logoUrl || null,
     }
 
     try {
@@ -139,6 +143,8 @@ export function AdvertiserForm({ advertiser }: Props) {
           </select>
         </div>
       </div>
+
+      <ImageUploadField label="Logo" value={logoUrl || null} onChange={setLogoUrl} />
 
       <div className={styles.field}>
         <label className={styles.label}>Interne notater</label>

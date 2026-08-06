@@ -16,6 +16,24 @@ DECIDED BY: human | Claude | both
 
 ## Decisions
 
+DATE: 2026-08-06
+DECISION: Feilsporing (Sentry-kompatibel, f.eks. Bugsink) fjernet fra CR-011 sitt scope
+CONTEXT: CR-011 sin infra-checklist krevde opprinnelig Sentry-kompatibel feilsporing med https-DSN, verifisert med én bevisst testfeil, som forutsetning for å markere CR-011 Done. Uptime-monitoring (Uptime Kuma) ble i samme økt bekreftet aktiv på nytt domene.
+DECISION: Fjern feilsporingskravet fra CR-011 sine akseptansekriterier og infra-checklist. Ikke blokkerende for at CR-011 markeres Done.
+ALTERNATIVES CONSIDERED: Beholde kravet med lavere prioritet i OPEN-ISSUES.md (ikke blokkerende, men fortsatt et uttalt mål) — forkastet siden bruker eksplisitt ikke ønsket det som et stående mål akkurat nå.
+RATIONALE: Bruker vurderer at appens nåværende trafikkvolum/risikoprofil (demo/tidlig MVP) ikke rettferdiggjør å sette opp og drifte et eget feilsporingsverktøy nå.
+CONSEQUENCES: Uventede runtime-feil i prod fanges kun via de eksisterende JSON-feilresponsene (try/catch per API-rute, CR-011) og manuell observasjon — ingen sentralisert feilsporing/varsling. Kan gjeninnføres som egen, fremtidig CR om trafikkvolum eller driftsrisiko øker.
+DECIDED BY: human
+
+DATE: 2026-08-06
+DECISION: Egen, separat S3-bucket for opplastede bilder — ikke gjenbruk av backup-bucketen
+CONTEXT: Under CR-012-planlegging oppga bruker bucket-navnet `basbeta-backup` for den nye bildeopplastingsfunksjonen. Dette er samme bucket-navn som CR-011 satte opp for daglige `pg_dump`-backups (objektlagring, se CR-011 Infra-checklist). CR-012 sitt design krever at bilder-bucketen er offentlig lesbar (bilder vises uten auth i forbrukerappen), mens en backup-bucket normalt bør være privat siden `pg_dump`-filer kan inneholde persondata (leads) og andre sensitive DB-innhold.
+DECISION: Bruk en ny, dedikert bucket (`basbeta-pub-object-storage`) for opplastede bilder. Backup-bucketen (`basbeta-backup`) forblir uendret og privat.
+ALTERNATIVES CONSIDERED: Dele `basbeta-backup` med bildene under et eget prefiks (f.eks. `uploads/`) — forkastet fordi det ville krevd enten å gjøre hele bucketen offentlig lesbar (eksponerer backup-filene) eller finjustert per-prefiks-tilgangskontroll (mer kompleksitet enn en enkel S3-klient-konfigurasjon tilsier for denne appens skala).
+RATIONALE: Separate buckets med separate tilgangsnivåer (privat for backup, offentlig lesbar for bilder) er den enkleste måten å unngå å blande sensitiv og offentlig data, uten ekstra kode for finjustert tilgangskontroll.
+CONSEQUENCES: Bruker må opprette `basbeta-pub-object-storage` som ny bucket i Coolify (se CR-012 Infra-checklist) med egen access key/secret, begrenset til denne bucketen. Samme S3-endepunkt (`https://fsn1.your-objectstorage.com`) og region (`fsn1`) gjenbrukes.
+DECIDED BY: both
+
 DATE: 2026-08-05
 DECISION: Behold Prisma 5.x for CR-011, ikke oppgrader til Prisma 7 selv om det ville løst Alpine/OpenSSL-krasjen
 CONTEXT: Under Coolify-deploy crash-loopet containeren fordi Prisma 5.x sin native schema-engine-binær ikke fant libssl i node:22-alpine. Effektbibliotek (søsterprosjekt, Prisma 7.x med driver-adapter-arkitektur) traff aldri dette problemet med identisk Dockerfile — sannsynlig fordi Prisma 7 er mindre avhengig av native binærfiler.

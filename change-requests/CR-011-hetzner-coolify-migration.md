@@ -143,7 +143,7 @@ Required Tests:
 - [x] Fersk Postgres-instans provisjonert (postgres:18-alpine) og migrasjon
       kjørt rent mot den (`prisma migrate deploy` i container-CMD)
 - [ ] Daglig backup bekreftet med "Backup Now" (fil observert i objektlagring)
-- [ ] Uptime-monitoring aktiv på nytt domene
+- [x] Uptime-monitoring aktiv på nytt domene — bekreftet oppe i Uptime Kuma (2026-08-06)
 - [x] Alle 19 API-ruter garanterer JSON-feilrespons ved kastet feil (16 av 19
       manglet reell try/catch rundt Prisma-kall — kun `.catch(() => null)` på
       `request.json()` — alle 16 fikset 2026-08-05, resten hadde allerede
@@ -155,7 +155,10 @@ Required Tests:
 - [x] Alle 6 faktiske dato-formateringskall har eksplisitt
       `timeZone: 'Europe/Oslo'` (2 av de opprinnelig 8 flaggede stedene var
       tallformatering, ikke dato — se Impact Analysis)
-- [ ] Feilsporing verifisert end-to-end med én bevisst testfeil før cutover
+- [x] Feilsporing (Sentry-kompatibel) bevisst utelatt fra CR-011 sitt scope
+      (bruker-beslutning 2026-08-06, se DECISIONS.md) — ikke blokkerende for
+      Done. Kan gjeninnføres som egen CR senere om trafikkvolum/behov endrer
+      seg.
 - [x] Gammel Vercel/Supabase-plattform urørt og fungerende som fallback —
       ingen endringer gjort mot Vercel/Supabase i denne CR-en
 - [x] `specs/architecture.md`, `.env.example` og `sessions/ARCHITECTURE-STATE.md`
@@ -211,10 +214,9 @@ tilgang til Coolify-konsollet og Hetzner-serveren, og må gjøres av deg:
    bucket — ikke stol på at toggle = bekreftet.
 7. **Uptime-monitoring**: legg til det nye domenet i Uptime Kuma (e.l.) nå,
    ikke som en oppfølging senere.
-8. **Feilsporing**: sett opp Sentry-kompatibel feilsporing med en
-   **`https://`**-DSN (ikke `http://` — mange SDK-transporter følger ikke
-   redirects, og feilen er da helt stille). Send én bevisst testfeil og
-   bekreft den faktisk vises i dashboardet før du stoler på oppsettet.
+8. ~~**Feilsporing**~~ — FJERNET FRA SCOPE (2026-08-06, bruker-beslutning,
+   se DECISIONS.md). Sentry-kompatibel feilsporing (f.eks. Bugsink) er
+   bevisst utelatt for denne appen nå. Kan vurderes som egen CR senere.
 9. **Smoke test** etter deploy: admin-innlogging, bla fordeler → se detalj →
    lagre/hent kode, CSV-eksport av leads, og sjekk at
    `/admin/profitability`/`/admin/analytics`/`/admin/leads`/`/admin/codes/[poolId]`

@@ -15,7 +15,7 @@
 | ORM | Prisma | 5.x | **Kritisk migreringssjikt** — bytt kun connection string |
 | Database | Selvhostet PostgreSQL (Hetzner/Coolify) | — | CR-011: migrert fra Supabase (se migreringsnotat) |
 | Auth (admin) | Egen JWT (`/lib/admin/auth`) | — | Uendret av CR-011 — bruker aldri Supabase Auth |
-| File storage | Ikke i bruk | — | `@supabase/supabase-js` var aldri koblet til noe lagringskall — fjernet i CR-011 |
+| File storage | S3-kompatibel object storage (Hetzner Object Storage) | — | CR-012: admin-opplastede bilder. Egen, offentlig lesbar bucket (`basbeta-pub-object-storage`), separat fra backup-bucketen |
 | Hosting | Coolify på Hetzner | — | CR-011: migrert fra Vercel (Hobby) |
 
 ### Migreringsnotat: CR-011 (Hetzner/Coolify, 2026-08-05)
@@ -35,6 +35,21 @@ for full kontekst. Sentrale endringer:
 - `timeZone: 'Europe/Oslo'` lagt til på de 6 stedene som formaterer datoer
   til visning (admin: benefits, heroes, leads, codes).
 - Fersk Postgres-instans (ikke `pg_dump`/restore) — demo-data er disposable.
+
+### Migreringsnotat: CR-012 (Bildeopplasting, 2026-08-06)
+Ny `src/lib/storage/`-modul — S3-kompatibel klient for admin-opplastede
+bilder (`Benefit.imageUrl`/`imageAlt`, `Advertiser.logoUrl`,
+`Hero.imageUrl`). Ingen schema-endring — feltene er fortsatt en URL-streng,
+kun kilden endres fra admin-limt ekstern URL til opplastet fil. Se
+`change-requests/CR-012-image-upload.md` for full kontekst.
+- Ny bucket `basbeta-pub-object-storage` (Hetzner Object Storage, region
+  `fsn1`) — bevisst separat fra backup-bucketen `basbeta-backup` (se
+  `sessions/DECISIONS.md` 2026-08-06): backup-data bør forbli privat,
+  bilder skal være offentlig lesbare. Hetzner sine S3-nøkler er
+  prosjekt-nivå, ikke bucket-scoped — separate buckets gir dermed skille i
+  *innhold*, ikke i nøkkel-tilgang.
+- Ny `POST /api/admin/upload`-rute, admin-auth-guardet, validerer filtype
+  (jpg/png/webp) og størrelse (maks 5 MB) server-side.
 
 ### Migreringsnotat: database
 Prisma er eneste lag som snakker med databasen. Ved migrering til ny PostgreSQL-leverandør:
@@ -76,6 +91,7 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 | `/lib/tracking` | Hendelseslogging (benefit_viewed, code_revealed osv.) |
 | `/lib/validation` | Zod-schemas for input-validering |
 | `/lib/codes` | Atomisk unik kode-tildeling |
+| `/lib/storage` | CR-012: S3-kompatibel klient for admin-opplastede bilder — isolert for enkel leverandørbytte |
 | `/lib/pwa` | PWA manifest og install-helpers |
 | `/lib/utils` | Generelle hjelpefunksjoner |
 | `/types` | TypeScript-typer og enums |
@@ -101,6 +117,7 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 - `zod` — Runtime input-validering
 - `qrcode` — QR-kode-generering
 - `papaparse` — CSV-parsing for kodeopplasting
+- `@aws-sdk/client-s3` — CR-012: S3-kompatibel klient for bildeopplasting (Hetzner Object Storage)
 
 ---
 
@@ -129,6 +146,14 @@ ADMIN_PASSWORD=
 
 # App
 NEXT_PUBLIC_APP_URL=
+
+# File storage — S3-kompatibel bucket for admin-opplastede bilder (CR-012)
+# Egen, offentlig lesbar bucket, separat fra backup-bucketen.
+S3_ENDPOINT=
+S3_REGION=
+S3_BUCKET=
+S3_ACCESS_KEY_ID=
+S3_SECRET_ACCESS_KEY=
 ```
 
 CR-011: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` og

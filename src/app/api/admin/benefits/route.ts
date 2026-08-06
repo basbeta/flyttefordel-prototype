@@ -37,6 +37,9 @@ const benefitSchema = z.object({
   usageInstruction: z.string().nullable().optional(),
   startsAt: z.string().nullable().optional(),
   endsAt: z.string().nullable().optional(),
+  // CR-012: Bilde (opplastet til S3-kompatibel storage, eller ekstern URL)
+  imageUrl: z.string().nullable().optional(),
+  imageAlt: z.string().nullable().optional(),
   redemption: z.object({
     genericCode: z.string().nullable().optional(),
     externalUrl: z.string().nullable().optional(),

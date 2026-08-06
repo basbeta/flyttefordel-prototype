@@ -22,6 +22,8 @@ const patchSchema = z.object({
   contactPhone: z.string().nullable().optional(),
   internalNotes: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
+  // CR-012: Logo (opplastet til S3-kompatibel storage, eller ekstern URL)
+  logoUrl: z.string().nullable().optional(),
 })
 
 type Params = { params: { id: string } }

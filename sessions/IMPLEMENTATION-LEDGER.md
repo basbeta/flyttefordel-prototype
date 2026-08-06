@@ -137,3 +137,16 @@
 | 2026-08-05 | Session-10 | Dockerfile | fix: `apk add --no-cache openssl` — container crash-loopet 10/10 restarts fordi Prisma sin native schema-engine ikke fant libssl i Alpine | CR-011 | Coolify deploy ✓ etter fix |
 | 2026-08-05 | Session-10 | git | Commit d5ecd55: fix(CR-011) — OpenSSL i Alpine-image | CR-011 | push ✓ |
 | 2026-08-06 | Session-10 | Prod-verifisering | Bruker opprettet kategori, annonsør og fordel via /admin på https://flyttefordel-prototype.basbeta.no — bekreftet synlig og fungerende i forbrukerappen | CR-011 | prod ✓ |
+| 2026-08-06 | Session-11 | change-requests/ | Opprettet og godkjent CR-012: Bildeopplasting i admin-grensesnittet | CR-012 | — |
+| 2026-08-06 | Session-11 | sessions/ | CR-011: uptime-monitoring bekreftet (Uptime Kuma), feilsporing fjernet fra scope (bruker-beslutning, se DECISIONS.md) | CR-011 | — |
+| 2026-08-06 | Session-11 | infra | Bruker opprettet S3-bucket basbeta-pub-object-storage (Hetzner Object Storage, fsn1, Public read-only), separat fra basbeta-backup; nøkler satt som Coolify-miljøvariabler | CR-012 | — |
+| 2026-08-06 | Session-11 | package.json | @aws-sdk/client-s3 lagt til | CR-012 | npm install ✓ |
+| 2026-08-06 | Session-11 | src/lib/storage/ | Nytt: client.ts (lazy S3-klient, build-safe), validateImage.ts (magic-byte-validering, maks 5MB, jpg/png/webp), uploadImage.ts, index.ts | CR-012 | tsc ✓ vitest ✓ |
+| 2026-08-06 | Session-11 | src/lib/storage/*.test.ts | 18 nye unit-tester (validateImage, client, uploadImage) | CR-012 | vitest ✓ 63/63 |
+| 2026-08-06 | Session-11 | src/app/api/admin/upload/route.ts | Ny: POST-rute, admin-auth-guardet, multipart/form-data → S3, JSON-feilrespons. + route.test.ts (5 tester) | CR-012 | tsc ✓ vitest ✓ |
+| 2026-08-06 | Session-11 | src/components/admin/ImageUploadField.tsx | Ny: delt opplastingskomponent brukt i alle tre admin-formene | CR-012 | tsc ✓ |
+| 2026-08-06 | Session-11 | HeroForm.tsx | URL-tekstfelt for imageUrl/imageAlt byttet til ImageUploadField | CR-012 | tsc ✓ |
+| 2026-08-06 | Session-11 | BenefitForm.tsx + admin/benefits route.ts/[id]/route.ts | Lagt til imageUrl/imageAlt-felt (manglet helt før denne CR-en) + Zod-schema-utvidelse | CR-012 | tsc ✓ |
+| 2026-08-06 | Session-11 | AdvertiserForm.tsx + admin/advertisers route.ts/[id]/route.ts | Lagt til logoUrl-felt (manglet helt før denne CR-en) + Zod-schema-utvidelse | CR-012 | tsc ✓ |
+| 2026-08-06 | Session-11 | specs/architecture.md, specs/entities.md, .env.example (via architecture.md-liste) | Oppdatert for ny S3-storage-modul, nye miljøvariabler, migreringsnotat | CR-012 | — |
+| 2026-08-06 | Session-11 | Full validering | npx tsc --noEmit ✓, npx vitest run 63/63 ✓ (opp fra 45), npm run build ✓ | CR-012 | — |

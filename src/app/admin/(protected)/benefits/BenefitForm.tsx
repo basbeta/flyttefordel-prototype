@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { AdminAdvertiserRow, AdminCodePoolRow } from '@/types/admin'
 import styles from '@/components/admin/AdminTable.module.css'
+import { ImageUploadField } from '@/components/admin/ImageUploadField'
 
 type Category = { id: string; name: string; slug: string }
 
@@ -34,6 +35,8 @@ type BenefitData = {
   usageInstruction: string | null
   startsAt: Date | null
   endsAt: Date | null
+  imageUrl?: string | null
+  imageAlt?: string | null
   redemption: {
     genericCode: string | null
     externalUrl: string | null
@@ -92,6 +95,9 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
   const [usageInstruction, setUsageInstruction] = useState(benefit?.usageInstruction ?? '')
   const [startsAt, setStartsAt] = useState(benefit?.startsAt ? new Date(benefit.startsAt).toISOString().slice(0, 16) : '')
   const [endsAt, setEndsAt] = useState(benefit?.endsAt ? new Date(benefit.endsAt).toISOString().slice(0, 16) : '')
+  // CR-012: Bilde
+  const [imageUrl, setImageUrl] = useState(benefit?.imageUrl ?? '')
+  const [imageAlt, setImageAlt] = useState(benefit?.imageAlt ?? '')
   // Redemption fields
   const [genericCode, setGenericCode] = useState(benefit?.redemption?.genericCode ?? '')
   const [externalUrl, setExternalUrl] = useState(benefit?.redemption?.externalUrl ?? '')
@@ -137,6 +143,7 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
       badgeText: badgeText || null, termsText: termsText || null,
       usageInstruction: usageInstruction || null,
       startsAt: startsAt || null, endsAt: endsAt || null,
+      imageUrl: imageUrl || null, imageAlt: imageAlt || null,
       redemption: {
         genericCode: genericCode || null,
         externalUrl: externalUrl || null,
@@ -303,6 +310,15 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
           Tidsbegrenset
         </label>
       </div>
+
+      <ImageUploadField
+        label="Bilde"
+        value={imageUrl || null}
+        onChange={setImageUrl}
+        altLabel="Bilde-alt"
+        altValue={imageAlt}
+        onAltChange={setImageAlt}
+      />
 
       <div className={styles.field}>
         <label className={styles.label}>Bruksanvisning</label>

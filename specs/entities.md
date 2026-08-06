@@ -114,7 +114,7 @@ Fields:
 - name: string
 - slug: string (UNIQUE)
 - org_number: string?
-- logo_url: string? (Supabase Storage URL — byttes ved migrering)
+- logo_url: string? (URL-streng — populeres via admin-opplasting til S3-kompatibel storage, se CR-012, eller fortsatt en direkte ekstern URL for eldre data)
 - website_url: string?
 - contact_name / contact_email / contact_phone: string?
 - internal_notes: text? (aldri eksponert i app)
@@ -158,7 +158,7 @@ Fields:
 - slug: string (UNIQUE, autogenerert fra tittel)
 - short_description: string (vises på fordelskort)
 - long_description: text (vises på detaljside)
-- image_url: string?
+- image_url: string? (populeres via admin-opplasting til S3-kompatibel storage, se CR-012, eller en direkte ekstern URL)
 - image_alt: string?
 - badge_text: string? (f.eks. "Ny", "Tidsbegrenset")
 - status: BenefitStatus
@@ -254,7 +254,7 @@ Fields:
 - id: uuid (PK)
 - title: string
 - description: text?
-- image_url: string?
+- image_url: string? (populeres via admin-opplasting til S3-kompatibel storage, se CR-012, eller en direkte ekstern URL)
 - image_alt: string?
 - cta_label: string?
 - cta_type: CTAType

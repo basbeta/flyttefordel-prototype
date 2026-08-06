@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { CTAType, HeroStatus } from '@prisma/client'
 import styles from '@/components/admin/AdminTable.module.css'
+import { ImageUploadField } from '@/components/admin/ImageUploadField'
 
 type TargetingData = {
   appliesNationally: boolean
@@ -129,16 +130,14 @@ export function HeroForm({ hero }: Props) {
         <textarea className={styles.textarea} rows={2} value={description} onChange={(e) => setDescription(e.target.value)} />
       </div>
 
-      <div className={styles.formRow}>
-        <div className={styles.field}>
-          <label className={styles.label}>Bilde-URL</label>
-          <input className={styles.input} value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://" />
-        </div>
-        <div className={styles.field}>
-          <label className={styles.label}>Bilde-alt</label>
-          <input className={styles.input} value={imageAlt} onChange={(e) => setImageAlt(e.target.value)} />
-        </div>
-      </div>
+      <ImageUploadField
+        label="Bilde"
+        value={imageUrl || null}
+        onChange={setImageUrl}
+        altLabel="Bilde-alt"
+        altValue={imageAlt}
+        onAltChange={setImageAlt}
+      />
 
       <div className={styles.formRow}>
         <div className={styles.field}>
