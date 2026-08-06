@@ -1,7 +1,8 @@
 # CR-014: Rate limiting på innlogging og kode-tildeling
 
-Status: Draft
+Status: Approved
 Created: 2026-08-06
+Approved: 2026-08-06
 
 ## Business Goal
 Beskytte to endepunkter mot automatisert misbruk: brute-force-gjetting av
