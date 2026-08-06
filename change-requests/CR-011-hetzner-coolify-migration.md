@@ -1,7 +1,8 @@
 # CR-011: Migrering fra Vercel/Supabase til Hetzner/Coolify
 
-Status: In Progress
+Status: Done
 Created: 2026-08-05
+Done: 2026-08-06
 
 ## Business Goal
 Flytte hosting fra Vercel (Hobby) + Supabase (free tier) til selvhostet
@@ -126,12 +127,20 @@ Required Tests:
 - [x] Unit: eksisterende 41 vitest-tester bekreftet fortsatt grønne etter alle
       kodeendringer, pluss 4 nye tester for `withConnectionTimeouts()`
       (`src/lib/db/client.test.ts`) — 45/45 (2026-08-05)
-- [ ] Integration: manuell smoke test etter hver infra-deploy — innlogging
-      (admin), kjerneflyt (bla fordeler → se detalj → lagre/hent kode),
-      CSV-eksport av leads
-- [ ] Manuell: bekreft `/admin/profitability`, `/admin/analytics`,
-      `/admin/leads`, `/admin/codes/[poolId]` viser korrekte
-      norsk-tidssone-tidspunkt etter `TZ`-fix (§2.5)
+- [x] Integration: delvis — kategori, annonsør og fordel opprettet i /admin,
+      bekreftet synlig i forbrukerappen (2026-08-06). Full claim-code/
+      lead-innsendingsflyt og CSV-eksport IKKE eksplisitt verifisert i
+      denne CR-en — bevisst akseptert som kjent gap (bruker-beslutning
+      2026-08-06, prototype, lav risiko). Bør dekkes ved neste CR som
+      rører disse flytene, eller ved en fremtidig dedikert smoke-test-runde.
+- [x] Manuell: `/admin/profitability`, `/admin/analytics`, `/admin/leads`,
+      `/admin/codes/[poolId]` sin norsk-tidssone-visning IKKE eksplisitt
+      verifisert i denne CR-en — samme bevisste aksept som over. Koden
+      (`timeZone: 'Europe/Oslo'`) er på plass i alle 6 faktiske
+      formateringssteder, men INGEN unit-test dekker selve
+      dato-formateringen (verifisert: ingen `.test.tsx`-filer i
+      prosjektet i det hele tatt, se CR-012/CR-013), og den visuelle
+      rendringen i prod er ikke sett med egne øyne.
 - Ingen automatisert E2E-suite finnes i dag — per playbook §7 må dette sies
   eksplisitt, ikke antas dekket
 
@@ -142,7 +151,10 @@ Required Tests:
       fordelen vises korrekt i forbrukerappen
 - [x] Fersk Postgres-instans provisjonert (postgres:18-alpine) og migrasjon
       kjørt rent mot den (`prisma migrate deploy` i container-CMD)
-- [ ] Daglig backup bekreftet med "Backup Now" (fil observert i objektlagring)
+- [x] Backup bevisst utelatt fra CR-011 sitt scope (bruker-beslutning
+      2026-08-06, se DECISIONS.md) — prototype, ikke produksjonsdata med
+      reelt gjenopprettingsbehov. Kan gjeninnføres som egen CR senere
+      ved overgang til MVP/produksjon.
 - [x] Uptime-monitoring aktiv på nytt domene — bekreftet oppe i Uptime Kuma (2026-08-06)
 - [x] Alle 19 API-ruter garanterer JSON-feilrespons ved kastet feil (16 av 19
       manglet reell try/catch rundt Prisma-kall — kun `.catch(() => null)` på
@@ -209,9 +221,10 @@ tilgang til Coolify-konsollet og Hetzner-serveren, og må gjøres av deg:
    `npx prisma migrate deploy && npm run start` — trygt nå som
    `prisma/migrations/20260805000000_init/` er en verifisert, komplett
    baseline mot en tom database.
-6. **Backup**: skru på daglig `pg_dump` under ressursens **Backups**-fane, og
-   trykk **"Backup Now"** én gang for å bekrefte at en fil faktisk lander i
-   bucket — ikke stol på at toggle = bekreftet.
+6. ~~**Backup**~~ — FJERNET FRA SCOPE (2026-08-06, bruker-beslutning, se
+   DECISIONS.md). Prototype, ikke produksjonsdata — daglig `pg_dump`/
+   "Backup Now"-verifisering er bevisst utelatt. Kan gjeninnføres som
+   egen CR senere ved overgang til MVP/produksjon.
 7. **Uptime-monitoring**: legg til det nye domenet i Uptime Kuma (e.l.) nå,
    ikke som en oppfølging senere.
 8. ~~**Feilsporing**~~ — FJERNET FRA SCOPE (2026-08-06, bruker-beslutning,

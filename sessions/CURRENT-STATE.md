@@ -3,15 +3,20 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-CR-011 PÅGÅR — Hetzner/Coolify-migrering. App er LIVE på
-https://flyttefordel-prototype.basbeta.no og verifisert med reell data
-(kategori, annonsør, fordel opprettet og vist korrekt i forbrukerappen).
-To reelle deploy-blokkerende bugs ble funnet og fikset under selve
-utrullingen (se Recently Modified Systems). Uptime-monitoring bekreftet
-aktiv på Uptime Kuma (2026-08-06). Feilsporing fjernet fra scope
-(bruker-beslutning 2026-08-06, se DECISIONS.md). Gjenstår før CR-011 kan
-markeres Done: backup-verifisering ("Backup Now") og en avsluttende
-`/review`.
+Alle 13 CRs er nå Done (CR-001–CR-013). Ingen aktiv CR pågår.
+
+CR-011 (Hetzner/Coolify-migrering) FULLFØRT og markert Done 2026-08-06.
+App er LIVE på https://flyttefordel-prototype.basbeta.no og verifisert
+med reell data (kategori, annonsør, fordel opprettet og vist korrekt i
+forbrukerappen). To reelle deploy-blokkerende bugs ble funnet og fikset
+under selve utrullingen (se Recently Modified Systems). Uptime-monitoring
+bekreftet aktiv på Uptime Kuma. Feilsporing og backup begge bevisst
+fjernet fra scope (bruker-beslutninger 2026-08-06, prototype — se
+DECISIONS.md). To manuelle testpunkter (full claim-code/lead-flyt +
+CSV-eksport, tidssone-visning på 4 admin-sider) er akseptert som kjent,
+udekket gap — ikke faktisk verifisert i prod. `/review` kjørt — PASSED,
+Approve.
+
 CR-012 (bildeopplasting) FULLFØRT og markert Done 2026-08-06. Bucket
 `basbeta-pub-object-storage` på Hetzner Object Storage, admin kan laste
 opp bilder for fordel/annonsør/hero, verifisert manuelt i prod av bruker
@@ -27,11 +32,9 @@ dirty, grønn statisk "Lagret"-pille etter vellykket lagring. Rediger-
 sider navigerer ikke bort ved lagring lenger; opprett-sider navigerer
 til rediger-siden for den nye posten. Iterert 4 ganger etter brukertest
 samme dag (se Recently Modified Systems). `/review` kjørt — PASSED, Approve.
-12 CRs fullført (CR-001–CR-010, CR-012, CR-013) før dette.
 
 ## Current Objectives
-CR-011: bekreft backup med "Backup Now", deretter kjør `/review` på nytt
-og marker CR-011 Done. (Eneste gjenstående CR.)
+Ingen aktiv CR. Se Next Recommended Actions for kandidater til neste CR.
 
 ## Current Branch
 master
@@ -50,7 +53,7 @@ Ingen aktive blockers.
 - CR-008: Analytics dashboard (Status: Done — committed 220f558)
 - CR-009: Fraud prevention — kode-audit og DB-integritet (Status: Done — committed c1cf64c)
 - CR-010: Lønnsomhetsanalyse (Status: Done — committed e5f0c81)
-- CR-011: Migrering til Hetzner/Coolify (Status: In Progress — LIVE og verifisert i prod, kun backup-verifisering gjenstår før Done)
+- CR-011: Migrering til Hetzner/Coolify (Status: Done — LIVE og verifisert i prod 2026-08-06, /review PASSED)
 - CR-012: Bildeopplasting i admin-grensesnittet (Status: Done — verifisert i prod 2026-08-06)
 - CR-013: Varsel om ulagrede endringer i admin-former (Status: Done — verifisert i prod 2026-08-06, /review PASSED)
 
@@ -103,9 +106,12 @@ Ingen aktive blockers.
   manglende `prisma generate` i build-script, manglende OpenSSL i Alpine-image
 ✓ Smoke test: kategori, annonsør og fordel opprettet i /admin, bekreftet synlig i forbrukerappen (2026-08-06)
 ✓ Uptime-monitoring bekreftet aktiv på Uptime Kuma (2026-08-06, CR-011)
-⚠ Backup ("Backup Now") — IKKE gjort ennå, se CR-011 checklist. Feilsporing fjernet fra scope (se DECISIONS.md)
+✓ CR-011 Done (2026-08-06) — backup og feilsporing bevisst fjernet fra scope (prototype,
+  se DECISIONS.md). To manuelle testpunkter (claim-code/lead-flyt, tidssone-visning)
+  akseptert som kjent gap, ikke faktisk verifisert
 ✓ ISSUE-007 resolved — «gratis kaffe» startsAt/endsAt satt til null (2026-05-22)
 ✓ ISSUE-008 resolved — DB unique constraint + deaktiver-kode + detaljside (2026-05-22, CR-009)
+✓ ISSUE-010 resolved — CR-013 løste generelt "ulagrede endringer"-varsel i admin (2026-08-06)
 
 ## Notes
 - `<img>` brukes i stedet for `next/image` — lint warning, akseptabelt for demo
@@ -116,19 +122,18 @@ Ingen aktive blockers.
 - KRITISK: `npm ci` avdekket 12 sårbarheter (1 kritisk, 10 high) i avhengigheter, inkl. en kjent CVE i `next@14.2.3` med patch tilgjengelig. Ikke fikset i CR-011 (utenfor scope — infra-migrering, ikke avhengighetsoppgradering, jf. playbook §6). Se OPEN-ISSUES.md ISSUE-009.
 
 ## Next Recommended Actions
-1. Fullfør CR-011 sin siste gjenstående infra-oppgave: daglig backup + "Backup Now"-verifisering.
-   Kjør `/review` på nytt og marker CR-011 Done.
-2. Utvid smoke-testen for CR-011: test lagre/hent-kode-flyt og lead-innsending (kun kategori/
-   annonsør/fordel er testet så langt), sjekk at admin-sider viser korrekte norske klokkeslett
-3. Ny CR for ISSUE-010: admin-formene varsler ikke ved navigering bort med ulagrede endringer
-   (gjelder alle felt, ikke spesifikt bilde — bekreftet av bruker under CR-012-testing)
-4. ISSUE-009 (høy prioritet): vurder `next@14.2.3` sikkerhetsoppdatering som egen CR
-5. Vurder Prisma 5→7-migrering som egen fremtidig CR — ville eliminert Alpine/OpenSSL-feilklassen
+1. Dekk det aksepterte test-gapet fra CR-011 når det er praktisk: test claim-code/lead-
+   innsendingsflyt + CSV-eksport i prod, og bekreft norske klokkeslett på
+   /admin/profitability, /admin/analytics, /admin/leads, /admin/codes/[poolId]
+2. ISSUE-009 (høy prioritet): vurder `next@14.2.3` sikkerhetsoppdatering som egen CR
+3. Vurder Prisma 5→7-migrering som egen fremtidig CR — ville eliminert Alpine/OpenSSL-feilklassen
    permanent (se DECISIONS.md 2026-08-05), men er en breaking-change-oppgradering, ikke en hastesak
-6. Etter CR-011 er Done: planlegg neste CR — kandidater:
+4. Planlegg neste CR — kandidater:
    a. Rate limiting på claim-endepunkt (krever Redis)
    b. Bruker-autentisering (ny leverandør — Supabase Auth ikke lenger et alternativ, se ARCHITECTURE-STATE.md)
    c. Notifikasjoner ved lav pool-beholdning (e-post / webhook)
    d. Per-sesjon LTV-estimat på /admin/profitability (AdminSessionLTV — type definert, query ikke implementert)
    e. Presigned direct-upload til S3 i stedet for server-side proxy, hvis bildevolum/frekvens øker
       (se CR-012 Performance Impact)
+   f. Backup/feilsporing som egne CRs ved overgang fra prototype til MVP/produksjon
+      (se DECISIONS.md 2026-08-06)

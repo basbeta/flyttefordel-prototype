@@ -17,6 +17,24 @@ DECIDED BY: human | Claude | both
 ## Decisions
 
 DATE: 2026-08-06
+DECISION: To gjenstående manuelle testpunkter i CR-011 akseptert som kjent gap, ikke blokkerende for Done
+CONTEXT: CR-011 sin Required Tests-seksjon hadde to uverifiserte punkter: (1) full claim-code/lead-innsendingsflyt + CSV-eksport i prod, (2) visuell bekreftelse av norsk tidssone på 4 admin-sider. Kun kategori/annonsør/fordel-opprettelse var faktisk testet i prod.
+DECISION: Aksepter begge som et kjent, dokumentert gap i CR-011. Ikke blokkerende for at CR-011 markeres Done.
+ALTERNATIVES CONSIDERED: Utføre testene før CR-011 lukkes — forkastet av bruker i favør av å lukke CR-en nå og heller dekke gapet senere (ved neste CR som rører disse flytene, eller en dedikert smoke-test-runde).
+RATIONALE: Prototype-fase, lav risiko ved en uverifisert visningsdetalj eller flyt som uansett kan rettes raskt hvis den skulle vise seg å ha en feil.
+CONSEQUENCES: Regresjon i claim-code/lead-flyten eller tidssone-visning kan forbli uoppdaget til en bruker faktisk trigger den i prod. Dokumentert i CR-011 Required Tests som en åpen, bevisst aksept — ikke en påstått fullført test.
+DECIDED BY: human
+
+DATE: 2026-08-06
+DECISION: Backup (daglig pg_dump + "Backup Now"-verifisering) fjernet fra CR-011 sitt scope
+CONTEXT: CR-011 sin infra-checklist krevde opprinnelig daglig pg_dump-backup til objektlagring, verifisert med "Backup Now", som forutsetning for å markere CR-011 Done. Dette var det siste gjenstående punktet før CR-011 kunne fullføres.
+DECISION: Fjern backup-kravet fra CR-011 sine akseptansekriterier og infra-checklist. Ikke blokkerende for at CR-011 markeres Done. Bruker avgjør selv om en eventuell allerede opprettet backup-jobb i Coolify skal skrus av — det er en handling i Coolify-konsollet, ikke noe Claude utfører.
+ALTERNATIVES CONSIDERED: Beholde backup-jobben i Coolify (lav kostnad, allerede opprettet), men droppe kravet om å verifisere den for CR-011 sin skyld — forkastet av bruker i favør av å fjerne kravet helt fra CR-en.
+RATIONALE: Appen er en prototype/demo, ikke produksjonsdata med et reelt gjenopprettingsbehov. Samme resonnement som feilsporing-beslutningen samme dag (se under).
+CONSEQUENCES: Ingen automatisert gjenopprettingsmulighet ved datatap i denne fasen. Kan gjeninnføres som egen, fremtidig CR ved overgang til MVP/produksjon med reelle annonsørdata.
+DECIDED BY: human
+
+DATE: 2026-08-06
 DECISION: Feilsporing (Sentry-kompatibel, f.eks. Bugsink) fjernet fra CR-011 sitt scope
 CONTEXT: CR-011 sin infra-checklist krevde opprinnelig Sentry-kompatibel feilsporing med https-DSN, verifisert med én bevisst testfeil, som forutsetning for å markere CR-011 Done. Uptime-monitoring (Uptime Kuma) ble i samme økt bekreftet aktiv på nytt domene.
 DECISION: Fjern feilsporingskravet fra CR-011 sine akseptansekriterier og infra-checklist. Ikke blokkerende for at CR-011 markeres Done.
