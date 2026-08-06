@@ -193,8 +193,13 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
 
       if (res.ok) {
         baselineRef.current = JSON.stringify(payload)
-        router.push('/admin/benefits')
-        router.refresh()
+        setSaving(false)
+        if (isEdit) {
+          router.refresh()
+        } else {
+          const data = (await res.json()) as { id: string }
+          router.push(`/admin/benefits/${data.id}`)
+        }
       } else {
         const data = (await res.json()) as { message?: string }
         setError(data.message ?? 'Noe gikk galt')

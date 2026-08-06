@@ -82,6 +82,25 @@ miste, kun én enkelt innloggingshandling.
      i `FormSaveBar.module.css` (samme per-komponent-mønster som
      `AdminShell.module.css`/`AdminSidebar.module.css`), med
      `prefers-reduced-motion`-respekt.
+6. **Ikke naviger bort ved vellykket lagring** (bruker-tillegg
+   2026-08-06). Alle fire former navigerte tidligere til listesiden
+   (`router.push('/admin/benefits')` osv.) etter en vellykket lagring —
+   bruker ba om at dette fjernes for alle sider med lagreknapp:
+   - **Rediger-flyt** (`isEdit === true`): ingen navigasjon i det hele
+     tatt. Kun `router.refresh()` (henter ev. fersk server-data på
+     nytt, navigerer ikke bort) + `setSaving(false)` (nødvendig nå som
+     komponenten ikke unmountes ved suksess — tidligere var dette
+     implisitt siden navigasjonen unmountet formet). `isDirty` blir
+     `false` idet baseline nullstilles, så `FormSaveBar` forsvinner —
+     dette ER suksess-tilbakemeldingen, ingen egen "Lagret!"-melding
+     lagt til.
+   - **Opprett-flyt** (`isEdit === false`): naviger til den nyopprettede
+     postens REDIGER-side (f.eks. `/admin/benefits/{id}`ved bruk av
+     `id`-en fra `POST`-responsen), ikke til listen. Valgt over
+     alternativet "bli på opprett-siden og nullstill formet" — brukeren
+     ender opp i samme kontekst (redigerer denne posten), bare med en
+     URL som nå har en ekte ID, i stedet for å måtte navigere til listen
+     selv for å fortsette å jobbe med posten.
 
 ## Impact Analysis
 
@@ -104,7 +123,9 @@ Affected Components:
   `UnsavedChangesBadge` — se Proposed Solution punkt 5)
 - `src/app/admin/(protected)/benefits/BenefitForm.tsx` — payload flyttet
   til `useMemo`, isDirty-beregning, hook-kall, gammel `formActions`-div
-  fjernet og erstattet med `<FormSaveBar .../>`
+  fjernet og erstattet med `<FormSaveBar .../>`, `handleSubmit` sin
+  suksess-gren endret fra "naviger til liste" til "bli/naviger til
+  rediger-side for denne posten" (se Proposed Solution punkt 6)
 - `src/app/admin/(protected)/advertisers/AdvertiserForm.tsx` — samme
 - `src/app/admin/(protected)/heroes/HeroForm.tsx` — samme
 - `src/app/admin/(protected)/categories/CategoryForm.tsx` — samme
@@ -172,6 +193,10 @@ Required Tests:
       (f.eks. BenefitForm)
 - [ ] Baren forsvinner umiddelbart etter vellykket lagring
 - [ ] Pulseringen respekterer `prefers-reduced-motion`
+- [ ] Lagring på en REDIGER-side navigerer IKKE bort — brukeren blir på
+      samme side, lagre-knappen forsvinner (isDirty → false)
+- [ ] Lagring på en OPPRETT-side navigerer til rediger-siden for den
+      nyopprettede posten (`/admin/{type}/{nytt-id}`), ikke til listen
 - [ ] `LoginForm.tsx` er uendret
 
 ## Rollback Strategy
