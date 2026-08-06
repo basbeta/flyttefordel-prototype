@@ -136,10 +136,12 @@ Required Tests:
   eksplisitt, ikke antas dekket
 
 ## Acceptance Criteria
-- [ ] Ny app kjører på Coolify via Dockerfile-build, tilgjengelig på eget domene
-- [x] Fersk Postgres-instans-migrasjon regenerert og verifisert mot
-      schema.prisma (se Database Impact) — selve Coolify-provisjoneringen
-      gjenstår (brukeroppgave)
+- [x] Ny app kjører på Coolify via Dockerfile-build, tilgjengelig på eget domene
+      — https://flyttefordel-prototype.basbeta.no LIVE og verifisert
+      (2026-08-05/06): kategori, annonsør og fordel opprettet i admin,
+      fordelen vises korrekt i forbrukerappen
+- [x] Fersk Postgres-instans provisjonert (postgres:18-alpine) og migrasjon
+      kjørt rent mot den (`prisma migrate deploy` i container-CMD)
 - [ ] Daglig backup bekreftet med "Backup Now" (fil observert i objektlagring)
 - [ ] Uptime-monitoring aktiv på nytt domene
 - [x] Alle 19 API-ruter garanterer JSON-feilrespons ved kastet feil (16 av 19
@@ -154,7 +156,8 @@ Required Tests:
       `timeZone: 'Europe/Oslo'` (2 av de opprinnelig 8 flaggede stedene var
       tallformatering, ikke dato — se Impact Analysis)
 - [ ] Feilsporing verifisert end-to-end med én bevisst testfeil før cutover
-- [ ] Gammel Vercel/Supabase-plattform urørt og fungerende som fallback
+- [x] Gammel Vercel/Supabase-plattform urørt og fungerende som fallback —
+      ingen endringer gjort mot Vercel/Supabase i denne CR-en
 - [x] `specs/architecture.md`, `.env.example` og `sessions/ARCHITECTURE-STATE.md`
       oppdatert med ny plattform, nye miljøvariabler, fjernet
       Supabase-spesifikke notater (2026-08-05)
@@ -241,13 +244,35 @@ tilgang til Coolify-konsollet og Hetzner-serveren, og må gjøres av deg:
   migreringen. Fikset: `datasources`-nøkkelen utelates helt fra
   `PrismaClient`-konstruktøren når DATABASE_URL mangler, i stedet for å sende
   `{ url: undefined }` (som Prisma selv avviser like hardt).
-- Docker er ikke installert på denne maskinen (kun Node ble installert, via
-  `winget --scope user` — Docker Desktop krever admin/WSL2, som heller ikke er
-  tilgjengelig). `docker build` er derfor IKKE verifisert lokalt — Coolifys
-  egen build blir første reelle test av Dockerfilen.
+- ~~Docker er ikke installert på denne maskinen, `docker build` derfor ikke
+  verifisert lokalt~~ — bekreftet nå via faktisk Coolify-deploy, som avdekket
+  to reelle byggefeil `docker build` lokalt ville fanget med en gang:
+  1. **Manglende `prisma generate`**: byggets `npm run build`
+     (`next build` alene) feilet i Coolify fordi Dockerfilens
+     `COPY package.json package-lock.json ./` → `RUN npm ci` skjer FØR
+     `COPY . .` — så Prisma sin postinstall-generering manglet
+     `prisma/schema.prisma` og kjørte aldri. Usynlig lokalt fordi hele
+     repoet alltid ligger på disk der npm ci kjører. Fikset ved å endre
+     `package.json`: `"build": "prisma generate && next build"` (samme
+     mønster som effektbibliotek), commit fd72641.
+  2. **Manglende OpenSSL i Alpine**: `prisma migrate deploy` crash-loopet
+     containeren 10/10 restarts — Prisma 5.x sin native schema-engine-binær
+     fant ikke `libssl` i `node:22-alpine` (Alpine har ingen OpenSSL som
+     standard) og returnerte et ikke-JSON-svar. Fikset med
+     `RUN apk add --no-cache openssl` i Dockerfilen, commit d5ecd55.
+  Begge var reelle produksjonsblokkerende feil som kun viste seg ved faktisk
+  container-oppstart — bekrefter playbookens §0-poeng om at "lokal build"
+  uten et ekte Docker-bygg fortsatt har blindsoner Docker-laget introduserer.
 - ISSUE-009 (ny): `npm ci` avdekket 12 sårbarheter (1 kritisk) i avhengigheter,
   inkl. en patchbar CVE i `next@14.2.3`. Bevisst utenfor scope for CR-011 (se
   OPEN-ISSUES.md) — men bør ikke bli glemt.
+- Prisma 5.x (denne kodebasen) er avhengig av en native schema-engine-binær
+  for `migrate deploy`, som er hva som krasjet på Alpine. `effektbibliotek`
+  (Prisma 7.x, driver-adapter-arkitektur) traff aldri dette med identisk
+  Dockerfile — sannsynlig (ikke bekreftet) årsak. En fremtidig Prisma 7-
+  migrering ville trolig eliminere denne feilklassen helt, men er en egen,
+  reviewbar CR (breaking changes i `PrismaClient`-konstruksjon), ikke noe å
+  gjøre reaktivt her.
 
 ## Dependencies
 - Hetzner-server og Coolify-instans må være provisjonert (utenfor Claude sin

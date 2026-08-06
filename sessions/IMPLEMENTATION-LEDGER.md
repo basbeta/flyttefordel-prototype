@@ -122,3 +122,18 @@
 | 2026-05-22 | Session-9 | src/components/admin/AdminSidebar.tsx | Lønnsomhet nav-lenke lagt til | CR-010 | tsc ✓ |
 | 2026-05-22 | Session-9 | src/lib/queries/profitability.test.ts | 10 unit-tester: revenue-formelen (alle kombinasjoner), per-annonsør aggregering, snitt-CPL | CR-010 | vitest ✓ 41/41 |
 | 2026-05-22 | Session-9 | git | Commit e5f0c81: feat(CR-010) — lønnsomhetsanalyse | CR-010 | push ✓ |
+| 2026-08-05 | Session-10 | change-requests/ | Opprettet og godkjent CR-011: Migrering fra Vercel/Supabase til Hetzner/Coolify, basert på docs/MIGRATION-PLAYBOOK-HETZNER-COOLIFY.md | CR-011 | — |
+| 2026-08-05 | Session-10 | miljø | Node.js 22 installert lokalt via `winget install OpenJS.NodeJS.22 --scope user` (ingen admin-rettigheter tilgjengelig) — gjenbruk av install fra effektbibliotek-økt, oppdaget under `%LOCALAPPDATA%\Microsoft\WinGet\Packages\` | — | node -v ✓ |
+| 2026-08-05 | Session-10 | prisma/migrations/ | Regenerert baseline-migrasjon (20260805000000_init, erstatter utdatert 20260522100321_init som manglet CR-003/CR-009/CR-010-felter kun lagt til via db push) via `prisma migrate diff --from-empty` — ingen live DB nødvendig | CR-011 | verifisert mot schema.prisma ✓ |
+| 2026-08-05 | Session-10 | Dockerfile, .dockerignore | Nye: single-stage node:22-alpine build | CR-011 | build (lokalt, uten docker) ✓ tsc ✓ |
+| 2026-08-05 | Session-10 | src/lib/db/client.ts, client.test.ts | connect_timeout/socket_timeout på DATABASE_URL; build-safe når url mangler (fanget og fikset en selvintrodusert next build-krasj); 4 nye unit-tester | CR-011 | tsc ✓ vitest ✓ 45/45 |
+| 2026-08-05 | Session-10 | src/app/api/**/*.ts (16 ruter) | Try/catch lagt til rundt Prisma-kall — 16 av 19 ruter manglet reell feilhåndtering (kun .catch() på request.json()) | CR-011 | tsc ✓ vitest ✓ |
+| 2026-08-05 | Session-10 | 4 admin-sider | timeZone: 'Europe/Oslo' lagt til på 6 faktiske datoformateringssteder (2 av 8 opprinnelig flaggede var tallformatering) | CR-011 | tsc ✓ |
+| 2026-08-05 | Session-10 | package.json | @supabase/supabase-js fjernet (ubrukt, verifisert via full build) | CR-011 | build ✓ |
+| 2026-08-05 | Session-10 | specs/architecture.md, .env.example, sessions/ARCHITECTURE-STATE.md | Oppdatert for ny plattform | CR-011 | — |
+| 2026-08-05 | Session-10 | git | Commit 6487619: feat(CR-011) — kodedel, 34 filer | CR-011 | push ✓ |
+| 2026-08-05 | Session-10 | package.json | fix: build-script kjørte ikke `prisma generate` — Docker-buildet feilet i Coolify fordi npm ci sin postinstall kjørte før schema.prisma var kopiert inn | CR-011 | Coolify build ✓ etter fix |
+| 2026-08-05 | Session-10 | git | Commit fd72641: fix(CR-011) — prisma generate i build-script | CR-011 | push ✓ |
+| 2026-08-05 | Session-10 | Dockerfile | fix: `apk add --no-cache openssl` — container crash-loopet 10/10 restarts fordi Prisma sin native schema-engine ikke fant libssl i Alpine | CR-011 | Coolify deploy ✓ etter fix |
+| 2026-08-05 | Session-10 | git | Commit d5ecd55: fix(CR-011) — OpenSSL i Alpine-image | CR-011 | push ✓ |
+| 2026-08-06 | Session-10 | Prod-verifisering | Bruker opprettet kategori, annonsør og fordel via /admin på https://flyttefordel-prototype.basbeta.no — bekreftet synlig og fungerende i forbrukerappen | CR-011 | prod ✓ |

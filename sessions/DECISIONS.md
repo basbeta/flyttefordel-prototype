@@ -16,6 +16,15 @@ DECIDED BY: human | Claude | both
 
 ## Decisions
 
+DATE: 2026-08-05
+DECISION: Behold Prisma 5.x for CR-011, ikke oppgrader til Prisma 7 selv om det ville løst Alpine/OpenSSL-krasjen
+CONTEXT: Under Coolify-deploy crash-loopet containeren fordi Prisma 5.x sin native schema-engine-binær ikke fant libssl i node:22-alpine. Effektbibliotek (søsterprosjekt, Prisma 7.x med driver-adapter-arkitektur) traff aldri dette problemet med identisk Dockerfile — sannsynlig fordi Prisma 7 er mindre avhengig av native binærfiler.
+DECISION: Fiks krasjen med `apk add --no-cache openssl` i Dockerfilen (liten, reversibel endring) i stedet for å oppgradere til Prisma 7 nå.
+ALTERNATIVES CONSIDERED: Oppgradere til Prisma 7 for å eliminere hele feilklassen permanent — forkastet for nå, siden det er en major-versjon-oppgradering med reelle breaking changes (PrismaClient-konstruksjon endres til å bruke en eksplisitt driver-adapter/pg.Pool i stedet for kun en connection-string), og krever egen CR med impact-analyse per CLAUDE.md sin regel om at major-versjon-oppgraderinger ikke skal bundles inn i annet arbeid.
+RATIONALE: Den minimale fiksen (én linje i Dockerfilen) løser det akutte problemet uten å introdusere ny risiko midt i en pågående infra-migrering. En Prisma 7-migrering er en fornuftig fremtidig CR, men bør vurderes isolert.
+CONSEQUENCES: CR-011 forblir smalt scopet. En fremtidig CR bør vurdere Prisma 5→7-oppgradering, spesielt hvis flere native-binær-relaterte driftsproblemer dukker opp.
+DECIDED BY: both
+
 DATE: 2026-05-22
 DECISION: Tech stack valgt for demo-fase
 CONTEXT: Prosjektet er i demo-fase. Stack må støtte rask utvikling, gratis hosting, og enkel migrering til Bas/Postens infrastruktur for MVP og produksjon.
