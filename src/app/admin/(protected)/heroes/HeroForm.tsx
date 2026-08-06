@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import type { CTAType, HeroStatus } from '@prisma/client'
 import styles from '@/components/admin/AdminTable.module.css'
 import { ImageUploadField } from '@/components/admin/ImageUploadField'
-import { UnsavedChangesBadge } from '@/components/admin/UnsavedChangesBadge'
+import { FormSaveBar } from '@/components/admin/FormSaveBar'
 import { useUnsavedChangesWarning } from '@/lib/admin/useUnsavedChangesWarning'
 
 type TargetingData = {
@@ -133,7 +133,6 @@ export function HeroForm({ hero }: Props) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
-      <UnsavedChangesBadge isDirty={isDirty} />
       <div className={styles.field}>
         <label className={styles.label}>Tittel *</label>
         <input className={styles.input} required value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -257,13 +256,12 @@ export function HeroForm({ hero }: Props) {
         <p className={styles.hint}>Tom = alle postnummer. Overstyres av &laquo;Nasjonalt&raquo;.</p>
       </div>
 
-      {error && <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-sm)' }}>{error}</p>}
-
-      <div className={styles.formActions}>
-        <button type="submit" className={styles.primaryBtn} disabled={saving}>
-          {saving ? 'Lagrer…' : isEdit ? 'Lagre endringer' : 'Opprett hero'}
-        </button>
-      </div>
+      <FormSaveBar
+        label={isEdit ? 'Lagre endringer' : 'Opprett hero'}
+        saving={saving}
+        isDirty={isDirty}
+        error={error}
+      />
     </form>
   )
 }

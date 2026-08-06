@@ -4,7 +4,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import styles from '@/components/admin/AdminTable.module.css'
-import { UnsavedChangesBadge } from '@/components/admin/UnsavedChangesBadge'
+import { FormSaveBar } from '@/components/admin/FormSaveBar'
 import { useUnsavedChangesWarning } from '@/lib/admin/useUnsavedChangesWarning'
 
 type CategoryData = {
@@ -93,7 +93,6 @@ export function CategoryForm({ category }: Props) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
-      <UnsavedChangesBadge isDirty={isDirty} />
       <div className={styles.formRow}>
         <div className={styles.field}>
           <label className={styles.label}>Navn *</label>
@@ -162,13 +161,12 @@ export function CategoryForm({ category }: Props) {
         </select>
       </div>
 
-      {error && <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-sm)' }}>{error}</p>}
-
-      <div className={styles.formActions}>
-        <button type="submit" className={styles.primaryBtn} disabled={saving}>
-          {saving ? 'Lagrer…' : isEdit ? 'Lagre endringer' : 'Opprett kategori'}
-        </button>
-      </div>
+      <FormSaveBar
+        label={isEdit ? 'Lagre endringer' : 'Opprett kategori'}
+        saving={saving}
+        isDirty={isDirty}
+        error={error}
+      />
     </form>
   )
 }

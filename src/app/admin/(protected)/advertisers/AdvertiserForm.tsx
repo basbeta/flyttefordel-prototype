@@ -5,7 +5,7 @@ import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import styles from '@/components/admin/AdminTable.module.css'
 import { ImageUploadField } from '@/components/admin/ImageUploadField'
-import { UnsavedChangesBadge } from '@/components/admin/UnsavedChangesBadge'
+import { FormSaveBar } from '@/components/admin/FormSaveBar'
 import { useUnsavedChangesWarning } from '@/lib/admin/useUnsavedChangesWarning'
 
 type AdvertiserData = {
@@ -105,7 +105,6 @@ export function AdvertiserForm({ advertiser }: Props) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
-      <UnsavedChangesBadge isDirty={isDirty} />
       <div className={styles.formRow}>
         <div className={styles.field}>
           <label className={styles.label}>Navn *</label>
@@ -161,13 +160,12 @@ export function AdvertiserForm({ advertiser }: Props) {
         <textarea className={styles.textarea} rows={3} value={internalNotes} onChange={(e) => setInternalNotes(e.target.value)} placeholder="Kun synlig for admin" />
       </div>
 
-      {error && <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-sm)' }}>{error}</p>}
-
-      <div className={styles.formActions}>
-        <button type="submit" className={styles.primaryBtn} disabled={saving}>
-          {saving ? 'Lagrer…' : isEdit ? 'Lagre endringer' : 'Opprett annonsør'}
-        </button>
-      </div>
+      <FormSaveBar
+        label={isEdit ? 'Lagre endringer' : 'Opprett annonsør'}
+        saving={saving}
+        isDirty={isDirty}
+        error={error}
+      />
     </form>
   )
 }

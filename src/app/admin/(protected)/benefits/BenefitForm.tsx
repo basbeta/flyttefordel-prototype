@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import type { AdminAdvertiserRow, AdminCodePoolRow } from '@/types/admin'
 import styles from '@/components/admin/AdminTable.module.css'
 import { ImageUploadField } from '@/components/admin/ImageUploadField'
-import { UnsavedChangesBadge } from '@/components/admin/UnsavedChangesBadge'
+import { FormSaveBar } from '@/components/admin/FormSaveBar'
 import { useUnsavedChangesWarning } from '@/lib/admin/useUnsavedChangesWarning'
 
 type Category = { id: string; name: string; slug: string }
@@ -208,7 +208,6 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
-      <UnsavedChangesBadge isDirty={isDirty} />
       <div className={styles.formRow}>
         <div className={styles.field}>
           <label className={styles.label}>Tittel *</label>
@@ -423,13 +422,12 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
         </div>
       </div>
 
-      {error && <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-sm)' }}>{error}</p>}
-
-      <div className={styles.formActions}>
-        <button type="submit" className={styles.primaryBtn} disabled={saving}>
-          {saving ? 'Lagrer…' : isEdit ? 'Lagre endringer' : 'Opprett fordel'}
-        </button>
-      </div>
+      <FormSaveBar
+        label={isEdit ? 'Lagre endringer' : 'Opprett fordel'}
+        saving={saving}
+        isDirty={isDirty}
+        error={error}
+      />
     </form>
   )
 }

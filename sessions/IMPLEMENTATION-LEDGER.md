@@ -162,3 +162,4 @@
 | 2026-08-06 | Session-11 | src/components/admin/UnsavedChangesBadge.tsx + .module.css | Ny: fast posisjonert pille med pulserende rød prikk, prefers-reduced-motion respektert | CR-013 | tsc ✓ |
 | 2026-08-06 | Session-11 | CategoryForm/AdvertiserForm/HeroForm/BenefitForm.tsx | payload flyttet fra inline i handleSubmit til useMemo; baseline-ref + isDirty; hook + badge koblet inn i alle fire | CR-013 | tsc ✓ |
 | 2026-08-06 | Session-11 | Full validering | npx tsc --noEmit ✓, npx vitest run 68/68 ✓ (opp fra 63), npm run build ✓ | CR-013 | — |
+| 2026-08-06 | Session-11 | src/components/admin/FormSaveBar.tsx | UnsavedChangesBadge fjernet, erstattet av FormSaveBar — slår sammen lagre-knapp + dirty-indikator + feilmelding i én flytende bar (bruker-tilbakemelding: gamle statiske knapper virket gammeldagse). Koblet inn i alle fire former, gammel formActions-div fjernet | CR-013 | tsc ✓ vitest 68/68 ✓ build ✓ |

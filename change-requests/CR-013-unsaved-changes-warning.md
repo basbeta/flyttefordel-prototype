@@ -53,23 +53,31 @@ miste, kun én enkelt innloggingshandling.
    har — full løsning krever et History-API-lag utenfor denne CR-ens
    omfang). `beforeunload` + click-avskjæring dekker de vanligste
    tilfellene (tilsiktet navigasjon via lenke, fane-lukking, refresh).
-5. **Ny, alltid synlig dirty-indikator** (bruker-tillegg 2026-08-06): en
-   liten komponent `src/components/admin/UnsavedChangesBadge.tsx` — en
-   pille med en pulserende rød prikk + teksten «Ulagrede endringer».
-   Rendres av hvert form når `isDirty` er `true`, `position: fixed`
-   (f.eks. øvre høyre hjørne, under den eksisterende sticky topbaren i
-   `AdminShell.module.css`). `position: fixed` er valgt fremfor å
-   integrere i `AdminShell` sin topbar via React Context — topbaren
-   ligger i layout-laget og har i dag ingen kjennskap til et gitt form
-   sin `isDirty`-tilstand, og å koble dem sammen ville krevd en
-   context-provider som spenner over layout + form. `position: fixed`
-   garanterer synlighet uansett scroll-posisjon i lange former (som
-   `BenefitForm`) uten å røre `AdminShell`/layout-laget i det hele tatt.
-   Pulseringen implementeres som en enkel CSS `@keyframes`-animasjon i
-   en egen `UnsavedChangesBadge.module.css` (samme per-komponent-mønster
-   som `AdminShell.module.css`/`AdminSidebar.module.css`), med
-   `prefers-reduced-motion`-respekt (ingen animasjon for brukere som har
-   bedt om redusert bevegelse).
+5. **Ny, alltid synlig dirty-indikator, senere slått sammen med
+   lagre-knappen** (bruker-tillegg 2026-08-06, iterert samme dag):
+   - Første iterasjon: en frittstående `UnsavedChangesBadge`-pille
+     (kun tekst + pulserende prikk), separat fra den eksisterende
+     statiske "Lagre"-knappen nederst i formet.
+   - Andre iterasjon, etter brukertest: bruker påpekte at de statiske
+     "Lagre"-knappene så gammeldagse ut sammenlignet med den nye
+     pillen, og ba om at de slås sammen. `UnsavedChangesBadge` fjernet
+     og erstattet av `src/components/admin/FormSaveBar.tsx` — én
+     flytende bar som inneholder BÅDE lagre-knappen (`type="submit"`)
+     OG dirty-indikatoren (pulserende prikk + tekst, kun vist når
+     `isDirty`). Erstatter den gamle statiske `formActions`-diven
+     nederst i hvert form. Viser også feilmeldingen (`error`) inline i
+     baren i stedet for som egen paragraf i formet, siden det er der
+     brukerens attensjon er når de forsøker å lagre.
+   - `position: fixed` (nedre høyre hjørne), samme resonnement som i
+     første iterasjon: garanterer synlighet uansett scroll-posisjon i
+     lange former (som `BenefitForm`) uten å røre `AdminShell`/
+     layout-laget. Knappen er alltid klikkbar (også når `isDirty` er
+     `false` — bevarer muligheten til å re-lagre uendret data, som
+     var mulig med den gamle statiske knappen).
+   - Pulseringen implementeres som en enkel CSS `@keyframes`-animasjon
+     i `FormSaveBar.module.css` (samme per-komponent-mønster som
+     `AdminShell.module.css`/`AdminSidebar.module.css`), med
+     `prefers-reduced-motion`-respekt.
 
 ## Impact Analysis
 
@@ -87,10 +95,12 @@ Affected Specs:
 
 Affected Components:
 - Nytt: `src/lib/admin/useUnsavedChangesWarning.ts`
-- Nytt: `src/components/admin/UnsavedChangesBadge.tsx` +
-  `UnsavedChangesBadge.module.css`
-- `src/app/admin/(protected)/benefits/BenefitForm.tsx` — isDirty-beregning
-  + hook-kall + `<UnsavedChangesBadge isDirty={isDirty} />`
+- Nytt: `src/components/admin/FormSaveBar.tsx` + `FormSaveBar.module.css`
+  (erstatter den opprinnelig planlagte, frittstående
+  `UnsavedChangesBadge` — se Proposed Solution punkt 5)
+- `src/app/admin/(protected)/benefits/BenefitForm.tsx` — payload flyttet
+  til `useMemo`, isDirty-beregning, hook-kall, gammel `formActions`-div
+  fjernet og erstattet med `<FormSaveBar .../>`
 - `src/app/admin/(protected)/advertisers/AdvertiserForm.tsx` — samme
 - `src/app/admin/(protected)/heroes/HeroForm.tsx` — samme
 - `src/app/admin/(protected)/categories/CategoryForm.tsx` — samme
@@ -165,10 +175,12 @@ hver) — ingen datamigrering, ingen API-endring å reversere.
 ## Migration Strategy
 1. Implementer og enhetstest `useUnsavedChangesWarning` isolert, uavhengig
    av formene.
-2. Implementer `UnsavedChangesBadge` isolert (ren presentasjonskomponent,
-   tar kun `isDirty` som prop).
-3. Koble begge inn i ett form først (foreslår `CategoryForm.tsx` —
-   enklest, færrest felter) og verifiser manuelt.
+2. Implementer `FormSaveBar` isolert (ren presentasjonskomponent, tar
+   `label`/`saving`/`isDirty`/`error` som props — erstatter både den
+   gamle statiske lagre-knappen og den opprinnelig planlagte
+   frittstående dirty-pillen).
+3. Koble begge inn i ett form først (`CategoryForm.tsx` — enklest,
+   færrest felter) og verifiser manuelt.
 4. Koble inn i de tre resterende formene (Benefit/Advertiser/Hero) —
    samme mønster, egne commits.
 
@@ -185,9 +197,13 @@ hver) — ingen datamigrering, ingen API-endring å reversere.
   punkt 4) — må kommuniseres klart som en kjent begrensning, ikke noe
   som ved et uhell antas løst.
 - `AdminShell.module.css` sin sticky topbar (Logout-knapp) har allerede
-  `z-index: 10` — `UnsavedChangesBadge` sin `position: fixed`-plassering
-  må velge en posisjon/z-index som ikke visuelt kolliderer med topbaren
-  eller logout-knappen (f.eks. plasseres under topbaren, ikke over den).
+  `z-index: 10` — `FormSaveBar` bruker `z-index: 20` og er plassert
+  nede i høyre hjørne, ikke i konflikt med topbaren.
+- `FormSaveBar` har `type="submit"` på knappen inni et `position: fixed`
+  -element — fungerer fordi DOM-tilhørighet til `<form>` (via
+  React-tre-plassering) er uavhengig av CSS-posisjonering, men er verdt
+  å huske på om komponenten senere flyttes ut av `<form>`-treet (f.eks.
+  via en portal) — da må submit håndteres eksplisitt i stedet.
 
 ## Dependencies
 - Ingen avhengighet av andre åpne CR-er.
