@@ -74,19 +74,22 @@ export function ImageUploadField({
 
         <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
           {value && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={value}
-              alt=""
-              style={{
-                width: '56px',
-                height: '56px',
-                flexShrink: 0,
-                objectFit: 'cover',
-                borderRadius: 'var(--radius-md)',
-                border: '1px solid var(--color-border)',
-              }}
-            />
+            <a href={value} target="_blank" rel="noopener noreferrer" title="Se bilde i full størrelse">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={value}
+                alt=""
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  flexShrink: 0,
+                  objectFit: 'cover',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px solid var(--color-border)',
+                  cursor: 'zoom-in',
+                }}
+              />
+            </a>
           )}
           <button
             type="button"
