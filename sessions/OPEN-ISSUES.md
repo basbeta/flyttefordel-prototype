@@ -18,10 +18,10 @@ Resolution: [how it was resolved]
 ## Open Issues
 
 ISSUE-010
-Status: Open
+Status: Resolved
 Priority: Medium
 Area: src/app/admin/(protected)/** — alle admin-former (BenefitForm, AdvertiserForm,
-  HeroForm, øvrige)
+  HeroForm, CategoryForm)
 Description: Ingen admin-form varsler ved navigering bort (lenke, tilbake-knapp,
   lukk fane) med ulagrede endringer i noe felt — tekst, dropdown, bilde, osv.
   Oppdaget under CR-012-testing (bildeopplasting lastes opp til S3 umiddelbart,
@@ -31,8 +31,14 @@ Description: Ingen admin-form varsler ved navigering bort (lenke, tilbake-knapp,
 Blocker for: ingen kjent dataintegritetsrisiko (kun UX — admin kan tro noe er
   lagret som ikke er det)
 Opened: 2026-08-06
-Resolved:
-Resolution:
+Resolved: 2026-08-06
+Resolution: CR-013 løste dette — ny FormSaveBar-komponent (rød pulserende
+  dirty-indikator + lagre-knapp, grønn "Lagret"-pille etter suksess) i alle
+  fire admin-former, pluss useUnsavedChangesWarning-hook (beforeunload +
+  best-effort avskjæring av interne lenkeklikk). Lagring navigerer ikke
+  lenger bort fra rediger-sider; opprett-sider navigerer til rediger-siden
+  for den nye posten. Kjent, dokumentert begrensning: nettleserens
+  tilbake/frem-knapp dekkes ikke.
 
 ISSUE-009
 Status: Open

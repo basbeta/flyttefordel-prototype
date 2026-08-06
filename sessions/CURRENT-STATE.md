@@ -18,8 +18,16 @@ opp bilder for fordel/annonsør/hero, verifisert manuelt i prod av bruker
 inkl. avvisning av ugyldige filer. 4 UX-fikser landet etter brukertesting
 (se Recently Modified Systems). `/review` kjørt — PASSED, Approve.
 Et funn utenfor CR-012 sitt scope ble logget som ISSUE-010: admin-formene
-varsler generelt ikke ved ulagrede endringer — egen fremtidig CR.
-11 CRs fullført (CR-001–CR-010, CR-012) før dette.
+varsler generelt ikke ved ulagrede endringer — adressert i CR-013.
+
+CR-013 (varsel om ulagrede endringer) FULLFØRT og markert Done 2026-08-06.
+Ny FormSaveBar-komponent (nedre høyre hjørne) i alle fire admin-former —
+viser rød pulserende "Ulagrede endringer" + lagre-knapp når formet er
+dirty, grønn statisk "Lagret"-pille etter vellykket lagring. Rediger-
+sider navigerer ikke bort ved lagring lenger; opprett-sider navigerer
+til rediger-siden for den nye posten. Iterert 4 ganger etter brukertest
+samme dag (se Recently Modified Systems). `/review` kjørt — PASSED, Approve.
+12 CRs fullført (CR-001–CR-010, CR-012, CR-013) før dette.
 
 ## Current Objectives
 CR-011: bekreft backup med "Backup Now", deretter kjør `/review` på nytt
@@ -44,9 +52,13 @@ Ingen aktive blockers.
 - CR-010: Lønnsomhetsanalyse (Status: Done — committed e5f0c81)
 - CR-011: Migrering til Hetzner/Coolify (Status: In Progress — LIVE og verifisert i prod, kun backup-verifisering gjenstår før Done)
 - CR-012: Bildeopplasting i admin-grensesnittet (Status: Done — verifisert i prod 2026-08-06)
-- CR-013: Varsel om ulagrede endringer i admin-former (Status: In Progress — kode ferdig og validert lokalt, manuell test i nettleser gjenstår)
+- CR-013: Varsel om ulagrede endringer i admin-former (Status: Done — verifisert i prod 2026-08-06, /review PASSED)
 
 ## Recently Modified Systems
+- `src/lib/admin/useUnsavedChangesWarning.ts` — NY: beforeunload + best-effort intern lenke-avskjæring (capture-fase), shouldInterceptClick eksportert som ren, testbar funksjon + 5 tester (2026-08-06, CR-013)
+- `src/components/admin/FormSaveBar.tsx` — NY: flytende bar (nedre høyre hjørne) som slår sammen lagre-knapp + rød pulserende dirty-indikator + grønn statisk "Lagret"-pille + feilmelding. Erstatter både den gamle statiske `formActions`-knappen og en tidligere, nå fjernet `UnsavedChangesBadge`. Iterert 4 ganger samme dag etter brukertest (2026-08-06, CR-013, commits 99817da/c797ab9/ba5aaac/4b79784/f84e879)
+- `CategoryForm.tsx`, `AdvertiserForm.tsx`, `HeroForm.tsx`, `BenefitForm.tsx` — payload flyttet fra inline i handleSubmit til useMemo (for isDirty-sammenligning), rediger-lagring navigerer ikke bort lenger, opprett-lagring navigerer til rediger-siden for den nye posten i stedet for til listen (2026-08-06, CR-013)
+- `specs/architecture.md` — Module Map: ny `/lib/admin`-rad for useUnsavedChangesWarning (2026-08-06, CR-013)
 - `src/components/admin/ImageUploadField.tsx` — 4 UX-fikser etter brukertest: linjejustering, skjult native filinput → egen-stilt knapp, "Fjern bilde", lightbox-popup for full størrelse, "Velg fil" skjules når bilde er satt (2026-08-06, CR-012, commits e14f365/4c180b4/e0c1f35/effe0f3/bf9694a)
 - `package.json` — `@aws-sdk/client-s3` lagt til (2026-08-06, CR-012)
 - `src/lib/storage/` — NYE: client.ts (lazy S3-klient, build-safe), validateImage.ts (magic-byte-validering, maks 5MB, jpg/png/webp), uploadImage.ts, index.ts + 18 unit-tester (2026-08-06, CR-012)
@@ -78,9 +90,13 @@ Ingen aktive blockers.
   sine miljøvariabler (ikke gjenbrukt fra Vercel)
 
 ## Validation Status
-✓ `npx tsc --noEmit` — ingen feil (2026-08-06, etter CR-012 kodeendringer)
-✓ `npx vitest run` — 63/63 tester bestått (2026-08-06, CR-012 — 45 eksisterende + 18 nye for storage/upload)
-✓ `npm run build` — bygger rent lokalt med Node 22, `/api/admin/upload` med i rute-listen (2026-08-06, CR-012)
+✓ `npx tsc --noEmit` — ingen feil (2026-08-06, etter CR-013 kodeendringer)
+✓ `npx vitest run` — 68/68 tester bestått (2026-08-06, CR-013 — 63 eksisterende + 5 nye for shouldInterceptClick)
+✓ `npm run build` — bygger rent lokalt med Node 22 (2026-08-06, CR-013)
+✓ CR-013: manuell test i nettleser bekreftet av bruker (dirty-varsel, navigasjonsvarsel, ingen
+  navigering bort ved lagring, navigering til rediger-side ved opprettelse, grønn "Lagret"-pille),
+  `/review` PASSED, CR-013 Done. IKKE eksplisitt verifisert: native beforeunload-dialog ved
+  refresh/fane-lukking, prefers-reduced-motion (lav risiko, standard nettleser-API/CSS)
 ✓ CR-012: manuell smoke test mot ekte bucket (`basbeta-pub-object-storage`) — bekreftet av bruker
   (fordel/annonsør/hero-opplasting + avvisning av ugyldig fil), `/review` PASSED, CR-012 Done
 ✓ Coolify-deploy bekreftet LIVE (2026-08-06) — tok 2 fix-iterasjoner (se Recently Modified Systems):

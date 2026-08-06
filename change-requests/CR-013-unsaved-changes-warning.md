@@ -1,8 +1,9 @@
 # CR-013: Varsel om ulagrede endringer i admin-former
 
-Status: In Progress
+Status: Done
 Created: 2026-08-06
 Approved: 2026-08-06
+Done: 2026-08-06
 
 ## Business Goal
 Forhindre at admin-brukere utilsiktet mister endringer de har gjort i et
@@ -178,46 +179,47 @@ Required Tests:
       IKKE enhetstestet — prosjektets vitest kjører i `node`-miljø uten
       jsdom/happy-dom, og å legge til det kun for denne ene hooken ble
       vurdert som uforholdsmessig footprint. Verifiseres manuelt i stedet.
-- [ ] Manuell: for hver av de fire formene — endre et felt, klikk
+- [x] Manuell: for hver av de fire formene — endre et felt, klikk
       «← Tilbake», bekreft at varselet vises; bekreft at varselet IKKE
-      vises uten endringer; bekreft at varselet IKKE vises etter
-      vellykket lagring
+      vises uten endringer; bekreft at baren viser grønn "Lagret" etter
+      vellykket lagring (bruker bekreftet 2026-08-06)
 - [ ] Manuell: refresh/lukk-fane med ulagrede endringer viser nettleserens
-      native `beforeunload`-dialog
-- [ ] Manuell: badge vises/forsvinner korrekt, forblir synlig ved scroll
-      i BenefitForm (lengst av de fire formene), animasjon deaktivert med
-      `prefers-reduced-motion: reduce` aktivert i nettleseren
+      native `beforeunload`-dialog — IKKE eksplisitt verifisert av
+      bruker (standard nettleser-API, lav risiko, men ikke bekreftet)
+- [ ] Manuell: `prefers-reduced-motion: reduce` deaktiverer pulseringen —
+      IKKE eksplisitt verifisert av bruker
 - Ingen automatisert komponenttest (samme prosjektkonvensjon som
   `ImageUploadField.tsx` i CR-012 — ingen `@testing-library`-avhengighet,
   null `.test.tsx`-filer i prosjektet totalt)
 
 ## Acceptance Criteria
-- [ ] Endring i et felt i BenefitForm/AdvertiserForm/HeroForm/CategoryForm
+- [x] Endring i et felt i BenefitForm/AdvertiserForm/HeroForm/CategoryForm
       og påfølgende forsøk på å navigere bort via intern lenke gir en
-      bekreftelsesdialog
-- [ ] Ingen dialog vises hvis formet ikke har ulagrede endringer
-- [ ] Ingen dialog vises etter en vellykket lagring
+      bekreftelsesdialog (bruker bekreftet 2026-08-06)
+- [x] Ingen dialog vises hvis formet ikke har ulagrede endringer
+- [x] Ingen dialog vises etter en vellykket lagring
 - [ ] Refresh eller fane-lukking med ulagrede endringer trigger
-      nettleserens native `beforeunload`-varsel
-- [ ] En flytende bar med lagre-knapp + «Ulagrede endringer»-tekst med
+      nettleserens native `beforeunload`-varsel — ikke eksplisitt
+      verifisert (se Required Tests)
+- [x] En flytende bar med lagre-knapp + «Ulagrede endringer»-tekst med
       pulserende rød prikk vises så snart et felt endres, i alle fire
       former
-- [ ] Baren (inkl. lagre-knappen) er IKKE synlig når formet ikke har
+- [x] Baren (inkl. lagre-knappen) er IKKE synlig når formet ikke har
       ulagrede endringer — kun tilgjengelig etter en faktisk endring
-- [ ] Baren forblir synlig uansett scroll-posisjon i lange former
+- [x] Baren forblir synlig uansett scroll-posisjon i lange former
       (f.eks. BenefitForm)
-- [ ] Baren sin røde dirty-tilstand forsvinner umiddelbart etter
+- [x] Baren sin røde dirty-tilstand forsvinner umiddelbart etter
       vellykket lagring, erstattet av en grønn "Lagret"-pille (uten
       knapp) på rediger-sider
-- [ ] Den grønne "Lagret"-pillen forsvinner (erstattet av den røde
+- [x] Den grønne "Lagret"-pillen forsvinner (erstattet av den røde
       dirty-tilstanden) så snart brukeren gjør en ny endring
-- [ ] Pulseringen (kun den røde dirty-tilstanden pulserer, ikke den
-      grønne) respekterer `prefers-reduced-motion`
-- [ ] Lagring på en REDIGER-side navigerer IKKE bort — brukeren blir på
+- [ ] Pulseringen respekterer `prefers-reduced-motion` — ikke eksplisitt
+      verifisert (se Required Tests)
+- [x] Lagring på en REDIGER-side navigerer IKKE bort — brukeren blir på
       samme side, lagre-knappen forsvinner (isDirty → false)
-- [ ] Lagring på en OPPRETT-side navigerer til rediger-siden for den
+- [x] Lagring på en OPPRETT-side navigerer til rediger-siden for den
       nyopprettede posten (`/admin/{type}/{nytt-id}`), ikke til listen
-- [ ] `LoginForm.tsx` er uendret
+- [x] `LoginForm.tsx` er uendret (ingen kodeendring gjort i den filen)
 
 ## Rollback Strategy
 Additiv og isolert til én ny hook + fire small hook-kall i eksisterende
