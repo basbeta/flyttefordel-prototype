@@ -63,17 +63,21 @@ miste, kun én enkelt innloggingshandling.
      pillen, og ba om at de slås sammen. `UnsavedChangesBadge` fjernet
      og erstattet av `src/components/admin/FormSaveBar.tsx` — én
      flytende bar som inneholder BÅDE lagre-knappen (`type="submit"`)
-     OG dirty-indikatoren (pulserende prikk + tekst, kun vist når
-     `isDirty`). Erstatter den gamle statiske `formActions`-diven
-     nederst i hvert form. Viser også feilmeldingen (`error`) inline i
-     baren i stedet for som egen paragraf i formet, siden det er der
-     brukerens attensjon er når de forsøker å lagre.
+     OG dirty-indikatoren (pulserende prikk + tekst). Erstatter den
+     gamle statiske `formActions`-diven nederst i hvert form. Viser
+     også feilmeldingen (`error`) inline i baren i stedet for som egen
+     paragraf i formet, siden det er der brukerens attensjon er når de
+     forsøker å lagre.
+   - Tredje iterasjon, etter enda en brukertest: hele baren (inkl.
+     lagre-knappen) skal IKKE vises når `isDirty` er `false` — knappen
+     er nå borte fra skjermen helt til noe faktisk er endret, i stedet
+     for å alltid være tilgjengelig som den gamle statiske knappen var.
+     Bevisst avvik fra første instinkt (å bevare "re-lagre uendret
+     data"-muligheten) — brukers eksplisitte krav trumfer det.
    - `position: fixed` (nedre høyre hjørne), samme resonnement som i
      første iterasjon: garanterer synlighet uansett scroll-posisjon i
      lange former (som `BenefitForm`) uten å røre `AdminShell`/
-     layout-laget. Knappen er alltid klikkbar (også når `isDirty` er
-     `false` — bevarer muligheten til å re-lagre uendret data, som
-     var mulig med den gamle statiske knappen).
+     layout-laget.
    - Pulseringen implementeres som en enkel CSS `@keyframes`-animasjon
      i `FormSaveBar.module.css` (samme per-komponent-mønster som
      `AdminShell.module.css`/`AdminSidebar.module.css`), med
@@ -159,11 +163,14 @@ Required Tests:
 - [ ] Ingen dialog vises etter en vellykket lagring
 - [ ] Refresh eller fane-lukking med ulagrede endringer trigger
       nettleserens native `beforeunload`-varsel
-- [ ] En alltid synlig «Ulagrede endringer»-pille med pulserende rød
-      prikk vises så snart et felt endres, i alle fire former
-- [ ] Pillen forblir synlig uansett scroll-posisjon i lange former
+- [ ] En flytende bar med lagre-knapp + «Ulagrede endringer»-tekst med
+      pulserende rød prikk vises så snart et felt endres, i alle fire
+      former
+- [ ] Baren (inkl. lagre-knappen) er IKKE synlig når formet ikke har
+      ulagrede endringer — kun tilgjengelig etter en faktisk endring
+- [ ] Baren forblir synlig uansett scroll-posisjon i lange former
       (f.eks. BenefitForm)
-- [ ] Pillen forsvinner umiddelbart etter vellykket lagring
+- [ ] Baren forsvinner umiddelbart etter vellykket lagring
 - [ ] Pulseringen respekterer `prefers-reduced-motion`
 - [ ] `LoginForm.tsx` er uendret
 
