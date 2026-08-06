@@ -17,6 +17,26 @@ Resolution: [how it was resolved]
 
 ## Open Issues
 
+ISSUE-011
+Status: Open
+Priority: Low
+Area: claim-code-flyt, lead-innsending, admin dato/tid-visning (CR-011)
+Description: To manuelle testpunkter fra CR-011 sin Required Tests-seksjon
+  er bevisst akseptert som et kjent gap i stedet for å blokkere at CR-011
+  ble markert Done (bruker-beslutning 2026-08-06, se DECISIONS.md):
+  1. Full claim-code/lead-innsendingsflyt + CSV-eksport av leads er ikke
+     testet i prod på den nye Hetzner/Coolify-plattformen (kun kategori/
+     annonsør/fordel-opprettelse er faktisk verifisert).
+  2. Visuell bekreftelse av at `/admin/profitability`, `/admin/analytics`,
+     `/admin/leads`, `/admin/codes/[poolId]` viser korrekte norske
+     klokkeslett (`timeZone: 'Europe/Oslo'`-koden er på plass, men ingen
+     unit-test dekker selve formateringen, og ingen har sett den i prod).
+Blocker for: ingen kjent blocker — lav risiko i prototype-fase, men bør
+  dekkes før en fremtidig produksjonssetting med reelle annonsørkoder/leads
+Opened: 2026-08-06
+Resolved:
+Resolution:
+
 ISSUE-010
 Status: Resolved
 Priority: Medium

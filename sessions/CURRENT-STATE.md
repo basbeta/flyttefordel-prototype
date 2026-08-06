@@ -3,8 +3,12 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-Alle 13 CRs er nå Done (CR-001–CR-013). CR-014 (rate limiting) opprettet
-som Draft 2026-08-06 — venter på godkjenning og Redis-provisjonering.
+Alle 13 CRs er nå Done (CR-001–CR-013). CR-014 (rate limiting) er
+Approved (grenser bekreftet: 5 forsøk/15 min for login, 20 claims/time
+for claim-code), men IKKE implementert — bruker stoppet
+implementeringen eksplisitt før den startet i denne økten. Ingen kode
+skrevet for CR-014. Neste økt kan starte rett på implementasjon uten
+ny godkjenningsrunde.
 
 CR-011 (Hetzner/Coolify-migrering) FULLFØRT og markert Done 2026-08-06.
 App er LIVE på https://flyttefordel-prototype.basbeta.no og verifisert
@@ -35,8 +39,11 @@ til rediger-siden for den nye posten. Iterert 4 ganger etter brukertest
 samme dag (se Recently Modified Systems). `/review` kjørt — PASSED, Approve.
 
 ## Current Objectives
-CR-014: bruker godkjenner utkastet, provisjonerer Redis i Coolify, deretter
-implementeres og verifiseres rate limiting på login og claim-code.
+CR-014: implementer rate limiting (Redis-basert, /lib/rateLimit-modul) på
+POST /api/admin/auth/login og POST /api/benefits/[slug]/claim-code, når
+bruker gir klarsignal. Bruker må også provisjonere Redis i Coolify (se
+CR-014 Infra-checklist) før verifisering mot ekte Redis kan skje —
+unit-tester med mocket klient kan skrives uavhengig av dette.
 
 ## Current Branch
 master
@@ -58,7 +65,7 @@ Ingen aktive blockers.
 - CR-011: Migrering til Hetzner/Coolify (Status: Done — LIVE og verifisert i prod 2026-08-06, /review PASSED)
 - CR-012: Bildeopplasting i admin-grensesnittet (Status: Done — verifisert i prod 2026-08-06)
 - CR-013: Varsel om ulagrede endringer i admin-former (Status: Done — verifisert i prod 2026-08-06, /review PASSED)
-- CR-014: Rate limiting på innlogging og kode-tildeling (Status: Draft — venter på godkjenning + Redis-provisjonering)
+- CR-014: Rate limiting på innlogging og kode-tildeling (Status: Approved — grenser bekreftet 5/15min + 20/time, IKKE implementert ennå)
 
 ## Recently Modified Systems
 - `src/lib/admin/useUnsavedChangesWarning.ts` — NY: beforeunload + best-effort intern lenke-avskjæring (capture-fase), shouldInterceptClick eksportert som ren, testbar funksjon + 5 tester (2026-08-06, CR-013)
@@ -125,18 +132,21 @@ Ingen aktive blockers.
 - KRITISK: `npm ci` avdekket 12 sårbarheter (1 kritisk, 10 high) i avhengigheter, inkl. en kjent CVE i `next@14.2.3` med patch tilgjengelig. Ikke fikset i CR-011 (utenfor scope — infra-migrering, ikke avhengighetsoppgradering, jf. playbook §6). Se OPEN-ISSUES.md ISSUE-009.
 
 ## Next Recommended Actions
-1. Dekk det aksepterte test-gapet fra CR-011 når det er praktisk: test claim-code/lead-
+1. Implementer CR-014 (rate limiting) — Approved med bekreftede grenser (5/15min login,
+   20/time claim-code), ingen kode skrevet ennå. Bruker må provisjonere Redis i Coolify
+   (se CR-014 Infra-checklist) for verifisering mot ekte Redis, men implementasjon +
+   unit-tester (mocket klient) kan starte uavhengig av det.
+2. Dekk det aksepterte test-gapet fra CR-011 når det er praktisk: test claim-code/lead-
    innsendingsflyt + CSV-eksport i prod, og bekreft norske klokkeslett på
    /admin/profitability, /admin/analytics, /admin/leads, /admin/codes/[poolId]
-2. ISSUE-009 (høy prioritet): vurder `next@14.2.3` sikkerhetsoppdatering som egen CR
-3. Vurder Prisma 5→7-migrering som egen fremtidig CR — ville eliminert Alpine/OpenSSL-feilklassen
+3. ISSUE-009 (høy prioritet): vurder `next@14.2.3` sikkerhetsoppdatering som egen CR
+4. Vurder Prisma 5→7-migrering som egen fremtidig CR — ville eliminert Alpine/OpenSSL-feilklassen
    permanent (se DECISIONS.md 2026-08-05), men er en breaking-change-oppgradering, ikke en hastesak
-4. Planlegg neste CR — kandidater:
-   a. Rate limiting på claim-endepunkt (krever Redis)
-   b. Bruker-autentisering (ny leverandør — Supabase Auth ikke lenger et alternativ, se ARCHITECTURE-STATE.md)
-   c. Notifikasjoner ved lav pool-beholdning (e-post / webhook)
-   d. Per-sesjon LTV-estimat på /admin/profitability (AdminSessionLTV — type definert, query ikke implementert)
-   e. Presigned direct-upload til S3 i stedet for server-side proxy, hvis bildevolum/frekvens øker
+5. Etter CR-014: planlegg neste CR — kandidater:
+   a. Bruker-autentisering (ny leverandør — Supabase Auth ikke lenger et alternativ, se ARCHITECTURE-STATE.md)
+   b. Notifikasjoner ved lav pool-beholdning (e-post / webhook)
+   c. Per-sesjon LTV-estimat på /admin/profitability (AdminSessionLTV — type definert, query ikke implementert)
+   d. Presigned direct-upload til S3 i stedet for server-side proxy, hvis bildevolum/frekvens øker
       (se CR-012 Performance Impact)
-   f. Backup/feilsporing som egne CRs ved overgang fra prototype til MVP/produksjon
+   e. Backup/feilsporing som egne CRs ved overgang fra prototype til MVP/produksjon
       (se DECISIONS.md 2026-08-06)
