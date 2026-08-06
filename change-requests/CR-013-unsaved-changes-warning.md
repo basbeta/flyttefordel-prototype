@@ -52,6 +52,23 @@ miste, kun én enkelt innloggingshandling.
    har — full løsning krever et History-API-lag utenfor denne CR-ens
    omfang). `beforeunload` + click-avskjæring dekker de vanligste
    tilfellene (tilsiktet navigasjon via lenke, fane-lukking, refresh).
+5. **Ny, alltid synlig dirty-indikator** (bruker-tillegg 2026-08-06): en
+   liten komponent `src/components/admin/UnsavedChangesBadge.tsx` — en
+   pille med en pulserende rød prikk + teksten «Ulagrede endringer».
+   Rendres av hvert form når `isDirty` er `true`, `position: fixed`
+   (f.eks. øvre høyre hjørne, under den eksisterende sticky topbaren i
+   `AdminShell.module.css`). `position: fixed` er valgt fremfor å
+   integrere i `AdminShell` sin topbar via React Context — topbaren
+   ligger i layout-laget og har i dag ingen kjennskap til et gitt form
+   sin `isDirty`-tilstand, og å koble dem sammen ville krevd en
+   context-provider som spenner over layout + form. `position: fixed`
+   garanterer synlighet uansett scroll-posisjon i lange former (som
+   `BenefitForm`) uten å røre `AdminShell`/layout-laget i det hele tatt.
+   Pulseringen implementeres som en enkel CSS `@keyframes`-animasjon i
+   en egen `UnsavedChangesBadge.module.css` (samme per-komponent-mønster
+   som `AdminShell.module.css`/`AdminSidebar.module.css`), med
+   `prefers-reduced-motion`-respekt (ingen animasjon for brukere som har
+   bedt om redusert bevegelse).
 
 ## Impact Analysis
 
@@ -69,12 +86,14 @@ Affected Specs:
 
 Affected Components:
 - Nytt: `src/lib/admin/useUnsavedChangesWarning.ts`
+- Nytt: `src/components/admin/UnsavedChangesBadge.tsx` +
+  `UnsavedChangesBadge.module.css`
 - `src/app/admin/(protected)/benefits/BenefitForm.tsx` — isDirty-beregning
-  + hook-kall
+  + hook-kall + `<UnsavedChangesBadge isDirty={isDirty} />`
 - `src/app/admin/(protected)/advertisers/AdvertiserForm.tsx` — samme
 - `src/app/admin/(protected)/heroes/HeroForm.tsx` — samme
 - `src/app/admin/(protected)/categories/CategoryForm.tsx` — samme
-- Ingen endring i `LoginForm.tsx`
+- Ingen endring i `LoginForm.tsx` eller `AdminShell.tsx`
 
 Database Impact:
 - Ingen. Ren klient-side tilstand, ingen persistens.
@@ -87,7 +106,10 @@ UX Impact:
   ulagrede endringer — dette er nettleserens standard, ikke-stilbare
   bekreftelsesdialog (samme som `beforeunload` sin native dialog).
   Konsistent med at appen ikke har noe eget modal/dialog-system i dag.
-- Ingen endring i skjemaenes visuelle utseende eller feltrekkefølge.
+- Ny, alltid synlig «Ulagrede endringer»-pille med pulserende rød prikk,
+  fast posisjonert (øvre høyre hjørne) mens formet har ulagrede
+  endringer — forsvinner umiddelbart etter vellykket lagring.
+- Ingen endring i skjemaenes øvrige visuelle utseende eller feltrekkefølge.
 
 Security Impact:
 - Ingen. Ingen ny dataflyt, ingen ny input som må valideres server-side.
@@ -109,6 +131,9 @@ Required Tests:
       vellykket lagring
 - [ ] Manuell: refresh/lukk-fane med ulagrede endringer viser nettleserens
       native `beforeunload`-dialog
+- [ ] Manuell: badge vises/forsvinner korrekt, forblir synlig ved scroll
+      i BenefitForm (lengst av de fire formene), animasjon deaktivert med
+      `prefers-reduced-motion: reduce` aktivert i nettleseren
 - Ingen automatisert komponenttest (samme prosjektkonvensjon som
   `ImageUploadField.tsx` i CR-012 — ingen `@testing-library`-avhengighet,
   null `.test.tsx`-filer i prosjektet totalt)
@@ -121,6 +146,12 @@ Required Tests:
 - [ ] Ingen dialog vises etter en vellykket lagring
 - [ ] Refresh eller fane-lukking med ulagrede endringer trigger
       nettleserens native `beforeunload`-varsel
+- [ ] En alltid synlig «Ulagrede endringer»-pille med pulserende rød
+      prikk vises så snart et felt endres, i alle fire former
+- [ ] Pillen forblir synlig uansett scroll-posisjon i lange former
+      (f.eks. BenefitForm)
+- [ ] Pillen forsvinner umiddelbart etter vellykket lagring
+- [ ] Pulseringen respekterer `prefers-reduced-motion`
 - [ ] `LoginForm.tsx` er uendret
 
 ## Rollback Strategy
@@ -131,9 +162,11 @@ hver) — ingen datamigrering, ingen API-endring å reversere.
 ## Migration Strategy
 1. Implementer og enhetstest `useUnsavedChangesWarning` isolert, uavhengig
    av formene.
-2. Koble inn i ett form først (foreslår `CategoryForm.tsx` — enklest,
-   færrest felter) og verifiser manuelt.
-3. Koble inn i de tre resterende formene (Benefit/Advertiser/Hero) —
+2. Implementer `UnsavedChangesBadge` isolert (ren presentasjonskomponent,
+   tar kun `isDirty` som prop).
+3. Koble begge inn i ett form først (foreslår `CategoryForm.tsx` —
+   enklest, færrest felter) og verifiser manuelt.
+4. Koble inn i de tre resterende formene (Benefit/Advertiser/Hero) —
    samme mønster, egne commits.
 
 ## Risks
@@ -148,6 +181,10 @@ hver) — ingen datamigrering, ingen API-endring å reversere.
 - Nettleserens tilbake/frem-knapp er ikke dekket (se Proposed Solution
   punkt 4) — må kommuniseres klart som en kjent begrensning, ikke noe
   som ved et uhell antas løst.
+- `AdminShell.module.css` sin sticky topbar (Logout-knapp) har allerede
+  `z-index: 10` — `UnsavedChangesBadge` sin `position: fixed`-plassering
+  må velge en posisjon/z-index som ikke visuelt kolliderer med topbaren
+  eller logout-knappen (f.eks. plasseres under topbaren, ikke over den).
 
 ## Dependencies
 - Ingen avhengighet av andre åpne CR-er.
