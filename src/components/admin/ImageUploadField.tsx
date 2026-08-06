@@ -13,9 +13,19 @@ type Props = {
   altLabel?: string
   altValue?: string
   onAltChange?: (alt: string) => void
+  /** Vises som anbefalt-format-hint. Sett kun der bildet faktisk rendres et sted med et kjent aspect ratio. */
+  recommendedRatio?: string
 }
 
-export function ImageUploadField({ label, value, onChange, altLabel, altValue, onAltChange }: Props) {
+export function ImageUploadField({
+  label,
+  value,
+  onChange,
+  altLabel,
+  altValue,
+  onAltChange,
+  recommendedRatio,
+}: Props) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -47,33 +57,62 @@ export function ImageUploadField({ label, value, onChange, altLabel, altValue, o
     }
   }
 
+  function handleRemove() {
+    onChange('')
+    onAltChange?.('')
+    setError(null)
+    if (inputRef.current) inputRef.current.value = ''
+  }
+
   return (
     <div className={styles.formRow}>
       <div className={styles.field}>
         <label className={styles.label}>{label}</label>
-        {value && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={value}
-            alt=""
-            style={{
-              maxWidth: '160px',
-              maxHeight: '90px',
-              objectFit: 'cover',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--color-border)',
-            }}
+
+        <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
+          {value && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={value}
+              alt=""
+              style={{
+                width: '56px',
+                height: '56px',
+                flexShrink: 0,
+                objectFit: 'cover',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid var(--color-border)',
+              }}
+            />
+          )}
+          <input
+            ref={inputRef}
+            className={styles.input}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleFileChange}
+            disabled={uploading}
+            style={{ flex: 1 }}
           />
+        </div>
+
+        <p className={styles.hint}>
+          {uploading
+            ? 'Laster opp…'
+            : `JPG, PNG eller WebP, maks 5 MB${recommendedRatio ? ` — anbefalt format ${recommendedRatio}` : ''}`}
+        </p>
+
+        {value && !uploading && (
+          <button
+            type="button"
+            className={styles.secondaryBtn}
+            style={{ alignSelf: 'flex-start' }}
+            onClick={handleRemove}
+          >
+            Fjern bilde
+          </button>
         )}
-        <input
-          ref={inputRef}
-          className={styles.input}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          onChange={handleFileChange}
-          disabled={uploading}
-        />
-        <p className={styles.hint}>{uploading ? 'Laster opp…' : 'JPG, PNG eller WebP, maks 5 MB'}</p>
+
         {error && <p style={{ color: 'var(--color-error)', fontSize: 'var(--font-xs)' }}>{error}</p>}
       </div>
 

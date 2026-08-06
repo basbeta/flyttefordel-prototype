@@ -137,6 +137,7 @@ export function HeroForm({ hero }: Props) {
         altLabel="Bilde-alt"
         altValue={imageAlt}
         onAltChange={setImageAlt}
+        recommendedRatio="16:9 (landskap)"
       />
 
       <div className={styles.formRow}>

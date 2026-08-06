@@ -318,6 +318,7 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
         altLabel="Bilde-alt"
         altValue={imageAlt}
         onAltChange={setImageAlt}
+        recommendedRatio="16:9 (landskap)"
       />
 
       <div className={styles.field}>
