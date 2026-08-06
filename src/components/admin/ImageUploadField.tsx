@@ -28,12 +28,14 @@ export function ImageUploadField({
 }: Props) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fileName, setFileName] = useState<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
 
+    setFileName(file.name)
     setUploading(true)
     setError(null)
 
@@ -61,6 +63,7 @@ export function ImageUploadField({
     onChange('')
     onAltChange?.('')
     setError(null)
+    setFileName(null)
     if (inputRef.current) inputRef.current.value = ''
   }
 
@@ -85,14 +88,24 @@ export function ImageUploadField({
               }}
             />
           )}
+          <button
+            type="button"
+            className={styles.secondaryBtn}
+            onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+          >
+            {uploading ? 'Laster opp…' : 'Velg fil'}
+          </button>
+          <span className={styles.hint} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {fileName ?? 'Ingen fil valgt'}
+          </span>
           <input
             ref={inputRef}
-            className={styles.input}
             type="file"
             accept="image/jpeg,image/png,image/webp"
             onChange={handleFileChange}
             disabled={uploading}
-            style={{ flex: 1 }}
+            style={{ display: 'none' }}
           />
         </div>
 
