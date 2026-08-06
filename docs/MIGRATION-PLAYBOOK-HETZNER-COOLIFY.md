@@ -1,10 +1,12 @@
 # Migration Playbook: Vercel/Neon-style → Hetzner/Coolify
 
-> Distilled from the effektbibliotek migration (CR-008 through CR-030). Every
-> item below traces back to a real incident, near-miss, or piece of debugging
-> that cost real time or caused real downtime during that migration — not
-> hypothetical risk. Copy this file into the new project's repo and adapt it;
-> delete sections that don't apply.
+> Distilled from the effektbibliotek migration (CR-008 through CR-030) and
+> the flyttefordel-prototype migration (CR-011). Every item below traces back
+> to a real incident, near-miss, or piece of debugging that cost real time or
+> caused real downtime during one of these migrations — not hypothetical
+> risk. Copy this file into the new project's repo and adapt it; delete
+> sections that don't apply. Update it again after the next migration —
+> that's how it grows.
 >
 > The core theme: a serverless platform (Vercel) quietly absorbs a set of
 > infrastructure concerns for you — enforced function timeouts, correct
@@ -34,6 +36,21 @@
   Node available at all — every change was "visually verified" only, and at
   least two production crash-loops traced directly back to mistakes
   (an invalid CLI flag) that a local build would have caught in seconds.
+  - **No admin rights on the machine?** `winget install <PackageId> --scope
+    user` installs a portable, per-user copy of Node (or most other CLI
+    tools) without triggering a UAC elevation prompt — works even when a
+    plain `winget install` fails with exit code 1602 ("You cancelled the
+    installation") because there's no way to approve that prompt. Check
+    `%LOCALAPPDATA%\Microsoft\WinGet\Packages\` first — a prior migration on
+    the same machine may have already installed what you need.
+  - **`npm run build` succeeding locally is not the same as `docker build`
+    succeeding.** Docker's staged `COPY` (copy `package.json` first, `RUN npm
+    ci`, *then* `COPY . .`) creates an ordering effect a flat local
+    filesystem can never reproduce — see §2.7. If Docker itself isn't
+    installable locally either (Docker Desktop needs admin rights/WSL2,
+    unlike Node — the `--scope user` trick does not work for it), say so
+    explicitly and treat the PaaS's own first build as the real test, not a
+    guaranteed pass. Budget for at least one iteration.
 
 ---
 
@@ -152,6 +169,53 @@ another push. Generate SQL files with an explicit BOM-free write instead
 System.Text.UTF8Encoding($false))` on Windows), or generate them from a
 Linux/WSL environment.
 
+### 2.7 Prisma (5.x) in a Docker/Alpine image needs two things nobody tells you about
+
+Both of these produced a deployment that built fine but then crash-looped
+immediately on container start — the build log looked clean, so the
+temptation was to assume the Dockerfile was correct and look elsewhere first.
+
+- **`prisma generate` must run *after* the full source is in the image, not
+  rely on `npm ci`'s postinstall hook.** The standard Docker caching pattern
+  is `COPY package.json package-lock.json ./` → `RUN npm ci` → `COPY . .` →
+  `RUN npm run build`, copying package files first so the dependency-install
+  layer is cached across builds that don't touch dependencies. But Prisma's
+  own postinstall script (which normally auto-runs `prisma generate` during
+  `npm ci`) needs `prisma/schema.prisma` to do that — and at the point `npm
+  ci` runs in that layer order, only `package.json` has been copied in yet.
+  The client silently never gets generated, and the *next* build step
+  (`next build` or equivalent) fails with an import error on `@prisma/client`
+  that looks like a missing-dependency problem, not a missing-generation one.
+  This is invisible in any local `npm run build`, because on a real
+  filesystem the whole repo — schema included — is always present when `npm
+  ci` runs; only Docker's staged `COPY` creates the gap. Fix: make the build
+  script itself regenerate the client once the source is actually there —
+  `"build": "prisma generate && next build"` — rather than trusting
+  postinstall.
+- **Alpine ships no OpenSSL by default, and Prisma 5.x's native
+  schema-engine binary needs `libssl` to start at all.** Without it, running
+  any Prisma CLI command (notably `prisma migrate deploy` in the container's
+  startup `CMD`) logs `Prisma failed to detect the libssl/openssl version to
+  use` followed by `Could not parse schema engine response: ... is not valid
+  JSON`, and exits non-zero immediately. Because this happens in the
+  container's startup command, not the build, it crash-loops on the exact
+  same failure every restart until the PaaS gives up after its restart limit
+  — by which point the container is fully gone and its logs may no longer be
+  reachable through the platform's live-logs view (see §4). Fix: `RUN apk
+  add --no-cache openssl` in the Dockerfile, before the build steps.
+  - This is specific to Prisma's *older*, native-binary-based architecture
+    (5.x). A sibling project on Prisma 7.x (`@prisma/adapter-pg` driver
+    adapters, which route queries through the JS `pg` package instead of a
+    separate compiled engine binary) never hit this with an otherwise
+    identical Dockerfile — strong circumstantial evidence, not confirmed by
+    reading Prisma's own architecture docs, but consistent enough to note.
+    If you're starting a *new* project rather than migrating one already on
+    Prisma 5.x, defaulting to Prisma 7+ may sidestep this whole class of
+    problem. Upgrading an existing Prisma 5.x project to 7.x specifically to
+    fix this is a breaking-change migration in its own right (client
+    construction changes to take an explicit driver adapter) — treat it as
+    its own reviewed change, not a reactive patch mid-deploy.
+
 ---
 
 ## 3. Schema/migration strategy
@@ -215,6 +279,18 @@ Linux/WSL environment.
   loop's stdout. If a container crash-loops past its restart limit, it can
   fully exit and its logs can become hard to reach after the fact — capture
   logs live if you suspect trouble, don't wait to look afterward.
+  - Concretely in Coolify: once a container has exhausted its restart limit
+    and stopped, the live "Logs" tab shows **"No containers are running"** —
+    there's nothing left to tail. The per-deployment "Deployment Log" (the
+    one showing build output) is *also* the wrong place — it only shows
+    Coolify's own orchestration steps ("New container started", "Rolling
+    update completed"), never the container's own stdout/stderr, even for a
+    deployment that then immediately crash-looped. If you have SSH access to
+    the underlying server, `docker ps -a` + `docker logs <container>` is the
+    most reliable way to get the real output. Without SSH access: trigger a
+    fresh **Deploy** and switch to the Logs tab immediately — there's a
+    brief window each restart attempt where the container is actually
+    running and tailable, before it crashes and gets replaced again.
 
 ---
 
