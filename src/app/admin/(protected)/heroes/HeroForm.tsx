@@ -1,7 +1,7 @@
 'use client'
 // CR-004: Shared create/edit form for heroes.
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { CTAType, HeroStatus } from '@prisma/client'
 import styles from '@/components/admin/AdminTable.module.css'
@@ -101,6 +101,11 @@ export function HeroForm({ hero }: Props) {
   const isDirty = JSON.stringify(payload) !== baselineRef.current
   useUnsavedChangesWarning(isDirty)
 
+  const [justSaved, setJustSaved] = useState(false)
+  useEffect(() => {
+    if (isDirty) setJustSaved(false)
+  }, [isDirty])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
@@ -120,6 +125,7 @@ export function HeroForm({ hero }: Props) {
         baselineRef.current = JSON.stringify(payload)
         setSaving(false)
         if (isEdit) {
+          setJustSaved(true)
           router.refresh()
         } else {
           const data = (await res.json()) as { id: string }
@@ -265,6 +271,7 @@ export function HeroForm({ hero }: Props) {
         label={isEdit ? 'Lagre endringer' : 'Opprett hero'}
         saving={saving}
         isDirty={isDirty}
+        saved={justSaved}
         error={error}
       />
     </form>

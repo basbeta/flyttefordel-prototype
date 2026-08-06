@@ -1,7 +1,7 @@
 'use client'
 // CR-007: Shared create/edit form for categories.
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import styles from '@/components/admin/AdminTable.module.css'
 import { FormSaveBar } from '@/components/admin/FormSaveBar'
@@ -56,6 +56,11 @@ export function CategoryForm({ category }: Props) {
   const isDirty = JSON.stringify(payload) !== baselineRef.current
   useUnsavedChangesWarning(isDirty)
 
+  const [justSaved, setJustSaved] = useState(false)
+  useEffect(() => {
+    if (isDirty) setJustSaved(false)
+  }, [isDirty])
+
   function handleNameChange(val: string) {
     setName(val)
     if (!isEdit) setSlug(slugify(val))
@@ -80,6 +85,7 @@ export function CategoryForm({ category }: Props) {
         baselineRef.current = JSON.stringify(payload)
         setSaving(false)
         if (isEdit) {
+          setJustSaved(true)
           router.refresh()
         } else {
           const data = (await res.json()) as { id: string }
@@ -170,6 +176,7 @@ export function CategoryForm({ category }: Props) {
         label={isEdit ? 'Lagre endringer' : 'Opprett kategori'}
         saving={saving}
         isDirty={isDirty}
+        saved={justSaved}
         error={error}
       />
     </form>

@@ -1,7 +1,7 @@
 'use client'
 // CR-004: Shared create/edit form for benefits.
 
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { AdminAdvertiserRow, AdminCodePoolRow } from '@/types/admin'
 import styles from '@/components/admin/AdminTable.module.css'
@@ -171,6 +171,11 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
   const isDirty = JSON.stringify(payload) !== baselineRef.current
   useUnsavedChangesWarning(isDirty)
 
+  const [justSaved, setJustSaved] = useState(false)
+  useEffect(() => {
+    if (isDirty) setJustSaved(false)
+  }, [isDirty])
+
   function handleTitleChange(val: string) {
     setTitle(val)
     if (!isEdit) setSlug(slugify(val))
@@ -195,6 +200,7 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
         baselineRef.current = JSON.stringify(payload)
         setSaving(false)
         if (isEdit) {
+          setJustSaved(true)
           router.refresh()
         } else {
           const data = (await res.json()) as { id: string }
@@ -431,6 +437,7 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
         label={isEdit ? 'Lagre endringer' : 'Opprett fordel'}
         saving={saving}
         isDirty={isDirty}
+        saved={justSaved}
         error={error}
       />
     </form>

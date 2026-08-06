@@ -91,16 +91,30 @@ miste, kun én enkelt innloggingshandling.
      nytt, navigerer ikke bort) + `setSaving(false)` (nødvendig nå som
      komponenten ikke unmountes ved suksess — tidligere var dette
      implisitt siden navigasjonen unmountet formet). `isDirty` blir
-     `false` idet baseline nullstilles, så `FormSaveBar` forsvinner —
-     dette ER suksess-tilbakemeldingen, ingen egen "Lagret!"-melding
-     lagt til.
+     `false` idet baseline nullstilles, så `FormSaveBar` sin røde
+     dirty-tilstand forsvinner (se punkt 7 for hva som vises i stedet).
    - **Opprett-flyt** (`isEdit === false`): naviger til den nyopprettede
-     postens REDIGER-side (f.eks. `/admin/benefits/{id}`ved bruk av
+     postens REDIGER-side (f.eks. `/admin/benefits/{id}` ved bruk av
      `id`-en fra `POST`-responsen), ikke til listen. Valgt over
      alternativet "bli på opprett-siden og nullstill formet" — brukeren
      ender opp i samme kontekst (redigerer denne posten), bare med en
      URL som nå har en ekte ID, i stedet for å måtte navigere til listen
-     selv for å fortsette å jobbe med posten.
+     selv for å fortsette å jobbe med posten. Ingen "Lagret"-pille i
+     denne grenen (se punkt 7) — komponenten unmountes av navigasjonen
+     før den ville vist noe uansett.
+7. **Grønn "Lagret"-pille etter vellykket lagring** (bruker-tillegg
+   2026-08-06, samme dag). Da `FormSaveBar` sin røde dirty-tilstand
+   bare forsvinner stille ved suksess, ba bruker om en tydeligere,
+   men fortsatt lavmælt bekreftelse. Løsning: ny `saved`-prop på
+   `FormSaveBar`. Hvert form holder en egen `justSaved`-boolean
+   (`useState`, satt til `true` i `handleSubmit` sin rediger-suksess-
+   gren, nullstilt via en liten `useEffect` som lytter på `isDirty` —
+   så snart brukeren gjør en ny endring etter en lagring, forsvinner
+   den grønne pillen til fordel for den røde dirty-tilstanden igjen).
+   Pillen er statisk grønn (ingen pulsering — kun den røde,
+   "krever-handling"-tilstanden pulserer) og har ingen knapp, siden det
+   ikke er noe å lagre. Kun i rediger-flyten — opprett-flyten navigerer
+   uansett bort før noe ville blitt vist (se punkt 6).
 
 ## Impact Analysis
 
@@ -125,7 +139,8 @@ Affected Components:
   til `useMemo`, isDirty-beregning, hook-kall, gammel `formActions`-div
   fjernet og erstattet med `<FormSaveBar .../>`, `handleSubmit` sin
   suksess-gren endret fra "naviger til liste" til "bli/naviger til
-  rediger-side for denne posten" (se Proposed Solution punkt 6)
+  rediger-side for denne posten" (se Proposed Solution punkt 6), egen
+  `justSaved`-state + `useEffect` for grønn "Lagret"-pille (punkt 7)
 - `src/app/admin/(protected)/advertisers/AdvertiserForm.tsx` — samme
 - `src/app/admin/(protected)/heroes/HeroForm.tsx` — samme
 - `src/app/admin/(protected)/categories/CategoryForm.tsx` — samme
@@ -191,8 +206,13 @@ Required Tests:
       ulagrede endringer — kun tilgjengelig etter en faktisk endring
 - [ ] Baren forblir synlig uansett scroll-posisjon i lange former
       (f.eks. BenefitForm)
-- [ ] Baren forsvinner umiddelbart etter vellykket lagring
-- [ ] Pulseringen respekterer `prefers-reduced-motion`
+- [ ] Baren sin røde dirty-tilstand forsvinner umiddelbart etter
+      vellykket lagring, erstattet av en grønn "Lagret"-pille (uten
+      knapp) på rediger-sider
+- [ ] Den grønne "Lagret"-pillen forsvinner (erstattet av den røde
+      dirty-tilstanden) så snart brukeren gjør en ny endring
+- [ ] Pulseringen (kun den røde dirty-tilstanden pulserer, ikke den
+      grønne) respekterer `prefers-reduced-motion`
 - [ ] Lagring på en REDIGER-side navigerer IKKE bort — brukeren blir på
       samme side, lagre-knappen forsvinner (isDirty → false)
 - [ ] Lagring på en OPPRETT-side navigerer til rediger-siden for den
