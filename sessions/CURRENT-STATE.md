@@ -3,7 +3,8 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-Alle 13 CRs er nå Done (CR-001–CR-013). Ingen aktiv CR pågår.
+Alle 13 CRs er nå Done (CR-001–CR-013). CR-014 (rate limiting) opprettet
+som Draft 2026-08-06 — venter på godkjenning og Redis-provisjonering.
 
 CR-011 (Hetzner/Coolify-migrering) FULLFØRT og markert Done 2026-08-06.
 App er LIVE på https://flyttefordel-prototype.basbeta.no og verifisert
@@ -34,7 +35,8 @@ til rediger-siden for den nye posten. Iterert 4 ganger etter brukertest
 samme dag (se Recently Modified Systems). `/review` kjørt — PASSED, Approve.
 
 ## Current Objectives
-Ingen aktiv CR. Se Next Recommended Actions for kandidater til neste CR.
+CR-014: bruker godkjenner utkastet, provisjonerer Redis i Coolify, deretter
+implementeres og verifiseres rate limiting på login og claim-code.
 
 ## Current Branch
 master
@@ -56,6 +58,7 @@ Ingen aktive blockers.
 - CR-011: Migrering til Hetzner/Coolify (Status: Done — LIVE og verifisert i prod 2026-08-06, /review PASSED)
 - CR-012: Bildeopplasting i admin-grensesnittet (Status: Done — verifisert i prod 2026-08-06)
 - CR-013: Varsel om ulagrede endringer i admin-former (Status: Done — verifisert i prod 2026-08-06, /review PASSED)
+- CR-014: Rate limiting på innlogging og kode-tildeling (Status: Draft — venter på godkjenning + Redis-provisjonering)
 
 ## Recently Modified Systems
 - `src/lib/admin/useUnsavedChangesWarning.ts` — NY: beforeunload + best-effort intern lenke-avskjæring (capture-fase), shouldInterceptClick eksportert som ren, testbar funksjon + 5 tester (2026-08-06, CR-013)
