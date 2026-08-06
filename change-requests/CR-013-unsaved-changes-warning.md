@@ -1,7 +1,8 @@
 # CR-013: Varsel om ulagrede endringer i admin-former
 
-Status: Draft
+Status: In Progress
 Created: 2026-08-06
+Approved: 2026-08-06
 
 ## Business Goal
 Forhindre at admin-brukere utilsiktet mister endringer de har gjort i et
@@ -79,8 +80,8 @@ Affected Specs:
 - [ ] specs/flows.md — vurderes ved implementasjon; sannsynligvis ikke
       nødvendig, samme fravalg som CR-012 (uutfylt mal i alle 12
       foregående CRs)
-- [ ] specs/architecture.md — ny `src/lib/admin/useUnsavedChangesWarning.ts`
-      bør nevnes i Module Map ved implementasjon
+- [x] specs/architecture.md — Module Map oppdatert med `/lib/admin`-raden
+      (2026-08-06)
 - [ ] specs/nfr.md — uutfylt mal, ingen endring
 - [ ] specs/ui-spec.md — uutfylt mal, ingen endring
 
@@ -121,10 +122,12 @@ Performance Impact:
   ved render, ikke i en tight loop.
 
 Required Tests:
-- [ ] Unit: `useUnsavedChangesWarning` — registrerer/fjerner
-      `beforeunload` korrekt basert på `isDirty`; click-listener kaller
-      `preventDefault` + `confirm` kun når `isDirty` er `true` og lenken
-      er intern
+- [x] Unit: `shouldInterceptClick` (den rene beslutningslogikken i
+      `useUnsavedChangesWarning.ts`) — 5 tester, alle grønne (2026-08-06).
+      Selve DOM-wiringen (`beforeunload`/`document`-click-listener) er
+      IKKE enhetstestet — prosjektets vitest kjører i `node`-miljø uten
+      jsdom/happy-dom, og å legge til det kun for denne ene hooken ble
+      vurdert som uforholdsmessig footprint. Verifiseres manuelt i stedet.
 - [ ] Manuell: for hver av de fire formene — endre et felt, klikk
       «← Tilbake», bekreft at varselet vises; bekreft at varselet IKKE
       vises uten endringer; bekreft at varselet IKKE vises etter

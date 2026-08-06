@@ -1,10 +1,12 @@
 'use client'
 // CR-004: Shared create/edit form for advertisers.
 
-import { useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import styles from '@/components/admin/AdminTable.module.css'
 import { ImageUploadField } from '@/components/admin/ImageUploadField'
+import { UnsavedChangesBadge } from '@/components/admin/UnsavedChangesBadge'
+import { useUnsavedChangesWarning } from '@/lib/admin/useUnsavedChangesWarning'
 
 type AdvertiserData = {
   id: string
@@ -48,17 +50,8 @@ export function AdvertiserForm({ advertiser }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  function handleNameChange(val: string) {
-    setName(val)
-    if (!isEdit) setSlug(slugify(val))
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setSaving(true)
-    setError(null)
-
-    const payload = {
+  const payload = useMemo(
+    () => ({
       name, slug,
       orgNumber: orgNumber || null,
       websiteUrl: websiteUrl || null,
@@ -68,7 +61,22 @@ export function AdvertiserForm({ advertiser }: Props) {
       internalNotes: internalNotes || null,
       isActive,
       logoUrl: logoUrl || null,
-    }
+    }),
+    [name, slug, orgNumber, websiteUrl, contactName, contactEmail, contactPhone, internalNotes, isActive, logoUrl],
+  )
+  const baselineRef = useRef(JSON.stringify(payload))
+  const isDirty = JSON.stringify(payload) !== baselineRef.current
+  useUnsavedChangesWarning(isDirty)
+
+  function handleNameChange(val: string) {
+    setName(val)
+    if (!isEdit) setSlug(slugify(val))
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setSaving(true)
+    setError(null)
 
     try {
       const res = await fetch(
@@ -81,6 +89,7 @@ export function AdvertiserForm({ advertiser }: Props) {
       )
 
       if (res.ok) {
+        baselineRef.current = JSON.stringify(payload)
         router.push('/admin/advertisers')
         router.refresh()
       } else {
@@ -96,6 +105,7 @@ export function AdvertiserForm({ advertiser }: Props) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      <UnsavedChangesBadge isDirty={isDirty} />
       <div className={styles.formRow}>
         <div className={styles.field}>
           <label className={styles.label}>Navn *</label>

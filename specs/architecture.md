@@ -92,6 +92,7 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 | `/lib/validation` | Zod-schemas for input-validering |
 | `/lib/codes` | Atomisk unik kode-tildeling |
 | `/lib/storage` | CR-012: S3-kompatibel klient for admin-opplastede bilder — isolert for enkel leverandørbytte |
+| `/lib/admin` | CR-013: `useUnsavedChangesWarning` — beforeunload + intern lenke-avskjæring ved ulagrede endringer i admin-former, i tillegg til eksisterende JWT-auth-helpers |
 | `/lib/pwa` | PWA manifest og install-helpers |
 | `/lib/utils` | Generelle hjelpefunksjoner |
 | `/types` | TypeScript-typer og enums |

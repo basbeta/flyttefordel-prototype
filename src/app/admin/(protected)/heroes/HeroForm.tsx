@@ -1,11 +1,13 @@
 'use client'
 // CR-004: Shared create/edit form for heroes.
 
-import { useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { CTAType, HeroStatus } from '@prisma/client'
 import styles from '@/components/admin/AdminTable.module.css'
 import { ImageUploadField } from '@/components/admin/ImageUploadField'
+import { UnsavedChangesBadge } from '@/components/admin/UnsavedChangesBadge'
+import { useUnsavedChangesWarning } from '@/lib/admin/useUnsavedChangesWarning'
 
 type TargetingData = {
   appliesNationally: boolean
@@ -74,12 +76,8 @@ export function HeroForm({ hero }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setSaving(true)
-    setError(null)
-
-    const payload = {
+  const payload = useMemo(
+    () => ({
       title, description: description || null,
       imageUrl: imageUrl || null, imageAlt: imageAlt || null,
       ctaLabel: ctaLabel || null, ctaType, ctaTarget: ctaTarget || null,
@@ -92,7 +90,21 @@ export function HeroForm({ hero }: Props) {
         postcodeRanges: [],
         movingStatuses: selectedSegments,
       },
-    }
+    }),
+    [
+      title, description, imageUrl, imageAlt, ctaLabel, ctaType, ctaTarget,
+      status, priority, isFallback, startsAt, endsAt,
+      appliesNationally, includeUnknownLocation, postcodeInput, selectedSegments,
+    ],
+  )
+  const baselineRef = useRef(JSON.stringify(payload))
+  const isDirty = JSON.stringify(payload) !== baselineRef.current
+  useUnsavedChangesWarning(isDirty)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setSaving(true)
+    setError(null)
 
     try {
       const res = await fetch(
@@ -105,6 +117,7 @@ export function HeroForm({ hero }: Props) {
       )
 
       if (res.ok) {
+        baselineRef.current = JSON.stringify(payload)
         router.push('/admin/heroes')
         router.refresh()
       } else {
@@ -120,6 +133,7 @@ export function HeroForm({ hero }: Props) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      <UnsavedChangesBadge isDirty={isDirty} />
       <div className={styles.field}>
         <label className={styles.label}>Tittel *</label>
         <input className={styles.input} required value={title} onChange={(e) => setTitle(e.target.value)} />

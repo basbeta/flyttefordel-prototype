@@ -1,11 +1,13 @@
 'use client'
 // CR-004: Shared create/edit form for benefits.
 
-import { useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { AdminAdvertiserRow, AdminCodePoolRow } from '@/types/admin'
 import styles from '@/components/admin/AdminTable.module.css'
 import { ImageUploadField } from '@/components/admin/ImageUploadField'
+import { UnsavedChangesBadge } from '@/components/admin/UnsavedChangesBadge'
+import { useUnsavedChangesWarning } from '@/lib/admin/useUnsavedChangesWarning'
 
 type Category = { id: string; name: string; slug: string }
 
@@ -126,17 +128,8 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  function handleTitleChange(val: string) {
-    setTitle(val)
-    if (!isEdit) setSlug(slugify(val))
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setSaving(true)
-    setError(null)
-
-    const payload = {
+  const payload = useMemo(
+    () => ({
       title, slug, shortDescription, longDescription,
       advertiserId, categoryId, redemptionType, status,
       priority: Number(priority), isFeatured, isTimeLimited,
@@ -163,7 +156,30 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
         postcodeRanges: [],
         movingStatuses: selectedSegments,
       },
-    }
+    }),
+    [
+      title, slug, shortDescription, longDescription,
+      advertiserId, categoryId, redemptionType, status,
+      priority, isFeatured, isTimeLimited, badgeText, termsText, usageInstruction,
+      startsAt, endsAt, imageUrl, imageAlt,
+      genericCode, externalUrl, qrValue, ctaLabel, opensInNewTab,
+      campaignFee, pricePerView, pricePerLead, pricePerRedemption,
+      appliesNationally, includeUnknownLocation, postcodeInput, selectedSegments,
+    ],
+  )
+  const baselineRef = useRef(JSON.stringify(payload))
+  const isDirty = JSON.stringify(payload) !== baselineRef.current
+  useUnsavedChangesWarning(isDirty)
+
+  function handleTitleChange(val: string) {
+    setTitle(val)
+    if (!isEdit) setSlug(slugify(val))
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setSaving(true)
+    setError(null)
 
     try {
       const res = await fetch(
@@ -176,6 +192,7 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
       )
 
       if (res.ok) {
+        baselineRef.current = JSON.stringify(payload)
         router.push('/admin/benefits')
         router.refresh()
       } else {
@@ -191,6 +208,7 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      <UnsavedChangesBadge isDirty={isDirty} />
       <div className={styles.formRow}>
         <div className={styles.field}>
           <label className={styles.label}>Tittel *</label>

@@ -156,3 +156,9 @@
 | 2026-08-06 | Session-11 | /review | Full review-checklist kjørt — PASSED alle kategorier, RECOMMENDATION: Approve. CR-012 markert Done | CR-012 | — |
 | 2026-08-06 | Session-11 | OPEN-ISSUES.md | Funn utenfor scope: admin-formene varsler ikke ved ulagrede endringer (gjennomgående, ikke CR-012-spesifikt) — logget som ISSUE-010 | — | — |
 | 2026-08-06 | Session-11 | change-requests/ | Opprettet CR-013: Varsel om ulagrede endringer i admin-former (Status: Draft, adresserer ISSUE-010) | CR-013 | — |
+| 2026-08-06 | Session-11 | change-requests/ | CR-013 utvidet med bruker-tillegg (alltid synlig dirty-indikator), godkjent av bruker | CR-013 | — |
+| 2026-08-06 | Session-11 | specs/architecture.md | Module Map: ny `/lib/admin`-rad for useUnsavedChangesWarning | CR-013 | — |
+| 2026-08-06 | Session-11 | src/lib/admin/useUnsavedChangesWarning.ts | Ny: beforeunload + best-effort intern lenke-avskjæring (capture-fase, respekterer defaultPrevented/modifier-taster/_blank). shouldInterceptClick eksportert som ren, testbar funksjon + 5 tester | CR-013 | tsc ✓ vitest ✓ |
+| 2026-08-06 | Session-11 | src/components/admin/UnsavedChangesBadge.tsx + .module.css | Ny: fast posisjonert pille med pulserende rød prikk, prefers-reduced-motion respektert | CR-013 | tsc ✓ |
+| 2026-08-06 | Session-11 | CategoryForm/AdvertiserForm/HeroForm/BenefitForm.tsx | payload flyttet fra inline i handleSubmit til useMemo; baseline-ref + isDirty; hook + badge koblet inn i alle fire | CR-013 | tsc ✓ |
+| 2026-08-06 | Session-11 | Full validering | npx tsc --noEmit ✓, npx vitest run 68/68 ✓ (opp fra 63), npm run build ✓ | CR-013 | — |

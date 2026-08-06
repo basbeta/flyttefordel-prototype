@@ -1,9 +1,11 @@
 'use client'
 // CR-007: Shared create/edit form for categories.
 
-import { useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import styles from '@/components/admin/AdminTable.module.css'
+import { UnsavedChangesBadge } from '@/components/admin/UnsavedChangesBadge'
+import { useUnsavedChangesWarning } from '@/lib/admin/useUnsavedChangesWarning'
 
 type CategoryData = {
   id: string
@@ -39,6 +41,21 @@ export function CategoryForm({ category }: Props) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const payload = useMemo(
+    () => ({
+      name,
+      slug,
+      description: description || null,
+      icon: icon || null,
+      sortOrder,
+      isActive,
+    }),
+    [name, slug, description, icon, sortOrder, isActive],
+  )
+  const baselineRef = useRef(JSON.stringify(payload))
+  const isDirty = JSON.stringify(payload) !== baselineRef.current
+  useUnsavedChangesWarning(isDirty)
+
   function handleNameChange(val: string) {
     setName(val)
     if (!isEdit) setSlug(slugify(val))
@@ -48,15 +65,6 @@ export function CategoryForm({ category }: Props) {
     e.preventDefault()
     setSaving(true)
     setError(null)
-
-    const payload = {
-      name,
-      slug,
-      description: description || null,
-      icon: icon || null,
-      sortOrder,
-      isActive,
-    }
 
     try {
       const res = await fetch(
@@ -69,6 +77,7 @@ export function CategoryForm({ category }: Props) {
       )
 
       if (res.ok) {
+        baselineRef.current = JSON.stringify(payload)
         router.push('/admin/categories')
         router.refresh()
       } else {
@@ -84,6 +93,7 @@ export function CategoryForm({ category }: Props) {
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
+      <UnsavedChangesBadge isDirty={isDirty} />
       <div className={styles.formRow}>
         <div className={styles.field}>
           <label className={styles.label}>Navn *</label>

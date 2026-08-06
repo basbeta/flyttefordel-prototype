@@ -44,7 +44,7 @@ Ingen aktive blockers.
 - CR-010: Lønnsomhetsanalyse (Status: Done — committed e5f0c81)
 - CR-011: Migrering til Hetzner/Coolify (Status: In Progress — LIVE og verifisert i prod, kun backup-verifisering gjenstår før Done)
 - CR-012: Bildeopplasting i admin-grensesnittet (Status: Done — verifisert i prod 2026-08-06)
-- CR-013: Varsel om ulagrede endringer i admin-former (Status: Draft — venter på godkjenning)
+- CR-013: Varsel om ulagrede endringer i admin-former (Status: In Progress — kode ferdig og validert lokalt, manuell test i nettleser gjenstår)
 
 ## Recently Modified Systems
 - `src/components/admin/ImageUploadField.tsx` — 4 UX-fikser etter brukertest: linjejustering, skjult native filinput → egen-stilt knapp, "Fjern bilde", lightbox-popup for full størrelse, "Velg fil" skjules når bilde er satt (2026-08-06, CR-012, commits e14f365/4c180b4/e0c1f35/effe0f3/bf9694a)
