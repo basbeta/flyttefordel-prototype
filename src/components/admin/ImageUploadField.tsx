@@ -83,7 +83,7 @@ export function ImageUploadField({
         <label className={styles.label}>{label}</label>
 
         <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
-          {value && (
+          {value ? (
             <button
               type="button"
               onClick={() => setLightboxOpen(true)}
@@ -104,18 +104,21 @@ export function ImageUploadField({
                 }}
               />
             </button>
+          ) : (
+            <>
+              <button
+                type="button"
+                className={styles.secondaryBtn}
+                onClick={() => inputRef.current?.click()}
+                disabled={uploading}
+              >
+                {uploading ? 'Laster opp…' : 'Velg fil'}
+              </button>
+              <span className={styles.hint} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {fileName ?? 'Ingen fil valgt'}
+              </span>
+            </>
           )}
-          <button
-            type="button"
-            className={styles.secondaryBtn}
-            onClick={() => inputRef.current?.click()}
-            disabled={uploading}
-          >
-            {uploading ? 'Laster opp…' : 'Velg fil'}
-          </button>
-          <span className={styles.hint} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {fileName ?? 'Ingen fil valgt'}
-          </span>
           <input
             ref={inputRef}
             type="file"
