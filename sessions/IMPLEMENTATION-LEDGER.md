@@ -154,4 +154,5 @@
 | 2026-08-06 | Session-11 | ImageUploadField.tsx | 4 UX-fikser etter brukertest i nettleser: linjejustering, fjern-bilde-knapp, format-hint (5 commits: e14f365, 4c180b4, e0c1f35, effe0f3, bf9694a) — se CR-012 "Post-implementation UX-iterasjoner" | CR-012 | tsc ✓ hver commit |
 | 2026-08-06 | Session-11 | Prod-verifisering | Bruker testet manuelt i nettleser: opplasting for fordel, annonsørlogo og hero-bilde, samt avvisning av for stor/ugyldig fil — alt bekreftet fungerende | CR-012 | prod ✓ |
 | 2026-08-06 | Session-11 | /review | Full review-checklist kjørt — PASSED alle kategorier, RECOMMENDATION: Approve. CR-012 markert Done | CR-012 | — |
-| 2026-08-06 | Session-11 | OPEN-ISSUES.md (kommer) | Funn utenfor scope: admin-formene varsler ikke ved ulagrede endringer (gjennomgående, ikke CR-012-spesifikt) — ny CR planlagt | — | — |
+| 2026-08-06 | Session-11 | OPEN-ISSUES.md | Funn utenfor scope: admin-formene varsler ikke ved ulagrede endringer (gjennomgående, ikke CR-012-spesifikt) — logget som ISSUE-010 | — | — |
+| 2026-08-06 | Session-11 | change-requests/ | Opprettet CR-013: Varsel om ulagrede endringer i admin-former (Status: Draft, adresserer ISSUE-010) | CR-013 | — |
