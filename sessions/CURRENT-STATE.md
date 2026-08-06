@@ -12,21 +12,18 @@ aktiv på Uptime Kuma (2026-08-06). Feilsporing fjernet fra scope
 (bruker-beslutning 2026-08-06, se DECISIONS.md). Gjenstår før CR-011 kan
 markeres Done: backup-verifisering ("Backup Now") og en avsluttende
 `/review`.
-CR-012 (bildeopplasting) opprettet og godkjent 2026-08-06. Bucket
-`basbeta-pub-object-storage` opprettet av bruker på Hetzner Object Storage
-(Public read-only, fsn1), nøkler satt som Coolify-miljøvariabler.
-Kodedelen er FERDIG og validert lokalt (tsc/vitest/build alle grønne,
-18 nye tester) — se Recently Modified Systems. Gjenstår: manuell
-smoke test mot ekte bucket i prod, deretter `/review` og CR-012 Done.
-10 CRs fullført (CR-001–CR-010) før dette.
+CR-012 (bildeopplasting) FULLFØRT og markert Done 2026-08-06. Bucket
+`basbeta-pub-object-storage` på Hetzner Object Storage, admin kan laste
+opp bilder for fordel/annonsør/hero, verifisert manuelt i prod av bruker
+inkl. avvisning av ugyldige filer. 4 UX-fikser landet etter brukertesting
+(se Recently Modified Systems). `/review` kjørt — PASSED, Approve.
+Et funn utenfor CR-012 sitt scope ble logget som ISSUE-010: admin-formene
+varsler generelt ikke ved ulagrede endringer — egen fremtidig CR.
+11 CRs fullført (CR-001–CR-010, CR-012) før dette.
 
 ## Current Objectives
 CR-011: bekreft backup med "Backup Now", deretter kjør `/review` på nytt
-og marker CR-011 Done.
-CR-012: deploy kodeendringene til prod, kjør manuell smoke test (last opp
-bilde for fordel/annonsør/hero, bekreft synlig i forbrukerappen og at
-ugyldige filer avvises med tydelig feilmelding), deretter `/review` og
-CR-012 Done.
+og marker CR-011 Done. (Eneste gjenstående CR.)
 
 ## Current Branch
 master
@@ -46,9 +43,10 @@ Ingen aktive blockers.
 - CR-009: Fraud prevention — kode-audit og DB-integritet (Status: Done — committed c1cf64c)
 - CR-010: Lønnsomhetsanalyse (Status: Done — committed e5f0c81)
 - CR-011: Migrering til Hetzner/Coolify (Status: In Progress — LIVE og verifisert i prod, kun backup-verifisering gjenstår før Done)
-- CR-012: Bildeopplasting i admin-grensesnittet (Status: In Progress — kode ferdig og validert lokalt, manuell smoke test mot ekte bucket gjenstår)
+- CR-012: Bildeopplasting i admin-grensesnittet (Status: Done — verifisert i prod 2026-08-06)
 
 ## Recently Modified Systems
+- `src/components/admin/ImageUploadField.tsx` — 4 UX-fikser etter brukertest: linjejustering, skjult native filinput → egen-stilt knapp, "Fjern bilde", lightbox-popup for full størrelse, "Velg fil" skjules når bilde er satt (2026-08-06, CR-012, commits e14f365/4c180b4/e0c1f35/effe0f3/bf9694a)
 - `package.json` — `@aws-sdk/client-s3` lagt til (2026-08-06, CR-012)
 - `src/lib/storage/` — NYE: client.ts (lazy S3-klient, build-safe), validateImage.ts (magic-byte-validering, maks 5MB, jpg/png/webp), uploadImage.ts, index.ts + 18 unit-tester (2026-08-06, CR-012)
 - `src/app/api/admin/upload/route.ts` — NY: admin-auth-guardet opplastingsrute + 5 tester (2026-08-06, CR-012)
@@ -82,7 +80,8 @@ Ingen aktive blockers.
 ✓ `npx tsc --noEmit` — ingen feil (2026-08-06, etter CR-012 kodeendringer)
 ✓ `npx vitest run` — 63/63 tester bestått (2026-08-06, CR-012 — 45 eksisterende + 18 nye for storage/upload)
 ✓ `npm run build` — bygger rent lokalt med Node 22, `/api/admin/upload` med i rute-listen (2026-08-06, CR-012)
-⚠ CR-012: manuell smoke test mot ekte bucket (`basbeta-pub-object-storage`) — IKKE gjort ennå
+✓ CR-012: manuell smoke test mot ekte bucket (`basbeta-pub-object-storage`) — bekreftet av bruker
+  (fordel/annonsør/hero-opplasting + avvisning av ugyldig fil), `/review` PASSED, CR-012 Done
 ✓ Coolify-deploy bekreftet LIVE (2026-08-06) — tok 2 fix-iterasjoner (se Recently Modified Systems):
   manglende `prisma generate` i build-script, manglende OpenSSL i Alpine-image
 ✓ Smoke test: kategori, annonsør og fordel opprettet i /admin, bekreftet synlig i forbrukerappen (2026-08-06)
@@ -100,18 +99,16 @@ Ingen aktive blockers.
 - KRITISK: `npm ci` avdekket 12 sårbarheter (1 kritisk, 10 high) i avhengigheter, inkl. en kjent CVE i `next@14.2.3` med patch tilgjengelig. Ikke fikset i CR-011 (utenfor scope — infra-migrering, ikke avhengighetsoppgradering, jf. playbook §6). Se OPEN-ISSUES.md ISSUE-009.
 
 ## Next Recommended Actions
-1. Deploy CR-012 sine kodeendringer til prod (git push → Coolify auto-deploy), deretter kjør
-   manuell smoke test: last opp bilde for en fordel, en annonsørlogo og et hero-bilde i /admin,
-   bekreft synlig i forbrukerappen, og bekreft at en for stor/ugyldig fil avvises med tydelig
-   feilmelding. Kjør `/review` og marker CR-012 Done når dette er bekreftet.
-2. Fullfør CR-011 sin siste gjenstående infra-oppgave: daglig backup + "Backup Now"-verifisering.
+1. Fullfør CR-011 sin siste gjenstående infra-oppgave: daglig backup + "Backup Now"-verifisering.
    Kjør `/review` på nytt og marker CR-011 Done.
-3. Utvid smoke-testen for CR-011: test lagre/hent-kode-flyt og lead-innsending (kun kategori/
+2. Utvid smoke-testen for CR-011: test lagre/hent-kode-flyt og lead-innsending (kun kategori/
    annonsør/fordel er testet så langt), sjekk at admin-sider viser korrekte norske klokkeslett
+3. Ny CR for ISSUE-010: admin-formene varsler ikke ved navigering bort med ulagrede endringer
+   (gjelder alle felt, ikke spesifikt bilde — bekreftet av bruker under CR-012-testing)
 4. ISSUE-009 (høy prioritet): vurder `next@14.2.3` sikkerhetsoppdatering som egen CR
 5. Vurder Prisma 5→7-migrering som egen fremtidig CR — ville eliminert Alpine/OpenSSL-feilklassen
    permanent (se DECISIONS.md 2026-08-05), men er en breaking-change-oppgradering, ikke en hastesak
-6. Etter CR-011/CR-012 er Done: planlegg neste CR — kandidater:
+6. Etter CR-011 er Done: planlegg neste CR — kandidater:
    a. Rate limiting på claim-endepunkt (krever Redis)
    b. Bruker-autentisering (ny leverandør — Supabase Auth ikke lenger et alternativ, se ARCHITECTURE-STATE.md)
    c. Notifikasjoner ved lav pool-beholdning (e-post / webhook)

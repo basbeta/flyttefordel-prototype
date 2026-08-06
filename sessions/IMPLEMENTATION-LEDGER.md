@@ -150,3 +150,8 @@
 | 2026-08-06 | Session-11 | AdvertiserForm.tsx + admin/advertisers route.ts/[id]/route.ts | Lagt til logoUrl-felt (manglet helt før denne CR-en) + Zod-schema-utvidelse | CR-012 | tsc ✓ |
 | 2026-08-06 | Session-11 | specs/architecture.md, specs/entities.md, .env.example (via architecture.md-liste) | Oppdatert for ny S3-storage-modul, nye miljøvariabler, migreringsnotat | CR-012 | — |
 | 2026-08-06 | Session-11 | Full validering | npx tsc --noEmit ✓, npx vitest run 63/63 ✓ (opp fra 45), npm run build ✓ | CR-012 | — |
+| 2026-08-06 | Session-11 | git | Push 880c408 → Coolify auto-deploy | CR-012 | deploy ✓ |
+| 2026-08-06 | Session-11 | ImageUploadField.tsx | 4 UX-fikser etter brukertest i nettleser: linjejustering, fjern-bilde-knapp, format-hint (5 commits: e14f365, 4c180b4, e0c1f35, effe0f3, bf9694a) — se CR-012 "Post-implementation UX-iterasjoner" | CR-012 | tsc ✓ hver commit |
+| 2026-08-06 | Session-11 | Prod-verifisering | Bruker testet manuelt i nettleser: opplasting for fordel, annonsørlogo og hero-bilde, samt avvisning av for stor/ugyldig fil — alt bekreftet fungerende | CR-012 | prod ✓ |
+| 2026-08-06 | Session-11 | /review | Full review-checklist kjørt — PASSED alle kategorier, RECOMMENDATION: Approve. CR-012 markert Done | CR-012 | — |
+| 2026-08-06 | Session-11 | OPEN-ISSUES.md (kommer) | Funn utenfor scope: admin-formene varsler ikke ved ulagrede endringer (gjennomgående, ikke CR-012-spesifikt) — ny CR planlagt | — | — |

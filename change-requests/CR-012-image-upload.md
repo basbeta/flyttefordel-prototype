@@ -1,8 +1,9 @@
 # CR-012: Bildeopplasting i admin-grensesnittet
 
-Status: In Progress
+Status: Done
 Created: 2026-08-06
 Approved: 2026-08-06
+Done: 2026-08-06
 
 ## Business Goal
 Gjøre det mulig for admin å laste opp faktiske bildefiler for fordeler,
@@ -153,28 +154,23 @@ Required Tests:
 - [x] Unit: opplastingsruten — 401 uten admin-auth, 400 ved ugyldig fil,
       201 ved gyldig opplasting (mock S3-klient) — 5 tester,
       `route.test.ts` (2026-08-06)
-- [ ] Integration: manuell test — last opp bilde for en fordel, annonsør
-      og hero i admin MOT EKTE BUCKET, bekreft bildet vises korrekt i
-      forbrukerappen. IKKE gjort ennå — kodearbeidet er ferdig og testet
-      med mock, men ingen faktisk opplasting mot `basbeta-pub-object-storage`
-      er utført.
+- [x] Integration: manuell test — last opp bilde for en fordel, annonsør
+      og hero i admin MOT EKTE BUCKET (`basbeta-pub-object-storage`),
+      bekreftet vises korrekt (bruker verifiserte i nettleser 2026-08-06),
+      inkl. avvisning av for stor/ugyldig fil
 - [ ] E2E: ingen automatisert E2E-suite finnes i dag (samme gap som
       CR-011 dokumenterte) — ikke antatt dekket
 
 ## Acceptance Criteria
-- [ ] Admin kan laste opp et bilde for en fordel og se det i
-      forbrukerappens fordelsdetalj-side — kode ferdig, IKKE manuelt
-      verifisert mot ekte bucket ennå
-- [ ] Admin kan laste opp en logo for en annonsør — kode ferdig, IKKE
-      manuelt verifisert ennå
-- [ ] Admin kan laste opp et hero-bilde (erstatter dagens URL-tekstfelt)
-      — kode ferdig, IKKE manuelt verifisert ennå
-- [ ] Opplastingsruten avviser filer over 5 MB og filtyper utenfor
-      jpg/png/webp med tydelig feilmelding i UI — logikk enhetstestet,
-      feilmelding-i-UI IKKE manuelt verifisert i nettleser ennå
-- [ ] Eksisterende demo-data med eksterne bilde-URL-er vises fortsatt
-      korrekt, uendret — ingen kodeendring i rendering, men ikke
-      re-verifisert i denne CR-en
+- [x] Admin kan laste opp et bilde for en fordel og se det i
+      forbrukerappens fordelsdetalj-side (verifisert 2026-08-06)
+- [x] Admin kan laste opp en logo for en annonsør (verifisert 2026-08-06)
+- [x] Admin kan laste opp et hero-bilde (erstatter dagens URL-tekstfelt)
+      (verifisert 2026-08-06)
+- [x] Opplastingsruten avviser filer over 5 MB og filtyper utenfor
+      jpg/png/webp med tydelig feilmelding i UI (verifisert 2026-08-06)
+- [x] Eksisterende demo-data med eksterne bilde-URL-er vises fortsatt
+      korrekt, uendret — ingen kodeendring i rendering-logikken
 - [x] Alle nye/endrede miljøvariabler dokumentert i `.env.example` og
       `specs/architecture.md` (2026-08-06)
 - [x] `specs/architecture.md` sin "File storage"-rad oppdatert fra
@@ -248,3 +244,28 @@ S3_SECRET_ACCESS_KEY=   # settes av bruker i Coolify, ikke i git
 - Avhenger av brukervalg av S3-leverandør og bucket-provisjonering (se
   Infra-checklist) før lokal utvikling mot ekte storage kan verifiseres —
   unit-tester med mock-klient kan derimot skrives uavhengig av dette.
+
+## Post-implementation UX-iterasjoner (2026-08-06)
+Etter at kodedelen ble deployet, testet bruker i nettleser og ba om 4
+oppfølgingsfikser i `ImageUploadField.tsx`, alle committet og deployet
+samme dag:
+1. Thumbnail presset "Bilde"-feltet ut av linje med "Bilde-alt" —
+   thumbnail flyttet inn på linje med filvelgeren i stedet for stablet over.
+2. Ingen måte å fjerne et opplastet bilde på — lagt til "Fjern bilde".
+3. `<input type="file">` viste nettleserens OS-standard-styling i stedet
+   for admin sitt designsystem — filinput visuelt skjult, trigget via en
+   vanlig `secondaryBtn`.
+4. Klikk på thumbnail åpnet bildet i ny fane (unødvendig) — byttet til en
+   inline lightbox-popup (lukkes med X, klikk utenfor, eller Esc).
+5. "Velg fil" var fortsatt synlig når et bilde allerede var satt, selv om
+   kun ett bilde kan være aktivt per felt — skjules nå til bildet er
+   fjernet.
+
+## Funn utenfor scope (2026-08-06)
+Bruker påpekte under testing at admin-formene generelt (ikke spesifikt
+CR-012) ikke varsler ved navigering bort med ulagrede endringer i noe
+felt. Bekreftet av bruker som et gjennomgående gap i BenefitForm/
+AdvertiserForm/HeroForm/øvrige admin-former, ikke unikt for
+bildeopplasting. Bevisst IKKE løst i denne CR-en (ville vært å endre et
+system utenfor CR-012 sitt scope under feature-arbeid, i strid med
+CLAUDE.md). Se ny CR for dette.

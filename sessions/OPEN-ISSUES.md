@@ -17,6 +17,23 @@ Resolution: [how it was resolved]
 
 ## Open Issues
 
+ISSUE-010
+Status: Open
+Priority: Medium
+Area: src/app/admin/(protected)/** — alle admin-former (BenefitForm, AdvertiserForm,
+  HeroForm, øvrige)
+Description: Ingen admin-form varsler ved navigering bort (lenke, tilbake-knapp,
+  lukk fane) med ulagrede endringer i noe felt — tekst, dropdown, bilde, osv.
+  Oppdaget under CR-012-testing (bildeopplasting lastes opp til S3 umiddelbart,
+  men selve fordelen/annonsøren/heroen er ikke lagret før admin trykker
+  "Lagre"/"Opprett" — ingen indikasjon gis om dette). Bekreftet av bruker som et
+  gjennomgående gap i alle formene, ikke unikt for bildeopplasting.
+Blocker for: ingen kjent dataintegritetsrisiko (kun UX — admin kan tro noe er
+  lagret som ikke er det)
+Opened: 2026-08-06
+Resolved:
+Resolution:
+
 ISSUE-009
 Status: Open
 Priority: High
