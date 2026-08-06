@@ -3,7 +3,7 @@
 // Erstatter ren tekst-URL-input — laster opp direkte til S3-kompatibel storage
 // via /api/admin/upload og setter resultat-URL-en via onChange.
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from '@/components/admin/AdminTable.module.css'
 
 type Props = {
@@ -29,7 +29,17 @@ export function ImageUploadField({
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fileName, setFileName] = useState<string | null>(null)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!lightboxOpen) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') setLightboxOpen(false)
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [lightboxOpen])
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -74,7 +84,12 @@ export function ImageUploadField({
 
         <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center' }}>
           {value && (
-            <a href={value} target="_blank" rel="noopener noreferrer" title="Se bilde i full størrelse">
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+              title="Se bilde i full størrelse"
+              style={{ padding: 0, border: 'none', background: 'none', flexShrink: 0, lineHeight: 0 }}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={value}
@@ -82,14 +97,13 @@ export function ImageUploadField({
                 style={{
                   width: '56px',
                   height: '56px',
-                  flexShrink: 0,
                   objectFit: 'cover',
                   borderRadius: 'var(--radius-md)',
                   border: '1px solid var(--color-border)',
                   cursor: 'zoom-in',
                 }}
               />
-            </a>
+            </button>
           )}
           <button
             type="button"
@@ -136,6 +150,60 @@ export function ImageUploadField({
         <div className={styles.field}>
           <label className={styles.label}>{altLabel}</label>
           <input className={styles.input} value={altValue ?? ''} onChange={(e) => onAltChange(e.target.value)} />
+        </div>
+      )}
+
+      {lightboxOpen && value && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={label}
+          onClick={() => setLightboxOpen(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.85)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 'var(--space-6)',
+            cursor: 'zoom-out',
+            zIndex: 1000,
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(false)}
+            aria-label="Lukk"
+            style={{
+              position: 'absolute',
+              top: 'var(--space-4)',
+              right: 'var(--space-4)',
+              width: '40px',
+              height: '40px',
+              borderRadius: 'var(--radius-full)',
+              border: 'none',
+              background: 'rgba(255, 255, 255, 0.15)',
+              color: '#fff',
+              fontSize: 'var(--font-lg)',
+              cursor: 'pointer',
+            }}
+          >
+            ×
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={value}
+            alt=""
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              objectFit: 'contain',
+              borderRadius: 'var(--radius-md)',
+              cursor: 'default',
+            }}
+          />
         </div>
       )}
     </div>
