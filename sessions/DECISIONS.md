@@ -16,6 +16,15 @@ DECIDED BY: human | Claude | both
 
 ## Decisions
 
+DATE: 2026-08-07
+DECISION: Behold Redis-basert rate limiting for CR-014, ikke bytt til Traefik-middleware
+CONTEXT: CR-014 sin Redis-implementasjon (src/lib/rateLimit, wiring i login- og claim-code-rutene) var ferdig kodet og enhetstestet (91/91) da bruker spurte om Coolify sin Traefik-reverse-proxy sin innebygde rate-limit-middleware kunne dekke behovet i stedet, og ba om å ikke committe før dette var avklart (ISSUE-012).
+DECISION: Behold Redis-implementasjonen som allerede var skrevet. Committed som 10d9fd1.
+ALTERNATIVES CONSIDERED: Traefik-middleware — ingen ny app-avhengighet, ser ekte klient-IP direkte uten å stole på x-forwarded-for. Forkastet fordi konfigurasjonen ville leve i Coolify sitt UI/database, ikke i git (bryter prosjektets traceability-prinsipp, jf. CLAUDE.md), krever to separate path-baserte routere med ulike grenser, og gjør en custom norsk 429-feilmelding vanskeligere å gjenskape.
+RATIONALE: Versjonert, testbar konfigurasjon med full kontroll på feilmelding og Retry-After veier tyngre enn å unngå én ny infrastrukturavhengighet (Redis), spesielt i et prosjekt som eksplisitt prioriterer traceability og deterministiske arbeidsflyter.
+CONSEQUENCES: Ny Redis-avhengighet (ioredis) og Redis-instans må provisjoneres i Coolify (se CR-014 Infra-checklist) før CR-014 kan markeres Done. x-forwarded-for-usikkerheten (kan forfalskes/feilkonfigureres av reverse-proxy) består og må verifiseres manuelt i prod, i motsetning til Traefik-alternativet som ville sett ekte klient-IP direkte.
+DECIDED BY: human
+
 DATE: 2026-08-06
 DECISION: To gjenstående manuelle testpunkter i CR-011 akseptert som kjent gap, ikke blokkerende for Done
 CONTEXT: CR-011 sin Required Tests-seksjon hadde to uverifiserte punkter: (1) full claim-code/lead-innsendingsflyt + CSV-eksport i prod, (2) visuell bekreftelse av norsk tidssone på 4 admin-sider. Kun kategori/annonsør/fordel-opprettelse var faktisk testet i prod.

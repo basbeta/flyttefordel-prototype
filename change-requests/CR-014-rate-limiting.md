@@ -1,8 +1,13 @@
 # CR-014: Rate limiting på innlogging og kode-tildeling
 
-Status: Approved
+Status: Implementert (Redis) — committed (10d9fd1), venter på infra
 Created: 2026-08-06
 Approved: 2026-08-06
+Note (2026-08-07): Redis vs. Traefik-arkitekturspørsmålet (ISSUE-012) er
+  avklart — bruker valgte å beholde Redis. Kode committed 10d9fd1.
+  CR-014 markeres IKKE Done ennå — gjenstående Infra-checklist (Redis-
+  provisjonering, REDIS_URL, x-forwarded-for-verifisering, prod-smoke-
+  test) krever handling i Coolify som Claude ikke har tilgang til.
 
 ## Business Goal
 Beskytte to endepunkter mot automatisert misbruk: brute-force-gjetting av
@@ -120,14 +125,14 @@ Performance Impact:
   eksisterende Prisma-kall i samme request.
 
 Required Tests:
-- [ ] Unit: `checkRateLimit` — under grense (allowed=true), på grense,
+- [x] Unit: `checkRateLimit` — under grense (allowed=true), på grense,
       over grense (allowed=false), TTL/retryAfter-beregning (mocket
       Redis-klient, samme mønster som `uploadImage.test.ts` i CR-012)
-- [ ] Unit: `getClientIp` — leser første IP i `x-forwarded-for`, faller
+- [x] Unit: `getClientIp` — leser første IP i `x-forwarded-for`, faller
       tilbake til `x-real-ip`, faller tilbake til `'unknown'`
-- [ ] Unit: login-ruten — 429 ved overskredet grense (mocket rate limiter),
+- [x] Unit: login-ruten — 429 ved overskredet grense (mocket rate limiter),
       401 ved feil passord innenfor grensen (uendret eksisterende oppførsel)
-- [ ] Unit: claim-code-ruten — 429 ved overskredet grense, eksisterende
+- [x] Unit: claim-code-ruten — 429 ved overskredet grense, eksisterende
       dekning (401/404/410/500) uendret
 - [ ] Manuell (etter deploy): bekreft at `x-forwarded-for` faktisk
       inneholder ekte klient-IP i Coolify/Traefik-miljøet, ikke en

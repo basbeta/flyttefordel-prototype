@@ -17,6 +17,36 @@ Resolution: [how it was resolved]
 
 ## Open Issues
 
+ISSUE-012
+Status: Resolved
+Priority: Medium
+Area: CR-014 (rate limiting) — arkitekturvalg
+Description: CR-014 sin Redis-baserte implementasjon (src/lib/rateLimit,
+  wiring i login- og claim-code-rutene) er ferdig kodet, enhetstestet
+  (91/91 bestått) og bygger rent — men bruker stilte et arkitekturspørsmål
+  midt i økten: kan Coolify sin Traefik-reverse-proxy sin innebygde
+  rate-limit-middleware dekke behovet i stedet for en ny
+  Redis-avhengighet i appen?
+  Tradeoffs diskutert:
+  - Traefik: ingen ny infrastruktur/avhengighet, ser ekte klient-IP
+    direkte (løser x-forwarded-for-usikkerheten), men konfigurasjonen
+    lever i Coolify sitt UI/database — IKKE i denne git-repoen (ingen
+    docker-compose/Traefik-labels-fil finnes i prosjektet i dag), noe
+    som bryter med prosjektets traceability-prinsipp. Krever to separate
+    path-baserte routere (ulike grenser for login vs. claim-code).
+    Custom norsk feilmelding i 429-responsen er vanskeligere å gjenskape.
+  - Redis (nåværende kode): versjonert, testbar, full kontroll på
+    feilmelding/Retry-After, men krever ny infrastruktur (Redis-instans
+    i Coolify) og ioredis-avhengighet.
+Blocker for: committing/lukking av CR-014
+Opened: 2026-08-07
+Resolved: 2026-08-07
+Resolution: Bruker valgte å beholde Redis-implementasjonen — traceability
+  (versjonert konfigurasjon i git) og full kontroll på feilmelding/
+  Retry-After veide tyngre enn å unngå ny infrastruktur. Kode committed
+  (10d9fd1). Se DECISIONS.md for full begrunnelse. CR-014 gjenstår med
+  Infra-checklist (Redis-provisjonering i Coolify) før Done.
+
 ISSUE-011
 Status: Open
 Priority: Low

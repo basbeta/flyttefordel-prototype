@@ -4,11 +4,12 @@
 
 ## Current Phase
 Alle 13 CRs er nå Done (CR-001–CR-013). CR-014 (rate limiting) er
-Approved (grenser bekreftet: 5 forsøk/15 min for login, 20 claims/time
-for claim-code), men IKKE implementert — bruker stoppet
-implementeringen eksplisitt før den startet i denne økten. Ingen kode
-skrevet for CR-014. Neste økt kan starte rett på implementasjon uten
-ny godkjenningsrunde.
+**implementert (Redis-basert), fullt validert og committed (10d9fd1)**.
+Arkitekturspørsmålet fra forrige økt (Redis vs. Traefik, ISSUE-012) er
+avklart — bruker valgte å beholde Redis (se DECISIONS.md 2026-08-07).
+CR-014 er IKKE markert Done ennå — gjenstår Infra-checklist (Redis
+provisjonert i Coolify, REDIS_URL satt, x-forwarded-for verifisert,
+prod-smoke-test av 429-responser).
 
 CR-011 (Hetzner/Coolify-migrering) FULLFØRT og markert Done 2026-08-06.
 App er LIVE på https://flyttefordel-prototype.basbeta.no og verifisert
@@ -39,17 +40,24 @@ til rediger-siden for den nye posten. Iterert 4 ganger etter brukertest
 samme dag (se Recently Modified Systems). `/review` kjørt — PASSED, Approve.
 
 ## Current Objectives
-CR-014: implementer rate limiting (Redis-basert, /lib/rateLimit-modul) på
-POST /api/admin/auth/login og POST /api/benefits/[slug]/claim-code, når
-bruker gir klarsignal. Bruker må også provisjonere Redis i Coolify (se
-CR-014 Infra-checklist) før verifisering mot ekte Redis kan skje —
-unit-tester med mocket klient kan skrives uavhengig av dette.
+CR-014 sin Redis-baserte implementasjon er committed (10d9fd1). Neste
+skritt er brukerens Infra-checklist i Coolify (se Next Recommended
+Actions) — Claude har ikke tilgang til å utføre disse selv:
+1. Provisjonér Redis-ressurs i Coolify
+2. Sett `REDIS_URL` som miljøvariabel på app-ressursen
+3. Bekreft at Coolify/Traefik faktisk videresender ekte klient-IP via
+   `x-forwarded-for`
+4. Smoke-test: trigger faktisk 429 på begge endepunkter i prod
+
+Når disse er utført og verifisert, kan CR-014 markeres Done.
 
 ## Current Branch
 master
 
 ## Blockers
-Ingen aktive blockers.
+Ingen. CR-014 sitt arkitekturvalg (ISSUE-012) er avklart og committed.
+CR-014 avventer kun brukerens Infra-checklist i Coolify (ikke noe Claude
+kan utføre) før den kan markeres Done.
 
 ## Active Change Requests
 - CR-001: Fase 1 — Grunnmur (Status: Done)
@@ -65,9 +73,9 @@ Ingen aktive blockers.
 - CR-011: Migrering til Hetzner/Coolify (Status: Done — LIVE og verifisert i prod 2026-08-06, /review PASSED)
 - CR-012: Bildeopplasting i admin-grensesnittet (Status: Done — verifisert i prod 2026-08-06)
 - CR-013: Varsel om ulagrede endringer i admin-former (Status: Done — verifisert i prod 2026-08-06, /review PASSED)
-- CR-014: Rate limiting på innlogging og kode-tildeling (Status: Approved — grenser bekreftet 5/15min + 20/time, IKKE implementert ennå)
+- CR-014: Rate limiting på innlogging og kode-tildeling (Status: Implementert (Redis), committed 10d9fd1, IKKE Done — venter på Infra-checklist i Coolify)
 
-## Recently Modified Systems
+- `src/lib/rateLimit/` (NY: client.ts lazy ioredis-klient, rateLimiter.ts checkRateLimit fixed-window via INCR+EXPIRE fail-open, getClientIp.ts x-forwarded-for→x-real-ip→'unknown', index.ts + 13 unit-tester), `src/app/api/admin/auth/login/route.ts` (rate-limit-sjekk 5/15min per IP, 429+Retry-After, FØR validateAdminCredentials) + route.test.ts, `src/app/api/benefits/[slug]/claim-code/route.ts` (rate-limit-sjekk 20/time per IP, 429+Retry-After, etter sesjonssjekk) + route.test.ts, `package.json`/`package-lock.json` (ioredis lagt til), `.env.example` + `specs/architecture.md` (REDIS_URL, ny /lib/rateLimit-modul-rad) (2026-08-07, CR-014, commit 10d9fd1). Fullt validert (tsc/91 tester/build), `/review` PASSED kode-nivå. Redis vs. Traefik-arkitekturvalg (ISSUE-012) avklart 2026-08-07 — bruker valgte Redis, se DECISIONS.md
 - `src/lib/admin/useUnsavedChangesWarning.ts` — NY: beforeunload + best-effort intern lenke-avskjæring (capture-fase), shouldInterceptClick eksportert som ren, testbar funksjon + 5 tester (2026-08-06, CR-013)
 - `src/components/admin/FormSaveBar.tsx` — NY: flytende bar (nedre høyre hjørne) som slår sammen lagre-knapp + rød pulserende dirty-indikator + grønn statisk "Lagret"-pille + feilmelding. Erstatter både den gamle statiske `formActions`-knappen og en tidligere, nå fjernet `UnsavedChangesBadge`. Iterert 4 ganger samme dag etter brukertest (2026-08-06, CR-013, commits 99817da/c797ab9/ba5aaac/4b79784/f84e879)
 - `CategoryForm.tsx`, `AdvertiserForm.tsx`, `HeroForm.tsx`, `BenefitForm.tsx` — payload flyttet fra inline i handleSubmit til useMemo (for isDirty-sammenligning), rediger-lagring navigerer ikke bort lenger, opprett-lagring navigerer til rediger-siden for den nye posten i stedet for til listen (2026-08-06, CR-013)
@@ -103,6 +111,15 @@ Ingen aktive blockers.
   sine miljøvariabler (ikke gjenbrukt fra Vercel)
 
 ## Validation Status
+✓ `npx tsc --noEmit` — ingen feil (2026-08-07, CR-014 rate-limit-kode, UNCOMMITTED)
+✓ `npx vitest run` — 91/91 tester bestått (2026-08-07, CR-014 — 68 eksisterende + 23 nye:
+  rateLimiter (fail-open, TTL-edge-cases), getClientIp (header-fallback-kjede), client
+  (build-safe uten REDIS_URL), login-rute 429/401/200-regresjon, claim-code-rute
+  429/404/410/200-regresjon)
+✓ `npm run build` — bygger rent lokalt med Node 22, bekrefter lazy Redis-klient ikke
+  krasjer build uten REDIS_URL satt (2026-08-07, CR-014)
+✓ `npx tsc --noEmit` og `npx vitest run` (91/91) re-kjørt rett før commit som sanity-sjekk
+  (2026-08-07, CR-014, commit 10d9fd1)
 ✓ `npx tsc --noEmit` — ingen feil (2026-08-06, etter CR-013 kodeendringer)
 ✓ `npx vitest run` — 68/68 tester bestått (2026-08-06, CR-013 — 63 eksisterende + 5 nye for shouldInterceptClick)
 ✓ `npm run build` — bygger rent lokalt med Node 22 (2026-08-06, CR-013)
@@ -130,12 +147,17 @@ Ingen aktive blockers.
 - vitest er lagt til som devDependency — `npm test` kjører alle unit-tester
 - Node.js er installert lokalt (denne maskinen) via `winget install OpenJS.NodeJS.22 --scope user` — se memory. Bruk `$env:PATH = "C:\Users\haavard.kvinnesland\AppData\Local\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_Microsoft.Winget.Source_8wekyb3d8bbwe\node-v22.23.2-win-x64;$env:PATH"` i hver PowerShell-kommando som trenger node/npm — PATH-endringen fra winget vedvarer ikke i denne økt-typen shell.
 - KRITISK: `npm ci` avdekket 12 sårbarheter (1 kritisk, 10 high) i avhengigheter, inkl. en kjent CVE i `next@14.2.3` med patch tilgjengelig. Ikke fikset i CR-011 (utenfor scope — infra-migrering, ikke avhengighetsoppgradering, jf. playbook §6). Se OPEN-ISSUES.md ISSUE-009.
+- `npm install ioredis` (2026-08-07, CR-014, commit 10d9fd1) endret ikke sårbarhetstallet (fortsatt 12 — 1 kritisk, 10 high, 1 low) — ingen nye sårbarheter introdusert av ioredis selv.
 
 ## Next Recommended Actions
-1. Implementer CR-014 (rate limiting) — Approved med bekreftede grenser (5/15min login,
-   20/time claim-code), ingen kode skrevet ennå. Bruker må provisjonere Redis i Coolify
-   (se CR-014 Infra-checklist) for verifisering mot ekte Redis, men implementasjon +
-   unit-tester (mocket klient) kan starte uavhengig av det.
+1. **CR-014 Infra-checklist (bruker-oppgave i Coolify, ikke noe Claude kan utføre):**
+   a. Provisjonér en Redis-ressurs i Coolify (samme prosjekt som appen og Postgres)
+   b. Sett `REDIS_URL` som miljøvariabel på app-ressursen
+   c. Bekreft at Coolify/Traefik faktisk videresender ekte klient-IP via
+      `x-forwarded-for` — ikke anta det
+   d. Smoke-test etter deploy: trigger faktisk 429 på begge endepunkter, bekreft
+      `Retry-After`-header og at normal drift gjenopptas etter tidsvinduet
+   e. Når alt over er verifisert: marker CR-014 Done
 2. Dekk det aksepterte test-gapet fra CR-011 når det er praktisk: test claim-code/lead-
    innsendingsflyt + CSV-eksport i prod, og bekreft norske klokkeslett på
    /admin/profitability, /admin/analytics, /admin/leads, /admin/codes/[poolId]
