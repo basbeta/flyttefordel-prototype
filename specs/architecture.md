@@ -16,6 +16,7 @@
 | Database | Selvhostet PostgreSQL (Hetzner/Coolify) | — | CR-011: migrert fra Supabase (se migreringsnotat) |
 | Auth (admin) | Egen JWT (`/lib/admin/auth`) | — | Uendret av CR-011 — bruker aldri Supabase Auth |
 | File storage | S3-kompatibel object storage (Hetzner Object Storage) | — | CR-012: admin-opplastede bilder. Egen, offentlig lesbar bucket (`basbeta-pub-object-storage`), separat fra backup-bucketen |
+| Rate limiting | Redis (`ioredis`) | 6.x | CR-014: fixed-window rate limiting på login og claim-code. Splitter ny infrastruktur i dette prosjektet — provisjoneres i Coolify |
 | Hosting | Coolify på Hetzner | — | CR-011: migrert fra Vercel (Hobby) |
 
 ### Migreringsnotat: CR-011 (Hetzner/Coolify, 2026-08-05)
@@ -50,6 +51,15 @@ kun kilden endres fra admin-limt ekstern URL til opplastet fil. Se
   *innhold*, ikke i nøkkel-tilgang.
 - Ny `POST /api/admin/upload`-rute, admin-auth-guardet, validerer filtype
   (jpg/png/webp) og størrelse (maks 5 MB) server-side.
+
+### Migreringsnotat: CR-014 (Rate limiting, 2026-08-06)
+Ny `src/lib/rateLimit/`-modul — Redis-basert fixed-window rate limiting
+(`INCR`+`EXPIRE`) på `POST /api/admin/auth/login` (5 forsøk/15 min per IP)
+og `POST /api/benefits/[slug]/claim-code` (20 claims/time per IP). Klient-IP
+leses fra `x-forwarded-for` (med `x-real-ip`-fallback) — se
+`change-requests/CR-014-rate-limiting.md` for risiko rundt dette i
+Coolify/Traefik-miljøet. Fail-open ved Redis-feil (bevisst avveining,
+dokumentert i CR-en). Ingen schema-endring — tellerne lever kun i Redis.
 
 ### Migreringsnotat: database
 Prisma er eneste lag som snakker med databasen. Ved migrering til ny PostgreSQL-leverandør:
@@ -92,6 +102,7 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 | `/lib/validation` | Zod-schemas for input-validering |
 | `/lib/codes` | Atomisk unik kode-tildeling |
 | `/lib/storage` | CR-012: S3-kompatibel klient for admin-opplastede bilder — isolert for enkel leverandørbytte |
+| `/lib/rateLimit` | CR-014: Redis-basert fixed-window rate limiting (`checkRateLimit`, `getClientIp`) for login og claim-code |
 | `/lib/admin` | CR-013: `useUnsavedChangesWarning` — beforeunload + intern lenke-avskjæring ved ulagrede endringer i admin-former, i tillegg til eksisterende JWT-auth-helpers |
 | `/lib/pwa` | PWA manifest og install-helpers |
 | `/lib/utils` | Generelle hjelpefunksjoner |
@@ -119,6 +130,7 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 - `qrcode` — QR-kode-generering
 - `papaparse` — CSV-parsing for kodeopplasting
 - `@aws-sdk/client-s3` — CR-012: S3-kompatibel klient for bildeopplasting (Hetzner Object Storage)
+- `ioredis` — CR-014: Redis-klient for rate limiting
 
 ---
 
@@ -155,6 +167,10 @@ S3_REGION=
 S3_BUCKET=
 S3_ACCESS_KEY_ID=
 S3_SECRET_ACCESS_KEY=
+
+# Rate limiting — Redis-instans i Coolify (CR-014). Fixed-window-tellere
+# for login og claim-code, ingen persistent data.
+REDIS_URL=
 ```
 
 CR-011: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` og

@@ -1,6 +1,7 @@
 // CR-006: POST /api/benefits/[slug]/claim-code
 // Tildeler en unik kode fra fordelens kode-pool til nåværende sesjon.
 // Idempotent: gjentatte kall fra samme sesjon returnerer samme kode.
+// CR-014: rate limiting (20 claims / time per IP) lagt til.
 //
 // MIGRATION NOTE: For MVP med høyt volum (>1000 samtidige brukere),
 // bytt claimCode-transaksjonen til raw SQL med SELECT ... FOR UPDATE SKIP LOCKED.
@@ -11,12 +12,25 @@ import { prisma } from '@/lib/db/client'
 import { ANON_ID_HEADER } from '@/lib/session'
 import { trackEvent } from '@/lib/tracking/trackEvent'
 import { claimCode, NoCodesAvailableError } from '@/lib/codes/claimCode'
+import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 
 type Params = { params: { slug: string } }
+
+const CLAIM_CODE_RATE_LIMIT = 20
+const CLAIM_CODE_RATE_WINDOW_SECONDS = 60 * 60
 
 export async function POST(request: NextRequest, { params }: Params) {
   const anonymousId = request.headers.get(ANON_ID_HEADER)
   if (!anonymousId) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
+
+  const ip = getClientIp(request)
+  const rateLimit = await checkRateLimit(`claim-code:${ip}`, CLAIM_CODE_RATE_LIMIT, CLAIM_CODE_RATE_WINDOW_SECONDS)
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { message: 'For mange forsøk. Prøv igjen senere.' },
+      { status: 429, headers: { 'Retry-After': String(rateLimit.retryAfterSeconds) } }
+    )
+  }
 
   try {
     const session = await prisma.userSession.findUnique({
