@@ -50,6 +50,16 @@ sider navigerer ikke bort ved lagring lenger; opprett-sider navigerer
 til rediger-siden for den nye posten. Iterert 4 ganger etter brukertest
 samme dag (se Recently Modified Systems). `/review` kjørt — PASSED, Approve.
 
+Prosessendring (bruker-forespørsel, 2026-08-10, ikke en CR — ren
+governance/tooling-endring, ingen app-kode): sesjons-workflowen i
+CLAUDE.md ble for kostbar å kjøre (mye å lese ved hver sesjonsstart, full
+CR-mal brukt selv for en ren versjonsbump). Løsning: arkiverte gammel,
+lukket historikk (Session-1–9/CR-001–010 fra IMPLEMENTATION-LEDGER.md,
+ISSUE-001–008 fra OPEN-ISSUES.md) til nye `*-ARCHIVE.md`-søsterfiler som
+ikke leses automatisk, la til en Micro-CR-mal for trivielle/mekaniske
+endringer, og presiserte i CLAUDE.md at "aktive CR-er" betyr status ≠
+Done. Committed og pushet (1666936). Se DECISIONS.md 2026-08-10.
+
 ## Current Objectives
 CR-014 sin Redis-baserte implementasjon er committed (10d9fd1). Neste
 skritt er brukerens Infra-checklist i Coolify (se Next Recommended
@@ -161,6 +171,10 @@ kan utføre) før den kan markeres Done.
 ✓ ISSUE-010 resolved — CR-013 løste generelt "ulagrede endringer"-varsel i admin (2026-08-06)
 
 ## Notes
+- Historisk detalj for Session-1–9/CR-001–010 og ISSUE-001–008 ligger i
+  `sessions/IMPLEMENTATION-LEDGER-ARCHIVE.md` og `sessions/OPEN-ISSUES-ARCHIVE.md`
+  (2026-08-10) — ikke lest automatisk ved sesjonsstart, kun ved behov for
+  historisk kontekst.
 - `<img>` brukes i stedet for `next/image` — lint warning, akseptabelt for demo
 - Targeting er aktivt i prod — fordeler/heroer uten TargetingRule vises for alle (matchesSession(null) = true)
 - Admin-auth: ADMIN_EMAILS (kommaseparert), ADMIN_PASSWORD, ADMIN_JWT_SECRET — må re-provisjoneres som Coolify-miljøvariabler (CR-011), ikke gjenbruk av Vercel sine

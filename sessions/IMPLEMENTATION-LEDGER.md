@@ -86,3 +86,8 @@
 | 2026-08-10 | Session-14 | git | Push origin/master (98373b5→e3616e7) → Coolify auto-deploy trigget | CR-015 | push ✓ |
 | 2026-08-10 | Session-14 | Prod-verifisering | Bruker bekreftet Coolify-deploy fullført uten feil, og at admin-innlogging + anonym sesjon (begge Middleware-avhengige) fungerer som normalt i prod på next@14.2.35 | CR-015 | prod ✓ |
 | 2026-08-10 | Session-14 | change-requests/CR-015 | Markert Done — alle akseptansekriterier oppfylt (korrigerte, se Implementation Notes: 0 kritisk oppnådd, 2 high i prod akseptert som restrisiko til fremtidig major-CR) | CR-015 | — |
+| 2026-08-10 | Session-14 | Prosessendring (bruker-forespørsel) | Bruker ba om å redusere kostnaden ved sesjons-workflowen i CLAUDE.md. Arkiverte Session-1–9/CR-001–010 (118 rader) fra denne filen til ny `sessions/IMPLEMENTATION-LEDGER-ARCHIVE.md`, og ISSUE-001–008 fra `sessions/OPEN-ISSUES.md` til ny `sessions/OPEN-ISSUES-ARCHIVE.md` — begge arkiv ikke lest automatisk ved sesjonsstart | — | — |
+| 2026-08-10 | Session-14 | .claude/commands/create-cr.md | Lagt til Micro-CR-mal (4 linjer: What/Why/Risk/Rollback) for trivielle/mekaniske endringer, som alternativ til full impact-analyse-mal | — | — |
+| 2026-08-10 | Session-14 | .claude/CLAUDE.md | Presisert at "aktive CR-er" i Session Startup steg 3 betyr status ≠ Done, ikke alle historiske CR-filer. Lagt til arkiveringsregel (~40 rader/issues-terskel) i Session Shutdown | — | — |
+| 2026-08-10 | Session-14 | .claude/commands/end-session.md | Lagt til steg 7 (Archive if Grown) som speiler arkiveringsregelen i CLAUDE.md | — | — |
+| 2026-08-10 | Session-14 | git | Commit 1666936: chore — CR-015 Done + arkivering + micro-CR-prosess, 10 filer. Push origin/master (e3616e7→1666936) | — | push ✓ |
