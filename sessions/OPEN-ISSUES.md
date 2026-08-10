@@ -91,7 +91,7 @@ Resolution: CR-013 løste dette — ny FormSaveBar-komponent (rød pulserende
   tilbake/frem-knapp dekkes ikke.
 
 ISSUE-009
-Status: Open
+Status: Delvis løst — kritisk fikset, high-restrisiko krever egen fremtidig CR
 Priority: High
 Area: package.json / dependencies
 Description: `npm ci` (run for the first time with a real local Node install, during CR-011)
@@ -101,10 +101,20 @@ Description: `npm ci` (run for the first time with a real local Node install, du
   infra migration, not a dependency upgrade, and the migration playbook (docs/
   MIGRATION-PLAYBOOK-HETZNER-COOLIFY.md §6) explicitly says to treat a breaking/major
   dependency bump as its own reviewed CR rather than bundling it in.
-Blocker for: none yet, but should not be left indefinitely given severity (critical present)
+  Oppdatering 2026-08-10 (CR-015): re-kjørt `npm audit` viste 13 sårbarheter (1 kritisk,
+  11 high, 1 low — tallet driver over tid som nye advisories publiseres). CR-015 oppgraderte
+  `next` 14.2.3→14.2.35 (patch, ikke major) og kjørte `npm audit fix` uten `--force`.
+  Resultat: 0 kritisk (var 1), 0 low (var 1), men **8 high gjenstår** — alle tilhører to
+  kjeder som begge krever en semver-major-oppgradering: (1) `next`/`postcss` → krever
+  `next@16.3.0`, 2 av de 8 er i produksjonsavhengigheter (`npm audit --omit=dev` bekrefter);
+  (2) `eslint-config-next`→`glob`/`@typescript-eslint/*`→`minimatch` → krever
+  `eslint-config-next@16.3.0`, dev-only (lint-tid), ingen produksjonseksponering.
+Blocker for: none yet, men de 2 gjenstående high i produksjon (`next`, `postcss`) bør ikke
+  la ligge ubegrenset lenge — vurder en dedikert Next.js 14→15/16-migrerings-CR
 Opened: 2026-08-05
 Resolved:
-Resolution:
+Resolution: Delvis — se CR-015 for kritisk-fiksen. Full resolusjon avhenger av en fremtidig,
+  egen major-oppgraderings-CR for next (14→15/16) og separat for eslint-config-next.
 
 ISSUE-008
 Status: Resolved

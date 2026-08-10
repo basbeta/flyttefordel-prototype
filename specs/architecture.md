@@ -123,7 +123,10 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 
 ## External Dependencies
 
-- `next` 14.x — App-rammeverk
+- `next` 14.2.35 — App-rammeverk. CR-015: patchet fra 14.2.3 for å fjerne
+  en kritisk CVE-sekk. Restrisiko: flere høy-alvorlighets Next.js-CVE-er
+  (Middleware/Server Actions/rewrites) løses først i en fremtidig
+  major-oppgradering (15.x/16.x) — se ISSUE-009
 - `prisma` / `@prisma/client` 5.x — ORM
 - `@supabase/supabase-js` — Auth og Storage (ikke DB-tilgang)
 - `zod` — Runtime input-validering
