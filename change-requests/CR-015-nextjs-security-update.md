@@ -1,6 +1,6 @@
 # CR-015: Sikkerhetsoppdatering — next.js og transitive avhengigheter
 
-Status: Implementert, verifisert lokalt — venter på deploy + prod-smoke-test
+Status: Done (2026-08-10)
 Created: 2026-08-10
 Approved: 2026-08-10
 Note (2026-08-10, etter implementering): Opprinnelig akseptansekriterium
@@ -104,9 +104,9 @@ Required Tests:
       uendret
 - [x] Type-check: `npx tsc --noEmit` — ingen feil
 - [x] Build: `npm run build` — bygger rent
-- [ ] Manuell (etter deploy): admin-innlogging (JWT-guard via Middleware)
+- [x] Manuell (etter deploy): admin-innlogging (JWT-guard via Middleware)
       og forbrukerapp-sesjon (anon_id-cookie via Middleware) fungerer
-      uendret i prod
+      uendret i prod — bekreftet av bruker 2026-08-10
 - [~] Manuell (etter deploy): `npm audit --omit=dev` i prod-bygget viser
       0 kritisk (bekreftet lokalt) — 2 high (`next`/`postcss`) forblir,
       se korrigert AC
@@ -119,8 +119,8 @@ Required Tests:
       (major, utenfor scope). Akseptert restrisiko, se Risks + ISSUE-009.
 - [x] `npx tsc --noEmit`, `npx vitest run` (91/91), `npm run build` —
       alle grønne, ingen regresjon (verifisert 2026-08-10)
-- [ ] Admin-innlogging og anonym sesjon verifisert uendret i prod etter
-      deploy
+- [x] Admin-innlogging og anonym sesjon verifisert uendret i prod etter
+      deploy (bekreftet av bruker 2026-08-10)
 - [x] Gjenstående dev-only-sårbarheter: 6 av 10 løst av `npm audit fix`
       (`brace-expansion`, `esbuild`, `js-yaml`, `nanoid`, `vite` +
       transitive). 4 gjenstår (`eslint-config-next`-familien: `glob`,

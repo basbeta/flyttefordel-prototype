@@ -25,12 +25,23 @@ Before ANY implementation work, Claude MUST:
 
 1. Read `sessions/CURRENT-STATE.md`
 2. Read `sessions/OPEN-ISSUES.md`
-3. Read all active change requests in `/change-requests`
+3. Read active change requests in `/change-requests` — "active" means
+   `Status` is anything other than `Done` (Draft, Approved, Implementert,
+   etc.), not every CR file that has ever existed. CRs already marked
+   `Done` are historical record, not required reading, unless the current
+   task specifically touches the area they describe.
 4. Read impacted specs in `/specs`
 5. Validate architecture consistency against `sessions/ARCHITECTURE-STATE.md`
 6. Produce an explicit implementation plan and present it before proceeding
 
 If any of these files are missing or incomplete, stop and flag it.
+
+`sessions/DECISIONS.md` and `sessions/ARCHITECTURE-STATE.md` are read at
+startup, but `sessions/IMPLEMENTATION-LEDGER.md` and
+`sessions/OPEN-ISSUES.md` may each have a sibling `*-ARCHIVE.md` file —
+older, closed history moved there to keep the main file cheap to read
+every session. Archives are consulted only on demand (a task needs
+historical detail on a specific old CR/issue), never read automatically.
 
 ---
 
@@ -45,6 +56,14 @@ At the end of EVERY session, Claude MUST:
 5. Document unfinished work and blockers
 6. Document risks introduced
 7. Document recommended next actions
+
+Archiving (cost control): if `sessions/IMPLEMENTATION-LEDGER.md` or
+`sessions/OPEN-ISSUES.md` has grown large (as a rule of thumb, more than
+~40 rows/issues since the last archive), move the oldest fully-closed
+entries (Done CRs, Resolved issues with no open follow-up) to their
+`*-ARCHIVE.md` sibling, leave a one-line pointer behind, and note the
+archive move in that session's ledger entry. Never archive an entry that
+is still Open/In Progress or that a current issue references.
 
 ---
 
@@ -94,7 +113,7 @@ Claude MUST ALWAYS:
 |---|---|
 | `/start-session` | Load state, identify blockers, generate plan |
 | `/end-session` | Summarize work, update all orchestration files |
-| `/create-cr` | Create a new change request with impact analysis |
+| `/create-cr` | Create a new change request — Full template with impact analysis, or Micro template for trivial/mechanical changes |
 | `/review` | Run full review checklist |
 | `/implement` | Begin implementation from an approved CR |
 

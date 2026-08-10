@@ -3,13 +3,24 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-Alle 13 CRs er nå Done (CR-001–CR-013). CR-014 (rate limiting) er
+14 av 15 CRs er nå Done (CR-001–CR-013, CR-015). CR-014 (rate limiting) er
 **implementert (Redis-basert), fullt validert og committed (10d9fd1)**.
 Arkitekturspørsmålet fra forrige økt (Redis vs. Traefik, ISSUE-012) er
 avklart — bruker valgte å beholde Redis (se DECISIONS.md 2026-08-07).
 CR-014 er IKKE markert Done ennå — gjenstår Infra-checklist (Redis
 provisjonert i Coolify, REDIS_URL satt, x-forwarded-for verifisert,
 prod-smoke-test av 429-responser).
+
+CR-015 (next.js-sikkerhetsoppdatering, adresserer ISSUE-009) FULLFØRT og
+markert Done 2026-08-10. `next` oppgradert 14.2.3→14.2.35 (patch, ikke
+major) — fjerner den kritiske CVE-sekken (0 kritisk, ned fra 1). `npm
+audit fix` løste 6 av 10 gjenstående dev-transitive høy-sårbarheter.
+2 high i produksjon (`next`, `postcss`) og 4 dev-only (eslint-config-next-
+familien) krever en fremtidig next@16/eslint-config-next@16-major-
+oppgradering — bevisst utenfor scope, dokumentert restrisiko (se
+DECISIONS.md 2026-08-10, ISSUE-009 status "delvis løst"). Committed
+(e3616e7), pushet, deployet via Coolify, admin-login og anonym sesjon
+verifisert uendret i prod av bruker. `/review` kjørt — PASSED, Approve.
 
 CR-011 (Hetzner/Coolify-migrering) FULLFØRT og markert Done 2026-08-06.
 App er LIVE på https://flyttefordel-prototype.basbeta.no og verifisert
@@ -74,7 +85,9 @@ kan utføre) før den kan markeres Done.
 - CR-012: Bildeopplasting i admin-grensesnittet (Status: Done — verifisert i prod 2026-08-06)
 - CR-013: Varsel om ulagrede endringer i admin-former (Status: Done — verifisert i prod 2026-08-06, /review PASSED)
 - CR-014: Rate limiting på innlogging og kode-tildeling (Status: Implementert (Redis), committed 10d9fd1, IKKE Done — venter på Infra-checklist i Coolify)
+- CR-015: Sikkerhetsoppdatering — next.js og transitive avhengigheter (Status: Done — committed e3616e7, deployet og verifisert i prod 2026-08-10)
 
+- `package.json`/`package-lock.json` — `next` oppgradert 14.2.3→14.2.35 (eksakt pinnet, patch, ikke major), `npm audit fix` (uten `--force`) for 6 dev-transitive pakker (`brace-expansion`, `esbuild`, `js-yaml`, `nanoid`, `vite` + transitive), `next-env.d.ts` auto-oppdatert av `next build`, `specs/architecture.md` versjonsnotat (2026-08-10, CR-015, commit e3616e7). Fjerner den kritiske next-CVE-en; 2 high (`next`/`postcss`) og 4 dev-only (`eslint-config-next`-familien) gjenstår, krever fremtidig major-oppgradering — se ISSUE-009, DECISIONS.md
 - `src/lib/rateLimit/` (NY: client.ts lazy ioredis-klient, rateLimiter.ts checkRateLimit fixed-window via INCR+EXPIRE fail-open, getClientIp.ts x-forwarded-for→x-real-ip→'unknown', index.ts + 13 unit-tester), `src/app/api/admin/auth/login/route.ts` (rate-limit-sjekk 5/15min per IP, 429+Retry-After, FØR validateAdminCredentials) + route.test.ts, `src/app/api/benefits/[slug]/claim-code/route.ts` (rate-limit-sjekk 20/time per IP, 429+Retry-After, etter sesjonssjekk) + route.test.ts, `package.json`/`package-lock.json` (ioredis lagt til), `.env.example` + `specs/architecture.md` (REDIS_URL, ny /lib/rateLimit-modul-rad) (2026-08-07, CR-014, commit 10d9fd1). Fullt validert (tsc/91 tester/build), `/review` PASSED kode-nivå. Redis vs. Traefik-arkitekturvalg (ISSUE-012) avklart 2026-08-07 — bruker valgte Redis, se DECISIONS.md
 - `src/lib/admin/useUnsavedChangesWarning.ts` — NY: beforeunload + best-effort intern lenke-avskjæring (capture-fase), shouldInterceptClick eksportert som ren, testbar funksjon + 5 tester (2026-08-06, CR-013)
 - `src/components/admin/FormSaveBar.tsx` — NY: flytende bar (nedre høyre hjørne) som slår sammen lagre-knapp + rød pulserende dirty-indikator + grønn statisk "Lagret"-pille + feilmelding. Erstatter både den gamle statiske `formActions`-knappen og en tidligere, nå fjernet `UnsavedChangesBadge`. Iterert 4 ganger samme dag etter brukertest (2026-08-06, CR-013, commits 99817da/c797ab9/ba5aaac/4b79784/f84e879)
@@ -111,6 +124,13 @@ kan utføre) før den kan markeres Done.
   sine miljøvariabler (ikke gjenbrukt fra Vercel)
 
 ## Validation Status
+✓ CR-015: `npx tsc --noEmit`, `npx vitest run` (91/91, uendret), `npm run build`
+  (Next.js 14.2.35 bekreftet i output) — alle grønne (2026-08-10)
+✓ CR-015: `npm audit --omit=dev` viser 0 kritisk (ned fra 1), 2 high (`next`,
+  `postcss`) akseptert som restrisiko — se ISSUE-009, DECISIONS.md (2026-08-10)
+✓ CR-015: Coolify-deploy bekreftet, admin-innlogging og anonym sesjon
+  (Middleware-avhengige) verifisert uendret i prod av bruker (2026-08-10)
+✓ CR-015: `/review` PASSED, CR-015 Done (2026-08-10)
 ✓ `npx tsc --noEmit` — ingen feil (2026-08-07, CR-014 rate-limit-kode, UNCOMMITTED)
 ✓ `npx vitest run` — 91/91 tester bestått (2026-08-07, CR-014 — 68 eksisterende + 23 nye:
   rateLimiter (fail-open, TTL-edge-cases), getClientIp (header-fallback-kjede), client
@@ -161,7 +181,11 @@ kan utføre) før den kan markeres Done.
 2. Dekk det aksepterte test-gapet fra CR-011 når det er praktisk: test claim-code/lead-
    innsendingsflyt + CSV-eksport i prod, og bekreft norske klokkeslett på
    /admin/profitability, /admin/analytics, /admin/leads, /admin/codes/[poolId]
-3. ISSUE-009 (høy prioritet): vurder `next@14.2.3` sikkerhetsoppdatering som egen CR
+3. ISSUE-009 (delvis løst av CR-015 2026-08-10): vurder en fremtidig, egen
+   CR for Next.js 14→15/16-major-oppgradering — løser de 2 gjenstående
+   high-sårbarhetene i produksjon (`next`, `postcss`) og 4 dev-only
+   (`eslint-config-next`-familien). Ikke en hastesak, men bør ikke stå
+   ubegrenset lenge gitt at det er reelle CVE-er i produksjon.
 4. Vurder Prisma 5→7-migrering som egen fremtidig CR — ville eliminert Alpine/OpenSSL-feilklassen
    permanent (se DECISIONS.md 2026-08-05), men er en breaking-change-oppgradering, ikke en hastesak
 5. Etter CR-014: planlegg neste CR — kandidater:

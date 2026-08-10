@@ -16,6 +16,15 @@ DECIDED BY: human | Claude | both
 
 ## Decisions
 
+DATE: 2026-08-10
+DECISION: CR-015 begrenset til patch-oppgradering av next (14.2.3→14.2.35), major-oppgradering (15.x/16.x) utsatt til egen fremtidig CR
+CONTEXT: ISSUE-009 (åpnet 2026-08-05) flagget en kritisk CVE-sekk i `next@14.2.3` samt 10 andre høy/lav-sårbarheter. `npm audit` viste at en patch-oppgradering til `next@14.2.35` fjerner den kritiske sårbarheten, men at 2 gjenstående high-alvorlighetssårbarheter i produksjon (`next`, `postcss`) og 4 dev-only-sårbarheter (`eslint-config-next`-familien) først løses av en semver-major-oppgradering (`next@16.3.0` / `eslint-config-next@16.3.0`).
+DECISION: Implementer kun patch-oppgraderingen i CR-015 (fjerner det kritiske funnet). La de gjenstående high-sårbarhetene stå som kjent, akseptert restrisiko i ISSUE-009 (status endret til "delvis løst") inntil en dedikert major-oppgraderings-CR vurderes.
+ALTERNATIVES CONSIDERED: Kjøre `npm audit fix --force` for å ta alle sårbarheter i samme CR — forkastet fordi det ville dratt inn en Next.js 14→16-major-oppgradering (reelle breaking changes, bl.a. i Middleware/routing) uten egen impact-analyse, i strid med CLAUDE.md-regelen om at major-oppgraderinger er egne, reviewte CR-er.
+RATIONALE: Den kritiske sårbarheten var det akutte problemet og lot seg løse uten breaking changes. En major-oppgradering av Next.js er en betydelig større endring som fortjener egen impact-analyse, egen testrunde og egen brukergodkjenning — ikke noe som skal snikes inn via en sikkerhetspatch-CR.
+CONSEQUENCES: Produksjonen kjører fortsatt med 2 kjente high-alvorlighets Next.js/postcss-CVE-er til en fremtidig major-migrerings-CR gjennomføres. Risikoen er dokumentert (ikke skjult) i ISSUE-009 og CR-015. Bør ikke stå ubegrenset lenge, men er akseptabelt for en prototype-fase uten høyt trafikkvolum.
+DECIDED BY: Claude (foreslått i CR-015-utkast, ingen innvending fra bruker ved godkjenning)
+
 DATE: 2026-08-07
 DECISION: Behold Redis-basert rate limiting for CR-014, ikke bytt til Traefik-middleware
 CONTEXT: CR-014 sin Redis-implementasjon (src/lib/rateLimit, wiring i login- og claim-code-rutene) var ferdig kodet og enhetstestet (91/91) da bruker spurte om Coolify sin Traefik-reverse-proxy sin innebygde rate-limit-middleware kunne dekke behovet i stedet, og ba om å ikke committe før dette var avklart (ISSUE-012).

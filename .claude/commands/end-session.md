@@ -33,3 +33,13 @@ List risks, tech debt, assumptions, and unresolved dependencies.
 ## 6. Document Next Actions
 
 List recommended actions for next session in priority order. Be explicit.
+
+## 7. Archive if Grown (cost control)
+
+If `sessions/IMPLEMENTATION-LEDGER.md` or `sessions/OPEN-ISSUES.md` has
+grown past ~40 rows/issues since the last archive, move the oldest
+fully-closed entries (Done CRs, Resolved issues with no open follow-up)
+to their `*-ARCHIVE.md` sibling file, leave a one-line pointer behind,
+and note the move in this session's ledger entry. See CLAUDE.md
+"Archiving (cost control)" for the exact rule. Skip this step if neither
+file has grown enough to matter.
