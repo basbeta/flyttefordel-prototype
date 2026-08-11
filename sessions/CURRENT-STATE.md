@@ -3,13 +3,23 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-14 av 15 CRs er nå Done (CR-001–CR-013, CR-015). CR-014 (rate limiting) er
+14 av 16 CRs er nå Done (CR-001–CR-013, CR-015). CR-014 (rate limiting) er
 **implementert (Redis-basert), fullt validert og committed (10d9fd1)**.
 Arkitekturspørsmålet fra forrige økt (Redis vs. Traefik, ISSUE-012) er
 avklart — bruker valgte å beholde Redis (se DECISIONS.md 2026-08-07).
 CR-014 er IKKE markert Done ennå — gjenstår Infra-checklist (Redis
 provisjonert i Coolify, REDIS_URL satt, x-forwarded-for verifisert,
 prod-smoke-test av 429-responser).
+
+CR-016 (beregnet statusindikator for fordeler — aktiv/planlagt/kladd/feilet)
+er **implementert, fullt unit-testet (118/118) og committed (e906eb8), IKKE
+pushet ennå**. Ny `src/lib/benefits/displayStatus.ts` grupperer BenefitStatus
+i 4 fargebøtter og oppdager reelle konfigurasjonsproblemer (manglende
+redemption-innhold, tom kodepool, inkonsistente datoer) — "Feilet" er en
+beregnet UI-tilstand, ingen ny databasestatus. `/review` kjørt — PASSED
+(kode), men CR-016 er IKKE markert Done: ingen lokal `DATABASE_URL` finnes
+så funksjonen kunne ikke testes visuelt i nettleser denne økten. Venter på
+push + deploy + brukerens visuelle bekreftelse av de 4 fargene i prod.
 
 CR-015 (next.js-sikkerhetsoppdatering, adresserer ISSUE-009) FULLFØRT og
 markert Done 2026-08-10. `next` oppgradert 14.2.3→14.2.35 (patch, ikke
@@ -72,6 +82,13 @@ Actions) — Claude har ikke tilgang til å utføre disse selv:
 
 Når disse er utført og verifisert, kan CR-014 markeres Done.
 
+CR-016 er committed (e906eb8) men ikke pushet. Neste skritt:
+1. Push til origin/master → Coolify auto-deploy
+2. Bruker verifiserer visuelt i nettleser: grønn (aktiv), gul (planlagt),
+   grå (kladd/pauset/arkivert), rød (feilet — med forklaring) på både
+   `/admin/benefits` og `/admin/benefits/[id]`
+3. Når verifisert: marker CR-016 Done
+
 ## Current Branch
 master
 
@@ -96,6 +113,7 @@ kan utføre) før den kan markeres Done.
 - CR-013: Varsel om ulagrede endringer i admin-former (Status: Done — verifisert i prod 2026-08-06, /review PASSED)
 - CR-014: Rate limiting på innlogging og kode-tildeling (Status: Implementert (Redis), committed 10d9fd1, IKKE Done — venter på Infra-checklist i Coolify)
 - CR-015: Sikkerhetsoppdatering — next.js og transitive avhengigheter (Status: Done — committed e3616e7, deployet og verifisert i prod 2026-08-10)
+- CR-016: Beregnet statusindikator for fordeler (Status: Implementert, committed e906eb8, IKKE pushet/Done — venter på push+deploy+visuell verifisering)
 
 - `package.json`/`package-lock.json` — `next` oppgradert 14.2.3→14.2.35 (eksakt pinnet, patch, ikke major), `npm audit fix` (uten `--force`) for 6 dev-transitive pakker (`brace-expansion`, `esbuild`, `js-yaml`, `nanoid`, `vite` + transitive), `next-env.d.ts` auto-oppdatert av `next build`, `specs/architecture.md` versjonsnotat (2026-08-10, CR-015, commit e3616e7). Fjerner den kritiske next-CVE-en; 2 high (`next`/`postcss`) og 4 dev-only (`eslint-config-next`-familien) gjenstår, krever fremtidig major-oppgradering — se ISSUE-009, DECISIONS.md
 - `src/lib/rateLimit/` (NY: client.ts lazy ioredis-klient, rateLimiter.ts checkRateLimit fixed-window via INCR+EXPIRE fail-open, getClientIp.ts x-forwarded-for→x-real-ip→'unknown', index.ts + 13 unit-tester), `src/app/api/admin/auth/login/route.ts` (rate-limit-sjekk 5/15min per IP, 429+Retry-After, FØR validateAdminCredentials) + route.test.ts, `src/app/api/benefits/[slug]/claim-code/route.ts` (rate-limit-sjekk 20/time per IP, 429+Retry-After, etter sesjonssjekk) + route.test.ts, `package.json`/`package-lock.json` (ioredis lagt til), `.env.example` + `specs/architecture.md` (REDIS_URL, ny /lib/rateLimit-modul-rad) (2026-08-07, CR-014, commit 10d9fd1). Fullt validert (tsc/91 tester/build), `/review` PASSED kode-nivå. Redis vs. Traefik-arkitekturvalg (ISSUE-012) avklart 2026-08-07 — bruker valgte Redis, se DECISIONS.md
@@ -184,7 +202,10 @@ kan utføre) før den kan markeres Done.
 - `npm install ioredis` (2026-08-07, CR-014, commit 10d9fd1) endret ikke sårbarhetstallet (fortsatt 12 — 1 kritisk, 10 high, 1 low) — ingen nye sårbarheter introdusert av ioredis selv.
 
 ## Next Recommended Actions
-1. **CR-014 Infra-checklist (bruker-oppgave i Coolify, ikke noe Claude kan utføre):**
+1. **CR-016**: Push commit e906eb8 til origin/master → Coolify auto-deploy, deretter
+   bruker verifiserer visuelt de 4 fargebøttene (aktiv/planlagt/kladd/feilet) i
+   nettleser på `/admin/benefits` og `/admin/benefits/[id]` før CR-016 markeres Done
+2. **CR-014 Infra-checklist (bruker-oppgave i Coolify, ikke noe Claude kan utføre):**
    a. Provisjonér en Redis-ressurs i Coolify (samme prosjekt som appen og Postgres)
    b. Sett `REDIS_URL` som miljøvariabel på app-ressursen
    c. Bekreft at Coolify/Traefik faktisk videresender ekte klient-IP via
@@ -192,17 +213,17 @@ kan utføre) før den kan markeres Done.
    d. Smoke-test etter deploy: trigger faktisk 429 på begge endepunkter, bekreft
       `Retry-After`-header og at normal drift gjenopptas etter tidsvinduet
    e. Når alt over er verifisert: marker CR-014 Done
-2. Dekk det aksepterte test-gapet fra CR-011 når det er praktisk: test claim-code/lead-
+3. Dekk det aksepterte test-gapet fra CR-011 når det er praktisk: test claim-code/lead-
    innsendingsflyt + CSV-eksport i prod, og bekreft norske klokkeslett på
    /admin/profitability, /admin/analytics, /admin/leads, /admin/codes/[poolId]
-3. ISSUE-009 (delvis løst av CR-015 2026-08-10): vurder en fremtidig, egen
+4. ISSUE-009 (delvis løst av CR-015 2026-08-10): vurder en fremtidig, egen
    CR for Next.js 14→15/16-major-oppgradering — løser de 2 gjenstående
    high-sårbarhetene i produksjon (`next`, `postcss`) og 4 dev-only
    (`eslint-config-next`-familien). Ikke en hastesak, men bør ikke stå
    ubegrenset lenge gitt at det er reelle CVE-er i produksjon.
-4. Vurder Prisma 5→7-migrering som egen fremtidig CR — ville eliminert Alpine/OpenSSL-feilklassen
+5. Vurder Prisma 5→7-migrering som egen fremtidig CR — ville eliminert Alpine/OpenSSL-feilklassen
    permanent (se DECISIONS.md 2026-08-05), men er en breaking-change-oppgradering, ikke en hastesak
-5. Etter CR-014: planlegg neste CR — kandidater:
+6. Etter CR-014/CR-016: planlegg neste CR — kandidater:
    a. Bruker-autentisering (ny leverandør — Supabase Auth ikke lenger et alternativ, se ARCHITECTURE-STATE.md)
    b. Notifikasjoner ved lav pool-beholdning (e-post / webhook)
    c. Per-sesjon LTV-estimat på /admin/profitability (AdminSessionLTV — type definert, query ikke implementert)
