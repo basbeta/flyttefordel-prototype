@@ -24,6 +24,16 @@
 - `archived` — Tatt ut av drift, beholdt for historikk
 - `deleted` — Soft delete
 
+CR-016: Admin-UI viser i tillegg en **beregnet visningsstatus** (ikke lagret,
+ikke en egen enum-verdi) som grupperer statusene over i 4 farge-bøtter:
+- Grønn — `active` uten registrert problem
+- Gul — `scheduled` uten registrert problem
+- Grå — `draft`, `paused`, `archived`, `deleted`
+- Rød ("Feilet") — `expired`, ELLER `active`/`scheduled` med et reelt
+  konfigurasjonsproblem (manglende redemption-innhold for valgt
+  `BenefitRedemptionType`, tom kodepool, eller en `ends_at`/`starts_at`
+  som er inkonsistent med statusen). Se `src/lib/benefits/displayStatus.ts`.
+
 ### BenefitRedemptionType
 - `generic_code` — Én kode som alle kan bruke
 - `unique_code` — Kode fra kodepool, tildeles én gang per bruker/session

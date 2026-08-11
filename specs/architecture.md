@@ -61,6 +61,19 @@ leses fra `x-forwarded-for` (med `x-real-ip`-fallback) — se
 Coolify/Traefik-miljøet. Fail-open ved Redis-feil (bevisst avveining,
 dokumentert i CR-en). Ingen schema-endring — tellerne lever kun i Redis.
 
+### Migreringsnotat: CR-016 (Statusindikator for fordeler, 2026-08-11)
+Ny `src/lib/benefits/displayStatus.ts` — ren funksjon `getBenefitDisplayStatus()`
+som grupperer den lagrede `BenefitStatus` i 4 visnings-bøtter (aktiv/planlagt/
+kladd/feilet) og oppdager reelle konfigurasjonsproblemer (manglende
+redemption-innhold for valgt `redemptionType`, tom kodepool, utløpt sluttdato
+uten statusoppdatering). Ingen schema-endring — «feilet» er en beregnet
+tilstand, ikke en lagret enum-verdi. Se `change-requests/CR-016-*.md`.
+- Ny delt komponent `src/components/admin/BenefitStatusBadge.tsx` brukt både
+  på fordelsoversikten og rediger fordel-siden.
+- `getAdminBenefits()` sitt Prisma-query utvider `include` med `redemption`
+  (+ `codePool.availableCodes`) for å kunne beregne samme visningsstatus i
+  listen som i redigeringsvisningen.
+
 ### Migreringsnotat: database
 Prisma er eneste lag som snakker med databasen. Ved migrering til ny PostgreSQL-leverandør:
 1. Oppdater `DATABASE_URL` og `DIRECT_URL` i miljøvariabler
@@ -104,6 +117,7 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 | `/lib/storage` | CR-012: S3-kompatibel klient for admin-opplastede bilder — isolert for enkel leverandørbytte |
 | `/lib/rateLimit` | CR-014: Redis-basert fixed-window rate limiting (`checkRateLimit`, `getClientIp`) for login og claim-code |
 | `/lib/admin` | CR-013: `useUnsavedChangesWarning` — beforeunload + intern lenke-avskjæring ved ulagrede endringer i admin-former, i tillegg til eksisterende JWT-auth-helpers |
+| `/lib/benefits` | CR-016: `getBenefitDisplayStatus()` — ren funksjon som beregner visningsstatus (aktiv/planlagt/kladd/feilet) for fordeler, ingen I/O |
 | `/lib/pwa` | PWA manifest og install-helpers |
 | `/lib/utils` | Generelle hjelpefunksjoner |
 | `/types` | TypeScript-typer og enums |

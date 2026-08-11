@@ -242,6 +242,8 @@ export async function getAdminBenefits(filters?: {
     include: {
       advertiser: { select: { name: true } },
       category: { select: { name: true } },
+      // CR-016: nødvendig for å beregne visningsstatus (se /lib/benefits/displayStatus.ts)
+      redemption: { include: { codePool: { select: { availableCodes: true } } } },
     },
     orderBy: [{ status: 'asc' }, { priority: 'desc' }, { createdAt: 'desc' }],
   })
@@ -257,6 +259,17 @@ export async function getAdminBenefits(filters?: {
     startsAt: b.startsAt?.toISOString() ?? null,
     endsAt: b.endsAt?.toISOString() ?? null,
     createdAt: b.createdAt.toISOString(),
+    redemptionType: b.redemptionType,
+    redemption: b.redemption
+      ? {
+          genericCode: b.redemption.genericCode,
+          externalUrl: b.redemption.externalUrl,
+          qrValue: b.redemption.qrValue,
+          codePoolId: b.redemption.codePoolId,
+          leadFormId: b.redemption.leadFormId,
+          codePool: b.redemption.codePool ? { availableCodes: b.redemption.codePool.availableCodes } : null,
+        }
+      : null,
   }))
 }
 

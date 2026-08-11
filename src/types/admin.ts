@@ -44,6 +44,16 @@ export type AdminBenefitRow = {
   startsAt: string | null
   endsAt: string | null
   createdAt: string
+  // CR-016: felter for beregnet visningsstatus (se /lib/benefits/displayStatus.ts)
+  redemptionType: import('@prisma/client').BenefitRedemptionType
+  redemption: {
+    genericCode: string | null
+    externalUrl: string | null
+    qrValue: string | null
+    codePoolId: string | null
+    leadFormId: string | null
+    codePool: { availableCodes: number } | null
+  } | null
 }
 
 export type AdminBenefitDetail = AdminBenefitRow & {

@@ -4,7 +4,9 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireAdminAuth } from '@/lib/admin/auth'
 import { getAdminBenefits } from '@/lib/queries/adminQueries'
+import { getBenefitDisplayStatus } from '@/lib/benefits/displayStatus'
 import { BenefitStatusActions } from './BenefitStatusActions'
+import { BenefitStatusBadge } from '@/components/admin/BenefitStatusBadge'
 import styles from '@/components/admin/AdminTable.module.css'
 
 export const dynamic = 'force-dynamic'
@@ -70,9 +72,7 @@ export default async function AdminBenefitsPage({ searchParams }: Props) {
                     </Link>
                   </td>
                   <td>
-                    <span className={`${styles.statusBadge} ${styles[`status-${b.status}`]}`}>
-                      {STATUS_LABELS[b.status] ?? b.status}
-                    </span>
+                    <BenefitStatusBadge status={getBenefitDisplayStatus(b)} />
                   </td>
                   <td>{b.advertiserName}</td>
                   <td>{b.categoryName}</td>
