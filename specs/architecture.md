@@ -137,10 +137,12 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 
 ## External Dependencies
 
-- `next` 14.2.35 — App-rammeverk. CR-015: patchet fra 14.2.3 for å fjerne
-  en kritisk CVE-sekk. Restrisiko: flere høy-alvorlighets Next.js-CVE-er
-  (Middleware/Server Actions/rewrites) løses først i en fremtidig
-  major-oppgradering (15.x/16.x) — se ISSUE-009
+- `next` 16.3.1 — App-rammeverk. CR-015 patchet fra 14.2.3→14.2.35
+  (kritisk CVE). CR-018 fullførte major-oppgraderingen til 16.3.1,
+  som fjernet alle gjenstående 8 high-severity CVE-er (`next`, `postcss`,
+  `eslint-config-next`-kjeden) — se ISSUE-009 (lukket). Krevde
+  async-migrering av `params`/`searchParams`/`cookies()`/`headers()` i
+  App Router-kode (Next 15+ breaking change)
 - `prisma` / `@prisma/client` 5.x — ORM
 - `@supabase/supabase-js` — Auth og Storage (ikke DB-tilgang)
 - `zod` — Runtime input-validering

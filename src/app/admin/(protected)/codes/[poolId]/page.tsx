@@ -19,11 +19,12 @@ const STATUS_LABEL: Record<string, { label: string; color: string }> = {
   expired:   { label: 'Utløpt',       color: 'var(--color-error)' },
 }
 
-type Props = { params: { poolId: string } }
+type Props = { params: Promise<{ poolId: string }> }
 
 export default async function CodePoolDetailPage({ params }: Props) {
+  const { poolId } = await params
   await requireAdminAuth()
-  const pool = await getAdminCodePoolDetail(params.poolId)
+  const pool = await getAdminCodePoolDetail(poolId)
   if (!pool) notFound()
 
   const isLowStock = pool.availableCodes <= pool.lowStockThreshold

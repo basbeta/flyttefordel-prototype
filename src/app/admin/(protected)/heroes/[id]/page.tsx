@@ -11,11 +11,12 @@ import styles from '@/components/admin/AdminTable.module.css'
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Rediger hero' }
 
-type Props = { params: { id: string } }
+type Props = { params: Promise<{ id: string }> }
 
 export default async function EditHeroPage({ params }: Props) {
+  const { id } = await params
   await requireAdminAuth()
-  const hero = await getAdminHeroById(params.id)
+  const hero = await getAdminHeroById(id)
   if (!hero) notFound()
 
   return (

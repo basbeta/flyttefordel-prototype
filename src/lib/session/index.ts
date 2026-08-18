@@ -18,7 +18,7 @@ export type SessionData = {
 }
 
 export async function getOrCreateSession(): Promise<SessionData | null> {
-  const anonymousId = headers().get(ANON_ID_HEADER)
+  const anonymousId = (await headers()).get(ANON_ID_HEADER)
   if (!anonymousId) return null
 
   try {

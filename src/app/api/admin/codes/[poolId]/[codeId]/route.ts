@@ -12,14 +12,16 @@ async function authCheck(request: NextRequest) {
   return verifyAdminJWT(token)
 }
 
-type Params = { params: { poolId: string; codeId: string } }
+type Params = { params: Promise<{ poolId: string; codeId: string }> }
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   if (!await authCheck(request)) return NextResponse.json({ message: 'Ikke autentisert' }, { status: 401 })
 
+  const { poolId, codeId } = await params
+
   try {
     const code = await prisma.code.findFirst({
-      where: { id: params.codeId, codePoolId: params.poolId },
+      where: { id: codeId, codePoolId: poolId },
       select: { id: true, status: true },
     })
     if (!code) return NextResponse.json({ message: 'Kode ikke funnet' }, { status: 404 })
@@ -37,7 +39,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       }),
       ...(wasAvailable
         ? [prisma.codePool.update({
-            where: { id: params.poolId },
+            where: { id: poolId },
             data: { availableCodes: { decrement: 1 } },
           })]
         : []),

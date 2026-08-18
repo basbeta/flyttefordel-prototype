@@ -38,7 +38,7 @@ export async function verifyAdminJWT(token: string): Promise<AdminPayload | null
 }
 
 export async function requireAdminAuth(): Promise<AdminPayload> {
-  const token = cookies().get(ADMIN_TOKEN_COOKIE)?.value
+  const token = (await cookies()).get(ADMIN_TOKEN_COOKIE)?.value
   if (!token) redirect('/admin/login')
   const payload = await verifyAdminJWT(token)
   if (!payload) redirect('/admin/login')

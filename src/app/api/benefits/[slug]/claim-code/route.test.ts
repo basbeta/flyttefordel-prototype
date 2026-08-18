@@ -50,7 +50,7 @@ function makeRequest(anonymousId: string | null) {
   })
 }
 
-const PARAMS = { params: { slug: 'test-slug' } }
+const PARAMS = { params: Promise.resolve({ slug: 'test-slug' }) }
 
 beforeEach(() => vi.clearAllMocks())
 

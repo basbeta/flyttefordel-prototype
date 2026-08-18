@@ -26,17 +26,18 @@ const patchSchema = z.object({
   logoUrl: z.string().nullable().optional(),
 })
 
-type Params = { params: { id: string } }
+type Params = { params: Promise<{ id: string }> }
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   if (!await authCheck(request)) return NextResponse.json({ message: 'Ikke autentisert' }, { status: 401 })
 
+  const { id } = await params
   const body: unknown = await request.json().catch(() => null)
   const parsed = patchSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
   try {
-    const existing = await prisma.advertiser.findFirst({ where: { id: params.id, deletedAt: null } })
+    const existing = await prisma.advertiser.findFirst({ where: { id, deletedAt: null } })
     if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
     if (parsed.data.slug && parsed.data.slug !== existing.slug) {
@@ -44,7 +45,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       if (slugConflict) return NextResponse.json({ message: 'Slug er allerede i bruk' }, { status: 409 })
     }
 
-    await prisma.advertiser.update({ where: { id: params.id }, data: parsed.data })
+    await prisma.advertiser.update({ where: { id }, data: parsed.data })
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('[admin/advertisers/[id] PATCH] Uventet feil:', err)
@@ -55,12 +56,13 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 export async function DELETE(request: NextRequest, { params }: Params) {
   if (!await authCheck(request)) return NextResponse.json({ message: 'Ikke autentisert' }, { status: 401 })
 
+  const { id } = await params
   try {
-    const existing = await prisma.advertiser.findFirst({ where: { id: params.id, deletedAt: null } })
+    const existing = await prisma.advertiser.findFirst({ where: { id, deletedAt: null } })
     if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
     await prisma.advertiser.update({
-      where: { id: params.id },
+      where: { id },
       data: { deletedAt: new Date(), isActive: false },
     })
     return NextResponse.json({ ok: true })

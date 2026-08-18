@@ -11,11 +11,12 @@ import styles from '@/components/admin/AdminTable.module.css'
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Rediger annonsør' }
 
-type Props = { params: { id: string } }
+type Props = { params: Promise<{ id: string }> }
 
 export default async function EditAdvertiserPage({ params }: Props) {
+  const { id } = await params
   await requireAdminAuth()
-  const advertiser = await getAdminAdvertiserById(params.id)
+  const advertiser = await getAdminAdvertiserById(id)
   if (!advertiser) notFound()
 
   return (

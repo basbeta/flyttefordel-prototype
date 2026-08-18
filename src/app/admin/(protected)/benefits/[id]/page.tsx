@@ -13,12 +13,13 @@ import styles from '@/components/admin/AdminTable.module.css'
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Rediger fordel' }
 
-type Props = { params: { id: string } }
+type Props = { params: Promise<{ id: string }> }
 
 export default async function EditBenefitPage({ params }: Props) {
+  const { id } = await params
   await requireAdminAuth()
   const [benefit, advertisers, categories] = await Promise.all([
-    getAdminBenefitById(params.id),
+    getAdminBenefitById(id),
     getAdminAdvertisers(),
     getAdminCategories(),
   ])

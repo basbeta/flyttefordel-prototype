@@ -15,11 +15,12 @@ export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Fordeler' }
 
 type Props = {
-  searchParams: { category?: string }
+  searchParams: Promise<{ category?: string }>
 }
 
 export default async function BenefitsPage({ searchParams }: Props) {
-  const activeCategory = searchParams.category ?? null
+  const { category } = await searchParams
+  const activeCategory = category ?? null
   const session = await getOrCreateSession()
   const [categories, benefits] = await Promise.all([
     getActiveCategories(),

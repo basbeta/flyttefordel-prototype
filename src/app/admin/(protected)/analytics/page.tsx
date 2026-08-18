@@ -10,7 +10,7 @@ import styles from '@/components/admin/AdminTable.module.css'
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Analytics' }
 
-type Props = { searchParams: { period?: string } }
+type Props = { searchParams: Promise<{ period?: string }> }
 
 const VALID_PERIODS = ['7d', '30d', 'all'] as const
 type Period = typeof VALID_PERIODS[number]
@@ -21,7 +21,8 @@ function parsePeriod(raw: string | undefined): Period {
 
 export default async function AnalyticsPage({ searchParams }: Props) {
   await requireAdminAuth()
-  const period = parsePeriod(searchParams.period)
+  const { period: rawPeriod } = await searchParams
+  const period = parsePeriod(rawPeriod)
   const data = await getAnalytics(period)
 
   return (

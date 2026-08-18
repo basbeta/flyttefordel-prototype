@@ -13,17 +13,19 @@ import styles from './page.module.css'
 
 export const dynamic = 'force-dynamic'
 
-type Props = { params: { slug: string } }
+type Props = { params: Promise<{ slug: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const benefit = await getBenefitBySlug(params.slug)
+  const { slug } = await params
+  const benefit = await getBenefitBySlug(slug)
   if (!benefit) return { title: 'Fordel ikke funnet' }
   return { title: benefit.title, description: benefit.shortDescription }
 }
 
 export default async function BenefitDetailPage({ params }: Props) {
+  const { slug } = await params
   const session = await getOrCreateSession()
-  const benefit = await getBenefitBySlug(params.slug, session?.sessionId)
+  const benefit = await getBenefitBySlug(slug, session?.sessionId)
   if (!benefit) notFound()
 
   await trackEvent('benefit_viewed', benefit.id)

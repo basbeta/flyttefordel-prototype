@@ -31,7 +31,7 @@ function makeRequest() {
   })
 }
 
-const PARAMS = { params: { poolId: 'pool1', codeId: 'code1' } }
+const PARAMS = { params: Promise.resolve({ poolId: 'pool1', codeId: 'code1' }) }
 
 beforeEach(() => vi.clearAllMocks())
 

@@ -17,7 +17,7 @@ const addCodesSchema = z.object({
   codes: z.array(z.string().min(1)).min(1).max(1000),
 })
 
-type Params = { params: { poolId: string } }
+type Params = { params: Promise<{ poolId: string }> }
 
 export async function POST(request: NextRequest, { params }: Params) {
   if (!await authCheck(request)) return NextResponse.json({ message: 'Ikke autentisert' }, { status: 401 })
@@ -26,8 +26,10 @@ export async function POST(request: NextRequest, { params }: Params) {
   const parsed = addCodesSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
+  const { poolId } = await params
+
   try {
-    const pool = await prisma.codePool.findFirst({ where: { id: params.poolId } })
+    const pool = await prisma.codePool.findFirst({ where: { id: poolId } })
     if (!pool) return NextResponse.json({ message: 'Pool ikke funnet' }, { status: 404 })
 
     const deduped = Array.from(new Set(parsed.data.codes))
@@ -35,7 +37,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     const result = await prisma.$transaction(async (tx) => {
       const created = await tx.code.createMany({
         data: deduped.map((codeValue) => ({
-          codePoolId: params.poolId,
+          codePoolId: poolId,
           benefitId: pool.benefitId,
           codeValue,
           status: 'available',
@@ -45,7 +47,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
       if (created.count > 0) {
         await tx.codePool.update({
-          where: { id: params.poolId },
+          where: { id: poolId },
           data: {
             totalCodes: { increment: created.count },
             availableCodes: { increment: created.count },

@@ -14,12 +14,13 @@ import { trackEvent } from '@/lib/tracking/trackEvent'
 import { claimCode, NoCodesAvailableError } from '@/lib/codes/claimCode'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 
-type Params = { params: { slug: string } }
+type Params = { params: Promise<{ slug: string }> }
 
 const CLAIM_CODE_RATE_LIMIT = 20
 const CLAIM_CODE_RATE_WINDOW_SECONDS = 60 * 60
 
 export async function POST(request: NextRequest, { params }: Params) {
+  const { slug } = await params
   const anonymousId = request.headers.get(ANON_ID_HEADER)
   if (!anonymousId) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
 
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     if (!session) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
 
     const benefit = await prisma.benefit.findFirst({
-      where: { slug: decodeURIComponent(params.slug), status: 'active', deletedAt: null },
+      where: { slug: decodeURIComponent(slug), status: 'active', deletedAt: null },
       select: {
         id: true,
         redemptionType: true,

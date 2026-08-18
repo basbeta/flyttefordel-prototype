@@ -13,11 +13,12 @@ const STATUS_LABELS: Record<string, string> = {
   new: 'Ny', exported: 'Eksportert', failed: 'Feilet', deleted: 'Slettet',
 }
 
-type Props = { searchParams: { status?: string } }
+type Props = { searchParams: Promise<{ status?: string }> }
 
 export default async function AdminLeadsPage({ searchParams }: Props) {
   await requireAdminAuth()
-  const status = searchParams.status as 'new' | 'exported' | 'failed' | undefined
+  const { status: rawStatus } = await searchParams
+  const status = rawStatus as 'new' | 'exported' | 'failed' | undefined
   const leads = await getAdminLeads(status ? { status } : undefined)
 
   return (

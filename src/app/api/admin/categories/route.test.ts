@@ -72,7 +72,7 @@ describe('PATCH /api/admin/categories/[id]', () => {
     mockPrisma.category.findFirst.mockResolvedValueOnce(null)
 
     const req = makeRequest('PATCH', { name: 'Ny tittel' }, 'http://localhost/api/admin/categories/ukjent-id')
-    const res = await PATCH(req, { params: { id: 'ukjent-id' } })
+    const res = await PATCH(req, { params: Promise.resolve({ id: 'ukjent-id' }) })
 
     expect(res.status).toBe(404)
   })
@@ -83,7 +83,7 @@ describe('DELETE /api/admin/categories/[id]', () => {
     mockPrisma.category.findFirst.mockResolvedValueOnce({ id: 'cat-1', isActive: true })
 
     const req = makeRequest('DELETE', null, 'http://localhost/api/admin/categories/cat-1')
-    const res = await DELETE(req, { params: { id: 'cat-1' } })
+    const res = await DELETE(req, { params: Promise.resolve({ id: 'cat-1' }) })
 
     expect(res.status).toBe(200)
     expect(mockPrisma.category.update).toHaveBeenCalledWith({
@@ -96,7 +96,7 @@ describe('DELETE /api/admin/categories/[id]', () => {
     mockPrisma.category.findFirst.mockResolvedValueOnce(null)
 
     const req = makeRequest('DELETE', null, 'http://localhost/api/admin/categories/ukjent')
-    const res = await DELETE(req, { params: { id: 'ukjent' } })
+    const res = await DELETE(req, { params: Promise.resolve({ id: 'ukjent' }) })
 
     expect(res.status).toBe(404)
   })

@@ -8,7 +8,7 @@ import { prisma } from '@/lib/db/client'
 import { ANON_ID_HEADER } from '@/lib/session'
 import { trackEvent } from '@/lib/tracking/trackEvent'
 
-type Params = { params: { slug: string } }
+type Params = { params: Promise<{ slug: string }> }
 
 async function resolveSession(request: NextRequest) {
   const anonymousId = request.headers.get(ANON_ID_HEADER)
@@ -28,9 +28,10 @@ async function resolveBenefit(slug: string) {
 
 export async function POST(request: NextRequest, { params }: Params) {
   try {
+    const { slug } = await params
     const [session, benefit] = await Promise.all([
       resolveSession(request),
-      resolveBenefit(params.slug),
+      resolveBenefit(slug),
     ])
 
     if (!session) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })
@@ -70,9 +71,10 @@ export async function POST(request: NextRequest, { params }: Params) {
 
 export async function DELETE(request: NextRequest, { params }: Params) {
   try {
+    const { slug } = await params
     const [session, benefit] = await Promise.all([
       resolveSession(request),
-      resolveBenefit(params.slug),
+      resolveBenefit(slug),
     ])
 
     if (!session) return NextResponse.json({ message: 'Ingen sesjon' }, { status: 401 })

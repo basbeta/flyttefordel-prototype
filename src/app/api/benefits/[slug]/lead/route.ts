@@ -12,8 +12,9 @@ const LeadBodySchema = z
   })
   .passthrough()
 
-export async function POST(request: Request, { params }: { params: { slug: string } }) {
+export async function POST(request: Request, { params }: { params: Promise<{ slug: string }> }) {
   try {
+    const { slug } = await params
     const body = await request.json()
     const parsed = LeadBodySchema.safeParse(body)
 
@@ -25,7 +26,7 @@ export async function POST(request: Request, { params }: { params: { slug: strin
     }
 
     const benefit = await prisma.benefit.findFirst({
-      where: { slug: decodeURIComponent(params.slug), status: 'active', deletedAt: null },
+      where: { slug: decodeURIComponent(slug), status: 'active', deletedAt: null },
       select: { id: true, advertiserId: true, consentText: true },
     })
 

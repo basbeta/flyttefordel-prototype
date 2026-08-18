@@ -16,7 +16,7 @@ const statusSchema = z.object({
   status: z.enum(['draft', 'active', 'scheduled', 'paused', 'expired', 'archived', 'deleted']),
 })
 
-type Params = { params: { id: string } }
+type Params = { params: Promise<{ id: string }> }
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   if (!await authCheck(request)) return NextResponse.json({ message: 'Ikke autentisert' }, { status: 401 })
@@ -26,11 +26,12 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
 
   try {
-    const existing = await prisma.benefit.findFirst({ where: { id: params.id, deletedAt: null } })
+    const { id } = await params
+    const existing = await prisma.benefit.findFirst({ where: { id, deletedAt: null } })
     if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
     await prisma.benefit.update({
-      where: { id: params.id },
+      where: { id },
       data: { status: parsed.data.status },
     })
 

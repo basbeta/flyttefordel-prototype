@@ -11,11 +11,12 @@ import styles from '@/components/admin/AdminTable.module.css'
 export const dynamic = 'force-dynamic'
 export const metadata: Metadata = { title: 'Rediger kategori' }
 
-type Props = { params: { id: string } }
+type Props = { params: Promise<{ id: string }> }
 
 export default async function EditCategoryPage({ params }: Props) {
+  const { id } = await params
   await requireAdminAuth()
-  const category = await getAdminCategoryById(params.id)
+  const category = await getAdminCategoryById(id)
   if (!category) notFound()
 
   return (

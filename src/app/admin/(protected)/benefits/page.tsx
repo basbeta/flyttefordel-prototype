@@ -17,13 +17,13 @@ const STATUS_LABELS: Record<string, string> = {
   paused: 'Pauset', expired: 'Utløpt', archived: 'Arkivert',
 }
 
-type Props = { searchParams: { status?: string } }
+type Props = { searchParams: Promise<{ status?: string }> }
 
 export default async function AdminBenefitsPage({ searchParams }: Props) {
   await requireAdminAuth()
   const statusValues = ['draft', 'active', 'scheduled', 'paused', 'expired', 'archived', 'deleted'] as const
   type BenefitStatusValue = typeof statusValues[number]
-  const rawStatus = searchParams.status
+  const { status: rawStatus } = await searchParams
   const status = statusValues.includes(rawStatus as BenefitStatusValue) ? rawStatus as BenefitStatusValue : undefined
   const benefits = await getAdminBenefits(status ? { status } : undefined)
 
