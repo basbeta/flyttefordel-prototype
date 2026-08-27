@@ -3,7 +3,9 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-14 av 16 CRs er nå Done (CR-001–CR-013, CR-015). CR-014 (rate limiting) er
+15 av 19 CRs er nå Done (CR-001–CR-013, CR-015, CR-017). CR-016 og CR-018 er
+implementert/deployet og venter kun på brukerens verifisering i prod (ikke
+kodearbeid). CR-019 er Approved, ikke startet. CR-014 (rate limiting) er
 **implementert (Redis-basert), fullt validert og committed (10d9fd1)**.
 Arkitekturspørsmålet fra forrige økt (Redis vs. Traefik, ISSUE-012) er
 avklart — bruker valgte å beholde Redis (se DECISIONS.md 2026-08-07).
@@ -253,19 +255,51 @@ fra bruker (se Next Recommended Actions).
 ✓ ISSUE-007 resolved — «gratis kaffe» startsAt/endsAt satt til null (2026-05-22)
 ✓ ISSUE-008 resolved — DB unique constraint + deaktiver-kode + detaljside (2026-05-22, CR-009)
 ✓ ISSUE-010 resolved — CR-013 løste generelt "ulagrede endringer"-varsel i admin (2026-08-06)
+✓ ISSUE-009 resolved — CR-018 fjernet de siste 8 high-sårbarhetene, npm audit 0 vulnerabilities (2026-08-18, dokumentert 2026-08-27)
 
 ## Notes
 - Historisk detalj for Session-1–9/CR-001–010 og ISSUE-001–008 ligger i
   `sessions/IMPLEMENTATION-LEDGER-ARCHIVE.md` og `sessions/OPEN-ISSUES-ARCHIVE.md`
   (2026-08-10) — ikke lest automatisk ved sesjonsstart, kun ved behov for
   historisk kontekst.
+- 2026-08-27: samme arkiv utvidet med CR-012/CR-013/CR-015-rader og
+  2026-08-10-governance-radene (47 rader totalt, IMPLEMENTATION-LEDGER.md
+  hadde vokst til 106 rader siden forrige arkivering).
 - `<img>` brukes i stedet for `next/image` — lint warning, akseptabelt for demo
 - Targeting er aktivt i prod — fordeler/heroer uten TargetingRule vises for alle (matchesSession(null) = true)
 - Admin-auth: ADMIN_EMAILS (kommaseparert), ADMIN_PASSWORD, ADMIN_JWT_SECRET — må re-provisjoneres som Coolify-miljøvariabler (CR-011), ikke gjenbruk av Vercel sine
 - vitest er lagt til som devDependency — `npm test` kjører alle unit-tester
 - Node.js er installert lokalt (denne maskinen) via `winget install OpenJS.NodeJS.22 --scope user` — se memory. Bruk `$env:PATH = "C:\Users\haavard.kvinnesland\AppData\Local\Microsoft\WinGet\Packages\OpenJS.NodeJS.22_Microsoft.Winget.Source_8wekyb3d8bbwe\node-v22.23.2-win-x64;$env:PATH"` i hver PowerShell-kommando som trenger node/npm — PATH-endringen fra winget vedvarer ikke i denne økt-typen shell.
-- KRITISK: `npm ci` avdekket 12 sårbarheter (1 kritisk, 10 high) i avhengigheter, inkl. en kjent CVE i `next@14.2.3` med patch tilgjengelig. Ikke fikset i CR-011 (utenfor scope — infra-migrering, ikke avhengighetsoppgradering, jf. playbook §6). Se OPEN-ISSUES.md ISSUE-009.
+- Historisk: `npm ci` avdekket opprinnelig 12 sårbarheter (1 kritisk, 10 high) under CR-011. CR-015 fjernet det kritiske funnet (patch), CR-018 fjernet alle gjenstående 8 high (major-oppgradering) — `npm audit` viser nå 0 vulnerabilities. ISSUE-009 markert Resolved 2026-08-18 (dokumentert 2026-08-27).
 - `npm install ioredis` (2026-08-07, CR-014, commit 10d9fd1) endret ikke sårbarhetstallet (fortsatt 12 — 1 kritisk, 10 high, 1 low) — ingen nye sårbarheter introdusert av ioredis selv.
+
+## Risks
+- **CR-018 er allerede LIVE i prod uten bekreftet smoke-test.** Async
+  params/searchParams/cookies()/headers()-migreringen er en reell
+  kodeendring (ikke bare versjonsbump) i auth-kritisk kode
+  (`src/lib/session`, `src/lib/admin/auth.ts`) og 21 andre filer. Egen
+  adversarial sikkerhetsgjennomgang + code-review fant og fikset ett reelt
+  hull (10 side-komponenter), men ingen har sett appen kjøre i prod på
+  next@16.3.1 ennå. Lav sannsynlighet for nye funn gitt grundigheten, men
+  ikke null.
+- **Prosessrisiko: to økter på rad ble avsluttet uten `/end-session`**
+  (CR-017 sin implementasjon 2026-08-11, og hele CR-018/CR-019-arbeidet
+  2026-08-18) — begge oppdaget udokumentert denne økten. Se DECISIONS.md
+  2026-08-27. Hvis det skjer igjen, er risikoen at fremtidige økter bygger
+  videre på en feilaktig forståelse av repo-tilstanden. Ingen
+  automatisert safeguard finnes for dette utover at Claude nå kryssjekker
+  `git log`/`git status` mot session-filene ved oppstart.
+- CR-014 sin `x-forwarded-for`-tillit er ikke verifisert mot faktisk
+  Coolify/Traefik-oppsett — kan forfalskes/feilkonfigureres hvis proxy-en
+  ikke strippes riktig (se CR-014 Infra-checklist punkt c).
+- CR-017 sin sperre er skrive-tidsvalidering, ikke en bakgrunnsjobb — en
+  allerede aktiv fordel som blir "feilet" av noe utenfor en admin-
+  redigering (f.eks. kodepool tømt av forbrukertrafikk) blir IKKE
+  automatisk demotert, kun vist rødt i CR-016 sin badge (se CR-017 Risks).
+- Kjente, tidligere aksepterte restrisikoer uendret: delt admin-passord
+  (ett `ADMIN_PASSWORD` for alle brukere), ingen backup/feilsporing,
+  utsatt consumer-app-auth, `<img>` i stedet for `next/image` — se
+  DECISIONS.md 2026-08-06/2026-05-22 for begrunnelse.
 
 ## Next Recommended Actions
 1. **CR-018**: Allerede LIVE i prod (push e7cc47c). Bruker smoke-tester

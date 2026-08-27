@@ -24,37 +24,10 @@
 | 2026-08-05 | Session-10 | Dockerfile | fix: `apk add --no-cache openssl` — container crash-loopet 10/10 restarts fordi Prisma sin native schema-engine ikke fant libssl i Alpine | CR-011 | Coolify deploy ✓ etter fix |
 | 2026-08-05 | Session-10 | git | Commit d5ecd55: fix(CR-011) — OpenSSL i Alpine-image | CR-011 | push ✓ |
 | 2026-08-06 | Session-10 | Prod-verifisering | Bruker opprettet kategori, annonsør og fordel via /admin på https://flyttefordel-prototype.basbeta.no — bekreftet synlig og fungerende i forbrukerappen | CR-011 | prod ✓ |
-| 2026-08-06 | Session-11 | change-requests/ | Opprettet og godkjent CR-012: Bildeopplasting i admin-grensesnittet | CR-012 | — |
+> Rader for CR-012 og CR-013 (begge Done, ISSUE-010 Resolved) arkivert til
+> `IMPLEMENTATION-LEDGER-ARCHIVE.md` 2026-08-27.
+
 | 2026-08-06 | Session-11 | sessions/ | CR-011: uptime-monitoring bekreftet (Uptime Kuma), feilsporing fjernet fra scope (bruker-beslutning, se DECISIONS.md) | CR-011 | — |
-| 2026-08-06 | Session-11 | infra | Bruker opprettet S3-bucket basbeta-pub-object-storage (Hetzner Object Storage, fsn1, Public read-only), separat fra basbeta-backup; nøkler satt som Coolify-miljøvariabler | CR-012 | — |
-| 2026-08-06 | Session-11 | package.json | @aws-sdk/client-s3 lagt til | CR-012 | npm install ✓ |
-| 2026-08-06 | Session-11 | src/lib/storage/ | Nytt: client.ts (lazy S3-klient, build-safe), validateImage.ts (magic-byte-validering, maks 5MB, jpg/png/webp), uploadImage.ts, index.ts | CR-012 | tsc ✓ vitest ✓ |
-| 2026-08-06 | Session-11 | src/lib/storage/*.test.ts | 18 nye unit-tester (validateImage, client, uploadImage) | CR-012 | vitest ✓ 63/63 |
-| 2026-08-06 | Session-11 | src/app/api/admin/upload/route.ts | Ny: POST-rute, admin-auth-guardet, multipart/form-data → S3, JSON-feilrespons. + route.test.ts (5 tester) | CR-012 | tsc ✓ vitest ✓ |
-| 2026-08-06 | Session-11 | src/components/admin/ImageUploadField.tsx | Ny: delt opplastingskomponent brukt i alle tre admin-formene | CR-012 | tsc ✓ |
-| 2026-08-06 | Session-11 | HeroForm.tsx | URL-tekstfelt for imageUrl/imageAlt byttet til ImageUploadField | CR-012 | tsc ✓ |
-| 2026-08-06 | Session-11 | BenefitForm.tsx + admin/benefits route.ts/[id]/route.ts | Lagt til imageUrl/imageAlt-felt (manglet helt før denne CR-en) + Zod-schema-utvidelse | CR-012 | tsc ✓ |
-| 2026-08-06 | Session-11 | AdvertiserForm.tsx + admin/advertisers route.ts/[id]/route.ts | Lagt til logoUrl-felt (manglet helt før denne CR-en) + Zod-schema-utvidelse | CR-012 | tsc ✓ |
-| 2026-08-06 | Session-11 | specs/architecture.md, specs/entities.md, .env.example (via architecture.md-liste) | Oppdatert for ny S3-storage-modul, nye miljøvariabler, migreringsnotat | CR-012 | — |
-| 2026-08-06 | Session-11 | Full validering | npx tsc --noEmit ✓, npx vitest run 63/63 ✓ (opp fra 45), npm run build ✓ | CR-012 | — |
-| 2026-08-06 | Session-11 | git | Push 880c408 → Coolify auto-deploy | CR-012 | deploy ✓ |
-| 2026-08-06 | Session-11 | ImageUploadField.tsx | 4 UX-fikser etter brukertest i nettleser: linjejustering, fjern-bilde-knapp, format-hint (5 commits: e14f365, 4c180b4, e0c1f35, effe0f3, bf9694a) — se CR-012 "Post-implementation UX-iterasjoner" | CR-012 | tsc ✓ hver commit |
-| 2026-08-06 | Session-11 | Prod-verifisering | Bruker testet manuelt i nettleser: opplasting for fordel, annonsørlogo og hero-bilde, samt avvisning av for stor/ugyldig fil — alt bekreftet fungerende | CR-012 | prod ✓ |
-| 2026-08-06 | Session-11 | /review | Full review-checklist kjørt — PASSED alle kategorier, RECOMMENDATION: Approve. CR-012 markert Done | CR-012 | — |
-| 2026-08-06 | Session-11 | OPEN-ISSUES.md | Funn utenfor scope: admin-formene varsler ikke ved ulagrede endringer (gjennomgående, ikke CR-012-spesifikt) — logget som ISSUE-010 | — | — |
-| 2026-08-06 | Session-11 | change-requests/ | Opprettet CR-013: Varsel om ulagrede endringer i admin-former (Status: Draft, adresserer ISSUE-010) | CR-013 | — |
-| 2026-08-06 | Session-11 | change-requests/ | CR-013 utvidet med bruker-tillegg (alltid synlig dirty-indikator), godkjent av bruker | CR-013 | — |
-| 2026-08-06 | Session-11 | specs/architecture.md | Module Map: ny `/lib/admin`-rad for useUnsavedChangesWarning | CR-013 | — |
-| 2026-08-06 | Session-11 | src/lib/admin/useUnsavedChangesWarning.ts | Ny: beforeunload + best-effort intern lenke-avskjæring (capture-fase, respekterer defaultPrevented/modifier-taster/_blank). shouldInterceptClick eksportert som ren, testbar funksjon + 5 tester | CR-013 | tsc ✓ vitest ✓ |
-| 2026-08-06 | Session-11 | src/components/admin/UnsavedChangesBadge.tsx + .module.css | Ny: fast posisjonert pille med pulserende rød prikk, prefers-reduced-motion respektert | CR-013 | tsc ✓ |
-| 2026-08-06 | Session-11 | CategoryForm/AdvertiserForm/HeroForm/BenefitForm.tsx | payload flyttet fra inline i handleSubmit til useMemo; baseline-ref + isDirty; hook + badge koblet inn i alle fire | CR-013 | tsc ✓ |
-| 2026-08-06 | Session-11 | Full validering | npx tsc --noEmit ✓, npx vitest run 68/68 ✓ (opp fra 63), npm run build ✓ | CR-013 | — |
-| 2026-08-06 | Session-11 | src/components/admin/FormSaveBar.tsx | UnsavedChangesBadge fjernet, erstattet av FormSaveBar — slår sammen lagre-knapp + dirty-indikator + feilmelding i én flytende bar (bruker-tilbakemelding: gamle statiske knapper virket gammeldagse). Koblet inn i alle fire former, gammel formActions-div fjernet | CR-013 | tsc ✓ vitest 68/68 ✓ build ✓ |
-| 2026-08-06 | Session-11 | FormSaveBar.tsx | Skjuler baren (inkl. lagre-knapp) helt når isDirty er false — bevisst avvik fra "alltid klikkbar"-resonnementet, bruker eksplisitt krav | CR-013 | tsc ✓ |
-| 2026-08-06 | Session-11 | CategoryForm/AdvertiserForm/HeroForm/BenefitForm.tsx | handleSubmit sin suksess-gren endret: rediger-flyt navigerer ikke bort lenger (kun router.refresh() + setSaving(false)); opprett-flyt navigerer til rediger-siden for den nye posten (bruker id fra POST-responsen) i stedet for til listesiden | CR-013 | tsc ✓ vitest 68/68 ✓ build ✓ |
-| 2026-08-06 | Session-11 | FormSaveBar.tsx + alle fire former | Ny grønn "Lagret"-pille (saved-prop) etter vellykket lagring på rediger-sider — justSaved-state per form, nullstilt via useEffect når isDirty blir true igjen. Statisk (ikke pulserende), ingen knapp | CR-013 | tsc ✓ vitest 68/68 ✓ build ✓ |
-| 2026-08-06 | Session-11 | Prod-verifisering | Bruker testet manuelt i nettleser: dirty-varsel, navigasjonsvarsel ved intern lenke, ingen navigering bort ved lagring, navigering til rediger-side ved opprettelse, grønn "Lagret"-pille — alt bekreftet fungerende | CR-013 | prod ✓ |
-| 2026-08-06 | Session-11 | /review | Full review-checklist kjørt for CR-013 — PASSED alle kategorier, RECOMMENDATION: Approve. CR-013 markert Done, ISSUE-010 markert Resolved | CR-013 | — |
 | 2026-08-06 | Session-11 | change-requests/CR-011 | Backup fjernet fra scope (bruker-beslutning, prototype, se DECISIONS.md) — siste gjenstående akseptansekriterium | CR-011 | — |
 | 2026-08-06 | Session-11 | change-requests/CR-011 | To manuelle testpunkter (claim-code/lead-flyt + CSV-eksport, tidssone-visning på 4 admin-sider) akseptert som kjent, dokumentert gap — ikke faktisk verifisert (bruker-beslutning, se DECISIONS.md) | CR-011 | — |
 | 2026-08-06 | Session-11 | /review | Full review-checklist kjørt for CR-011 — PASSED alle kategorier med 2 dokumenterte WARNINGS (test-gap, feilsporing-fravalg), RECOMMENDATION: Approve. CR-011 markert Done — alle 13 CRs (CR-001–CR-013) nå fullført | CR-011 | — |
@@ -75,23 +48,11 @@
 | 2026-08-07 | Session-13 | Arkitektursamtale | Bruker valgte å beholde Redis-implementasjonen for CR-014 fremfor Traefik-middleware — traceability og full kontroll på feilmelding/Retry-After veide tyngre enn å unngå ny infrastruktur. ISSUE-012 markert Resolved, beslutning dokumentert i DECISIONS.md | CR-014 | — |
 | 2026-08-07 | Session-13 | git | Commit 10d9fd1: feat(CR-014) — rate limiting på admin-login og claim-code (Redis), 15 filer. tsc/91 tester re-verifisert rett før commit | CR-014 | tsc ✓ vitest 91/91 ✓ |
 | 2026-08-07 | Session-13 | change-requests/CR-014 | Status oppdatert til "committed, venter på infra". Required Tests-punkter for unit-testene krysset av | CR-014 | — |
-| 2026-08-10 | Session-14 | change-requests/ | Opprettet og godkjent CR-015: Sikkerhetsoppdatering — next.js og transitive avhengigheter (adresserer ISSUE-009) | CR-015 | — |
-| 2026-08-10 | Session-14 | package.json | `next` oppgradert 14.2.3 → 14.2.35 (eksakt pinnet, patch, ikke semver-major) | CR-015 | npm install ✓ |
-| 2026-08-10 | Session-14 | package.json, package-lock.json | `npm audit fix` (uten `--force`, kjørt 2x) — løste 6 av 10 opprinnelige dev-transitive sårbarheter (`brace-expansion`, `esbuild`, `js-yaml`, `nanoid`, `vite` + transitive: `picomatch`, `tinyglobby`, `rolldown`, `lightningcss`) | CR-015 | UNCOMMITTED |
-| 2026-08-10 | Session-14 | Funn under implementering | `npm audit --omit=dev` viser 2 gjenstående high (`next`, `postcss`) etter oppgradering — krever `next@16.3.0` (major, utenfor scope). Opprinnelig CR-015 AC "0 high i prod" korrigert til å reflektere dette; 0 kritisk oppnådd. ISSUE-009 oppdatert til "delvis løst" | CR-015 | — |
-| 2026-08-10 | Session-14 | specs/architecture.md | `next`-versjonsrad oppdatert til 14.2.35 + restrisiko-notat om gjenstående major-oppgradering | CR-015 | — |
-| 2026-08-10 | Session-14 | Full validering | `npx tsc --noEmit` ✓, `npx vitest run` 91/91 ✓ (uendret), `npm run build` ✓ (Next.js 14.2.35 bekreftet i output) | CR-015 | tsc ✓ vitest ✓ build ✓ |
-| 2026-08-10 | Session-14 | /review | Full review-checklist kjørt for CR-015 — PASSED alle kode-nivå-kategorier, WARNINGS: korrigert AC (2 high i prod gjenstår, kun løsbart via major-bump), ikke committed/deployet ennå ved review-tidspunkt. RECOMMENDATION: Approve (kode) | CR-015 | — |
-| 2026-08-10 | Session-14 | git | Commit e3616e7: fix(CR-015) — next 14.2.3→14.2.35 + npm audit fix, 7 filer | CR-015 | push: ikke gjort |
-| 2026-08-10 | Session-14 | git | Push origin/master (98373b5→e3616e7) → Coolify auto-deploy trigget | CR-015 | push ✓ |
-| 2026-08-10 | Session-14 | Prod-verifisering | Bruker bekreftet Coolify-deploy fullført uten feil, og at admin-innlogging + anonym sesjon (begge Middleware-avhengige) fungerer som normalt i prod på next@14.2.35 | CR-015 | prod ✓ |
-| 2026-08-10 | Session-14 | change-requests/CR-015 | Markert Done — alle akseptansekriterier oppfylt (korrigerte, se Implementation Notes: 0 kritisk oppnådd, 2 high i prod akseptert som restrisiko til fremtidig major-CR) | CR-015 | — |
-| 2026-08-10 | Session-14 | Prosessendring (bruker-forespørsel) | Bruker ba om å redusere kostnaden ved sesjons-workflowen i CLAUDE.md. Arkiverte Session-1–9/CR-001–010 (118 rader) fra denne filen til ny `sessions/IMPLEMENTATION-LEDGER-ARCHIVE.md`, og ISSUE-001–008 fra `sessions/OPEN-ISSUES.md` til ny `sessions/OPEN-ISSUES-ARCHIVE.md` — begge arkiv ikke lest automatisk ved sesjonsstart | — | — |
-| 2026-08-10 | Session-14 | .claude/commands/create-cr.md | Lagt til Micro-CR-mal (4 linjer: What/Why/Risk/Rollback) for trivielle/mekaniske endringer, som alternativ til full impact-analyse-mal | — | — |
-| 2026-08-10 | Session-14 | .claude/CLAUDE.md | Presisert at "aktive CR-er" i Session Startup steg 3 betyr status ≠ Done, ikke alle historiske CR-filer. Lagt til arkiveringsregel (~40 rader/issues-terskel) i Session Shutdown | — | — |
-| 2026-08-10 | Session-14 | .claude/commands/end-session.md | Lagt til steg 7 (Archive if Grown) som speiler arkiveringsregelen i CLAUDE.md | — | — |
-| 2026-08-10 | Session-14 | git | Commit 1666936: chore — CR-015 Done + arkivering + micro-CR-prosess, 10 filer. Push origin/master (e3616e7→1666936) | — | push ✓ |
-| 2026-08-11 | Session-15 | — | Ren statusøkt, ingen kodeendringer. Gikk gjennom CR-014 sin gjenstående Infra-checklist og en full oversikt over dokumenterte mangler (ISSUE-011, ISSUE-009, samt bevisste avvik: delt admin-passord, ingen backup/feilsporing, utsatt consumer-app-auth, CR-013-begrensninger, `<img>` vs. next/image, Prisma 5.x). Bruker valgte å utsette alt til neste økt — ingen nye CR-er, ingen filendringer | — | n/a (ingen endringer) |
+> Rader for CR-015 (Done, ISSUE-009 nå fullt Resolved via CR-018), governance-
+> rader for 2026-08-10-arkiveringen/Micro-CR-malen, og Session-15 (ren
+> statusøkt, ingen endringer) arkivert til `IMPLEMENTATION-LEDGER-ARCHIVE.md`
+> 2026-08-27.
+
 | 2026-08-11 | Session-16 | change-requests/ | Opprettet og godkjent CR-016: Beregnet statusindikator for fordeler (aktiv/planlagt/kladd/feilet). Avklart med bruker at "feilet" er en ny, beregnet feiltilstand (ikke en lagret status), og at Pauset/Arkivert kan grupperes visuelt med Kladd (samme grå) | CR-016 | — |
 | 2026-08-11 | Session-16 | src/lib/benefits/displayStatus.ts | Ny: ren funksjon `getBenefitDisplayStatus()` — grupperer BenefitStatus i 4 bøtter, oppdager konfigurasjonsproblemer (manglende redemption-innhold per type inkl. `mixed`, tom kodepool, utløpt/inkonsistent dato). + displayStatus.test.ts, 24 tester | CR-016 | tsc ✓ vitest ✓ |
 | 2026-08-11 | Session-16 | src/components/admin/BenefitStatusBadge.tsx + .module.css | Nye: delt badge-komponent med egne bucket-CSS-klasser (bevisst IKKE en utvidelse av AdminTable.module.css, som Heroer-siden fortsatt bruker uendret med rå HeroStatus-verdier) | CR-016 | tsc ✓ |
@@ -115,3 +76,4 @@
 | 2026-08-27 | Session-17 | git | Commit 4a30c11: chore — session-dokumentasjon rekonsiliert, 7 filer | — | — |
 | 2026-08-27 | Session-17 | git | Bruker bekreftet push. Push origin/master (e7cc47c→4a30c11) → Coolify auto-deploy trigget (tar med CR-017 + session-dok-oppdateringen) | CR-017 | push ✓ |
 | 2026-08-27 | Session-17 | change-requests/CR-017 | Markert Done — ingen manuell verifisering kreves per CR-en (kun unit/integration, alle grønne) | CR-017 | — |
+| 2026-08-27 | Session-17 | sessions/IMPLEMENTATION-LEDGER.md, sessions/IMPLEMENTATION-LEDGER-ARCHIVE.md | end-session steg 7: filen hadde vokst til 106 rader siden forrige arkivering (2026-08-10) — arkiverte CR-012/CR-013/CR-015-rader samt 2026-08-10-governance-radene og Session-15 (47 rader totalt) til arkivfilen, la igjen pekere. CR-011/CR-014-rader beholdt (ISSUE-011 refererer CR-011 sitt testgap; CR-014 fortsatt ikke Done) | — | — |
