@@ -112,3 +112,6 @@
 | 2026-08-27 | Session-17 | change-requests/CR-018 | Status og Implementation Notes oppdatert til å reflektere at commit+push allerede skjedde (e7cc47c), prod-smoke-test fortsatt IKKE bekreftet | CR-018 | — |
 | 2026-08-27 | Session-17 | sessions/OPEN-ISSUES.md | ISSUE-009 markert Resolved (2026-08-18) — CR-018 fjernet alle 8 gjenstående high-sårbarheter, npm audit 0 vulnerabilities | — | — |
 | 2026-08-27 | Session-17 | sessions/DECISIONS.md | Dokumentert rekonsilieringsbeslutningen (avbrutt økt, hvordan verifisert, hvorfor separate commits) | — | — |
+| 2026-08-27 | Session-17 | git | Commit 4a30c11: chore — session-dokumentasjon rekonsiliert, 7 filer | — | — |
+| 2026-08-27 | Session-17 | git | Bruker bekreftet push. Push origin/master (e7cc47c→4a30c11) → Coolify auto-deploy trigget (tar med CR-017 + session-dok-oppdateringen) | CR-017 | push ✓ |
+| 2026-08-27 | Session-17 | change-requests/CR-017 | Markert Done — ingen manuell verifisering kreves per CR-en (kun unit/integration, alle grønne) | CR-017 | — |

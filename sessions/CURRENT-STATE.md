@@ -22,8 +22,10 @@ kjørt — PASSED (kode), men CR-016 er IKKE markert Done ennå: ingen lokal
 denne økten. Venter kun på brukerens visuelle bekreftelse av de 4 fargene
 i prod.
 
-CR-017 (skrive-sperre mot ugyldig Aktiv/Planlagt status) er **implementert,
-fullt testet (133/133 inkl. 15 nye), committed (3ec4625), IKKE pushet ennå**.
+CR-017 (skrive-sperre mot ugyldig Aktiv/Planlagt status) er **FULLFØRT og
+markert Done 2026-08-27**. Fullt testet (133/133 inkl. 15 nye), committed
+(3ec4625) og pushet (4a30c11) — Coolify auto-deploy trigget. Ingen manuell
+verifisering kreves per CR-en (kun unit/integration).
 Gjenbruker CR-016 sin problem-deteksjon (nå eksportert som
 `getBenefitConfigProblems`) som skrive-tidsvalidering på alle tre steder en
 fordel kan bli `active`/`scheduled` (opprett, rediger, hurtig-statusknapper) —
@@ -129,10 +131,7 @@ CR-016 er committed og pushet (390e844) — Coolify auto-deploy trigget. Neste s
    `/admin/benefits` og `/admin/benefits/[id]`
 2. Når verifisert: marker CR-016 Done
 
-CR-017 er committed (3ec4625) men IKKE pushet. Neste skritt: bruker
-bekrefter push (trigger Coolify auto-deploy sammen med alt annet som ligger
-på master siden sist deploy) → marker CR-017 Done (ingen manuell test kreves
-per CR-en selv).
+CR-017 er Done (committed 3ec4625, pushet 4a30c11 2026-08-27).
 
 CR-018 er committed og pushet (e7cc47c) — allerede LIVE i prod via Coolify
 auto-deploy. Neste skritt: bruker smoke-tester admin-innlogging, anonym
@@ -140,14 +139,13 @@ sesjon og minst én dynamisk route i både admin og forbruker-app → marker
 CR-018 Done.
 
 ## Current Branch
-master (lokal ahead of origin/master med 1 commit: CR-017, 3ec4625 —
-IKKE pushet ennå)
+master (synkronisert med origin/master, 4a30c11)
 
 ## Blockers
 Ingen kodeblokker. To brukeroppgaver gjenstår før respektive CR-er kan
 markeres Done: CR-014 sin Infra-checklist i Coolify, og CR-018 sin
-prod-smoke-test (allerede deployet). CR-016/CR-017 venter på visuell/push-
-bekreftelse fra bruker (se Next Recommended Actions).
+prod-smoke-test (allerede deployet). CR-016 venter på visuell bekreftelse
+fra bruker (se Next Recommended Actions).
 
 ## Active Change Requests
 - CR-001: Fase 1 — Grunnmur (Status: Done)
@@ -166,7 +164,7 @@ bekreftelse fra bruker (se Next Recommended Actions).
 - CR-014: Rate limiting på innlogging og kode-tildeling (Status: Implementert (Redis), committed 10d9fd1, IKKE Done — venter på Infra-checklist i Coolify)
 - CR-015: Sikkerhetsoppdatering — next.js og transitive avhengigheter (Status: Done — committed e3616e7, deployet og verifisert i prod 2026-08-10)
 - CR-016: Beregnet statusindikator for fordeler (Status: Implementert, committed+pushet, IKKE Done — venter på brukerens visuelle verifisering i prod)
-- CR-017: Sperre mot ugyldig Aktiv/Planlagt status (Status: Implementert, committed 3ec4625, IKKE pushet, IKKE Done — venter på push+bekreftelse)
+- CR-017: Sperre mot ugyldig Aktiv/Planlagt status (Status: Done — committed 3ec4625, pushet 4a30c11, 2026-08-27)
 - CR-018: Next.js major-oppgradering 14.2.35→16.3.1 (Status: Implementert, committed+pushet e7cc47c, LIVE i prod, IKKE Done — venter på prod-smoke-test)
 - CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Approved, IKKE implementert)
 
@@ -273,9 +271,8 @@ bekreftelse fra bruker (se Next Recommended Actions).
 1. **CR-018**: Allerede LIVE i prod (push e7cc47c). Bruker smoke-tester
    admin-innlogging, anonym sesjon og minst én dynamisk route (admin +
    forbruker-app) før CR-018 markeres Done — se CR-018 Acceptance Criteria
-2. **CR-017**: Committed (3ec4625) men ikke pushet. Bruker bekrefter push
-   (merk: tar med seg CR-017 på master til origin) → Coolify auto-deploy →
-   marker CR-017 Done (ingen manuell test kreves)
+2. **CR-017**: Done (committed 3ec4625, pushet 4a30c11) — Coolify auto-deploy
+   trigget sammen med session-dokumentasjonsoppdateringen
 3. **CR-016**: Deployet via Coolify auto-deploy (push 390e844). Bruker verifiserer
    visuelt de 4 fargebøttene (aktiv/planlagt/kladd/feilet) i nettleser på
    `/admin/benefits` og `/admin/benefits/[id]` før CR-016 markeres Done

@@ -1,6 +1,6 @@
 # CR-017: Sperre mot Aktiv/Planlagt status når fordelen er «Feilet»
 
-Status: Implementert — committed, venter på push/deploy og brukerens verifisering i prod
+Status: Done — committed (3ec4625) og pushet (4a30c11) 2026-08-27, Coolify auto-deploy trigget. Ingen manuell verifisering kreves (kun unit/integration i Required Tests, alle grønne)
 Created: 2026-08-11
 
 ## Business Goal
