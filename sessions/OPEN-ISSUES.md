@@ -117,9 +117,20 @@ Description: `npm ci` (run for the first time with a real local Node install, du
 Blocker for: none yet, men de 2 gjenstående high i produksjon (`next`, `postcss`) bør ikke
   la ligge ubegrenset lenge — vurder en dedikert Next.js 14→15/16-migrerings-CR
 Opened: 2026-08-05
-Resolved:
-Resolution: Delvis — se CR-015 for kritisk-fiksen. Full resolusjon avhenger av en fremtidig,
-  egen major-oppgraderings-CR for next (14→15/16) og separat for eslint-config-next.
+  Oppdatering 2026-08-18: re-kjørt `npm audit` viser fortsatt 8 high (samme to kjeder som i
+  CR-015-notatet). `npm audit fix` (uten `--force`) endret ingen filer denne gangen. CR-018
+  opprettet (Draft) for Next.js-major-oppgraderingen (14.2.35 → 16.3.1), som dekker begge
+  kjedene siden `eslint-config-next` også må til 16.3.1.
+Resolved: 2026-08-18
+Resolution: CR-018 (next/eslint-config-next → 16.3.1, commit e7cc47c) fjernet alle 8
+  gjenstående high-severity funn — `npm audit` bekreftet 0 vulnerabilities. Oppgraderingen
+  krevde reell kodeendring (async params/searchParams/cookies()/headers()-migrering, 21
+  filer), ikke bare en versjonsbump — se CR-018 Implementation Notes. Prod-smoke-test av
+  admin-innlogging/anonym sesjon/dynamiske routes gjenstår fortsatt (deployet, ikke
+  brukerbekreftet), men det er nå en ren verifiseringsoppgave, ikke en åpen sårbarhet.
+  Sideeffekt: oppgraderingens strengere `eslint-config-next`-lintregler avdekket 8
+  preeksisterende React Hooks-feil i 4 admin-skjemakomponenter — logget som egen CR-019,
+  ikke en sikkerhetssak.
 
 ## Resolved Issues
 

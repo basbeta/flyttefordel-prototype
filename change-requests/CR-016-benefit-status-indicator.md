@@ -1,6 +1,6 @@
 # CR-016: Tydelig statusindikator for fordeler (Aktiv/Planlagt/Kladd/Feilet)
 
-Status: Implementert — venter på manuell verifisering i nettleser
+Status: Implementert, committed (e906eb8, 390e844) og pushet — venter på manuell verifisering i nettleser
 Created: 2026-08-11
 
 ## Business Goal

@@ -1,6 +1,6 @@
 # CR-018: Next.js major-oppgradering 14.2.35 → 16.3.1
 
-Status: Implementert (lokalt) — venter commit, review og prod-smoke-test
+Status: Committed og pushet (e7cc47c) — Coolify auto-deploy trigget, venter på prod-smoke-test
 Created: 2026-08-18
 Approved: 2026-08-18
 
@@ -255,8 +255,19 @@ verifiseringsdisiplin):
   denne oppgraderingen. **Ikke fikset her** — foreslå egen oppfølgings-CR
   eller -issue.
 
-**Ikke gjort**: commit, push, PR/code review av selve commit-en, deploy,
-prod-smoke-test. Alt over er verifisert lokalt i worktree-en.
+**Ikke gjort ved skrivetidspunkt**: commit, push, PR/code review av selve
+commit-en, deploy, prod-smoke-test. Alt over var verifisert lokalt i
+worktree-en.
+
+### Oppdatering 2026-08-27 (Session-17)
+Commit `e7cc47c` og push til `origin/master` skjedde i en tidligere økt som
+aldri kjørte `/end-session` — oppdaget denne økten ved at
+`sessions/CURRENT-STATE.md` fortsatt beskrev CR-018 som "Draft"/ikke startet,
+mens `git log`/`origin/master` viste den committed og pushet. Coolify
+auto-deploy er trigget av pushet, men admin-innlogging/anonym
+sesjon/dynamisk-route-smoke-testen er fortsatt IKKE bekreftet av bruker i
+prod — se Acceptance Criteria og Next Recommended Actions i
+`sessions/CURRENT-STATE.md`.
 
 ## Rollback Strategy
 Revert commit(s) og re-deploy forrige `next@14.2.35`-versjon. Siden
