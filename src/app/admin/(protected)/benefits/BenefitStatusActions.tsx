@@ -14,7 +14,17 @@ const TRANSITIONS: Partial<Record<BenefitStatus, { label: string; next: BenefitS
   expired:   [{ label: 'Arkiver', next: 'archived' }],
 }
 
-export function BenefitStatusActions({ id, currentStatus }: { id: string; currentStatus: BenefitStatus }) {
+type Props = {
+  id: string
+  currentStatus: BenefitStatus
+  // CR-017: reasons fra getBenefitConfigProblems(status: 'active') — når
+  // ikke-tom, deaktiveres knapper som ville aktivert en «Feilet» fordel.
+  // Serveren er den autoritative sperren; dette er kun for å unngå en
+  // unødvendig tur-retur for det vanligste tilfellet.
+  activationProblems?: string[]
+}
+
+export function BenefitStatusActions({ id, currentStatus, activationProblems = [] }: Props) {
   const router = useRouter()
   const actions = TRANSITIONS[currentStatus] ?? []
 
@@ -33,11 +43,20 @@ export function BenefitStatusActions({ id, currentStatus }: { id: string; curren
 
   return (
     <div className={styles.actionMenu}>
-      {actions.map((a) => (
-        <button key={a.next} className={styles.secondaryBtn} onClick={() => changeStatus(a.next)}>
-          {a.label}
-        </button>
-      ))}
+      {actions.map((a) => {
+        const blocked = a.next === 'active' && activationProblems.length > 0
+        return (
+          <button
+            key={a.next}
+            className={styles.secondaryBtn}
+            onClick={() => changeStatus(a.next)}
+            disabled={blocked}
+            title={blocked ? activationProblems.join('; ') : undefined}
+          >
+            {a.label}
+          </button>
+        )
+      })}
       <Link href={`/admin/benefits/${id}`} className={styles.secondaryBtn}>Rediger</Link>
     </div>
   )

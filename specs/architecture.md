@@ -74,6 +74,21 @@ tilstand, ikke en lagret enum-verdi. Se `change-requests/CR-016-*.md`.
   (+ `codePool.availableCodes`) for å kunne beregne samme visningsstatus i
   listen som i redigeringsvisningen.
 
+### Migreringsnotat: CR-017 (Skrive-sperre mot ugyldig Aktiv/Planlagt, 2026-08-11)
+CR-016 sin problem-deteksjon eksporteres som `getBenefitConfigProblems()` og
+gjenbrukes som skrive-tidsvalidering på alle tre steder en fordel kan bli
+`active`/`scheduled`: `POST /api/admin/benefits`, `PATCH /api/admin/benefits/[id]`
+og `PATCH /api/admin/benefits/[id]/status`. Reject med `400` + forklarende
+norsk melding hvis resultatet ville hatt et konfigurasjonsproblem (manglende
+redemption-innhold, tom kodepool, etc.) — samme regelsett som "Feilet"-
+badgen, én kilde til sannhet. Dekker også tilfellet der en allerede aktiv
+fordel utilsiktet ødelegges av en redigering som ikke selv endrer
+statusfeltet. Se `change-requests/CR-017-*.md`.
+- Ny `vitest.config.mts` (root) — la til `@/*` → `./src/*`-alias for vitest,
+  som manglet inntil nå fordi ingen tidligere test importerte et ekte,
+  ikke-mocket `@/`-modul (alle traff kun mockede moduler, som ikke krever
+  reell alias-oppløsning).
+
 ### Migreringsnotat: database
 Prisma er eneste lag som snakker med databasen. Ved migrering til ny PostgreSQL-leverandør:
 1. Oppdater `DATABASE_URL` og `DIRECT_URL` i miljøvariabler

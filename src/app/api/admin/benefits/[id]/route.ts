@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db/client'
 import { verifyAdminJWT, ADMIN_TOKEN_COOKIE } from '@/lib/admin/auth'
+import { getBenefitConfigProblems } from '@/lib/benefits/displayStatus'
 
 async function authCheck(request: NextRequest) {
   const token = request.cookies.get(ADMIN_TOKEN_COOKIE)?.value
@@ -66,10 +67,46 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   try {
     const { id } = await params
-    const existing = await prisma.benefit.findFirst({ where: { id, deletedAt: null } })
+    const existing = await prisma.benefit.findFirst({
+      where: { id, deletedAt: null },
+      include: { redemption: { include: { codePool: { select: { availableCodes: true } } } } },
+    })
     if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
 
     const { redemption, targeting, startsAt, endsAt, ...benefitData } = parsed.data
+
+    // CR-017: Sperre mot at fordelen ENDER OPP som Aktiv/Planlagt med
+    // manglende påkrevd redemption-innhold — enten fordi statusen
+    // eksplisitt settes dit, eller fordi en allerede aktiv/planlagt fordel
+    // utilsiktet ødelegges av denne redigeringen (f.eks. rabattkoden fjernes
+    // uten at status samtidig endres).
+    const targetStatus = parsed.data.status ?? existing.status
+    if (targetStatus === 'active' || targetStatus === 'scheduled') {
+      const problems = getBenefitConfigProblems({
+        status: targetStatus,
+        redemptionType: parsed.data.redemptionType ?? existing.redemptionType,
+        startsAt: startsAt !== undefined ? (startsAt ? new Date(startsAt) : null) : existing.startsAt,
+        endsAt: endsAt !== undefined ? (endsAt ? new Date(endsAt) : null) : existing.endsAt,
+        redemption: {
+          genericCode: redemption ? redemption.genericCode ?? null : existing.redemption?.genericCode ?? null,
+          externalUrl: redemption ? redemption.externalUrl ?? null : existing.redemption?.externalUrl ?? null,
+          qrValue: redemption ? redemption.qrValue ?? null : existing.redemption?.qrValue ?? null,
+          // Kodepool/leadskjema kan ikke endres via denne ruten — alltid fra eksisterende.
+          codePoolId: existing.redemption?.codePoolId ?? null,
+          leadFormId: existing.redemption?.leadFormId ?? null,
+          codePool: existing.redemption?.codePool
+            ? { availableCodes: existing.redemption.codePool.availableCodes }
+            : null,
+        },
+      })
+      if (problems.length > 0) {
+        const statusLabel = targetStatus === 'active' ? 'Aktiv' : 'Planlagt'
+        return NextResponse.json(
+          { message: `Kan ikke lagre som ${statusLabel}: ${problems.join('; ')}` },
+          { status: 400 },
+        )
+      }
+    }
 
     await prisma.benefit.update({
       where: { id },

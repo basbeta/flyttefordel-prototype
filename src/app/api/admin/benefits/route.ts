@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db/client'
 import { verifyAdminJWT, ADMIN_TOKEN_COOKIE } from '@/lib/admin/auth'
+import { getBenefitConfigProblems } from '@/lib/benefits/displayStatus'
 
 async function authCheck(request: NextRequest) {
   const token = request.cookies.get(ADMIN_TOKEN_COOKIE)?.value
@@ -61,6 +62,36 @@ export async function POST(request: NextRequest) {
   const body: unknown = await request.json().catch(() => null)
   const parsed = benefitSchema.safeParse(body)
   if (!parsed.success) return NextResponse.json({ message: parsed.error.errors[0]?.message }, { status: 400 })
+
+  // CR-017: En fordel skal aldri kunne opprettes som Aktiv/Planlagt med
+  // manglende påkrevd redemption-innhold — den ville vist seg ødelagt for
+  // ekte brukere (benefitQueries.ts viser alle status=active uansett).
+  if (parsed.data.status === 'active' || parsed.data.status === 'scheduled') {
+    const problems = getBenefitConfigProblems({
+      status: parsed.data.status,
+      redemptionType: parsed.data.redemptionType,
+      startsAt: parsed.data.startsAt ?? null,
+      endsAt: parsed.data.endsAt ?? null,
+      redemption: parsed.data.redemption
+        ? {
+            genericCode: parsed.data.redemption.genericCode ?? null,
+            externalUrl: parsed.data.redemption.externalUrl ?? null,
+            qrValue: parsed.data.redemption.qrValue ?? null,
+            // Kodepool/leadskjema kan aldri kobles til ved opprettelse via denne ruten.
+            codePoolId: null,
+            leadFormId: null,
+            codePool: null,
+          }
+        : null,
+    })
+    if (problems.length > 0) {
+      const statusLabel = parsed.data.status === 'active' ? 'Aktiv' : 'Planlagt'
+      return NextResponse.json(
+        { message: `Kan ikke opprette som ${statusLabel}: ${problems.join('; ')}` },
+        { status: 400 },
+      )
+    }
+  }
 
   try {
     const { redemption, targeting, startsAt, endsAt, ...benefitData } = parsed.data

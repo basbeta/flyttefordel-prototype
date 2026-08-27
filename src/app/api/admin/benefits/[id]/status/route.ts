@@ -5,6 +5,7 @@ import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db/client'
 import { verifyAdminJWT, ADMIN_TOKEN_COOKIE } from '@/lib/admin/auth'
+import { getBenefitConfigProblems } from '@/lib/benefits/displayStatus'
 
 async function authCheck(request: NextRequest) {
   const token = request.cookies.get(ADMIN_TOKEN_COOKIE)?.value
@@ -27,8 +28,41 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
   try {
     const { id } = await params
-    const existing = await prisma.benefit.findFirst({ where: { id, deletedAt: null } })
+    const existing = await prisma.benefit.findFirst({
+      where: { id, deletedAt: null },
+      include: { redemption: { include: { codePool: { select: { availableCodes: true } } } } },
+    })
     if (!existing) return NextResponse.json({ message: 'Ikke funnet' }, { status: 404 })
+
+    // CR-017: Sperre mot å sette Aktiv/Planlagt på en fordel med manglende
+    // påkrevd redemption-innhold — se getBenefitConfigProblems.
+    if (parsed.data.status === 'active' || parsed.data.status === 'scheduled') {
+      const problems = getBenefitConfigProblems({
+        status: parsed.data.status,
+        redemptionType: existing.redemptionType,
+        startsAt: existing.startsAt,
+        endsAt: existing.endsAt,
+        redemption: existing.redemption
+          ? {
+              genericCode: existing.redemption.genericCode,
+              externalUrl: existing.redemption.externalUrl,
+              qrValue: existing.redemption.qrValue,
+              codePoolId: existing.redemption.codePoolId,
+              leadFormId: existing.redemption.leadFormId,
+              codePool: existing.redemption.codePool
+                ? { availableCodes: existing.redemption.codePool.availableCodes }
+                : null,
+            }
+          : null,
+      })
+      if (problems.length > 0) {
+        const statusLabel = parsed.data.status === 'active' ? 'Aktiv' : 'Planlagt'
+        return NextResponse.json(
+          { message: `Kan ikke sette status ${statusLabel}: ${problems.join('; ')}` },
+          { status: 400 },
+        )
+      }
+    }
 
     await prisma.benefit.update({
       where: { id },

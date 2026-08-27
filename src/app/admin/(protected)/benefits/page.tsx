@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireAdminAuth } from '@/lib/admin/auth'
 import { getAdminBenefits } from '@/lib/queries/adminQueries'
-import { getBenefitDisplayStatus } from '@/lib/benefits/displayStatus'
+import { getBenefitDisplayStatus, getBenefitConfigProblems } from '@/lib/benefits/displayStatus'
 import { BenefitStatusActions } from './BenefitStatusActions'
 import { BenefitStatusBadge } from '@/components/admin/BenefitStatusBadge'
 import styles from '@/components/admin/AdminTable.module.css'
@@ -81,7 +81,11 @@ export default async function AdminBenefitsPage({ searchParams }: Props) {
                     {b.endsAt ? new Date(b.endsAt).toLocaleDateString('nb-NO', { timeZone: 'Europe/Oslo' }) : '—'}
                   </td>
                   <td>
-                    <BenefitStatusActions id={b.id} currentStatus={b.status} />
+                    <BenefitStatusActions
+                      id={b.id}
+                      currentStatus={b.status}
+                      activationProblems={getBenefitConfigProblems({ ...b, status: 'active' })}
+                    />
                   </td>
                 </tr>
               ))}

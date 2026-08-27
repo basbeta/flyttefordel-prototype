@@ -45,7 +45,9 @@ function toDate(value: Date | string | null): Date | null {
   return value instanceof Date ? value : new Date(value)
 }
 
-function findProblems(input: BenefitStatusInput, now: Date): string[] {
+// CR-017: Eksportert (ikke lenger privat) slik at API-rutene kan gjenbruke
+// nøyaktig samme problem-deteksjon som skrive-sperre mot Aktiv/Planlagt.
+export function getBenefitConfigProblems(input: BenefitStatusInput, now: Date = new Date()): string[] {
   const problems: string[] = []
   const startsAt = toDate(input.startsAt)
   const endsAt = toDate(input.endsAt)
@@ -100,7 +102,7 @@ export function getBenefitDisplayStatus(
   }
 
   // Her er status enten 'active' eller 'scheduled'.
-  const reasons = findProblems(input, now)
+  const reasons = getBenefitConfigProblems(input, now)
   if (reasons.length > 0) {
     return { bucket: 'failed', label: 'Feilet', reasons }
   }
