@@ -131,7 +131,7 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 | `/lib/codes` | Atomisk unik kode-tildeling |
 | `/lib/storage` | CR-012: S3-kompatibel klient for admin-opplastede bilder — isolert for enkel leverandørbytte |
 | `/lib/rateLimit` | CR-014: Redis-basert fixed-window rate limiting (`checkRateLimit`, `getClientIp`) for login og claim-code |
-| `/lib/admin` | CR-013: `useUnsavedChangesWarning` — beforeunload + intern lenke-avskjæring ved ulagrede endringer i admin-former, i tillegg til eksisterende JWT-auth-helpers |
+| `/lib/admin` | CR-013: `useUnsavedChangesWarning` — beforeunload + intern lenke-avskjæring ved ulagrede endringer i admin-former, i tillegg til eksisterende JWT-auth-helpers. CR-019: `useDirtyTracking` — delt dirty-/«Lagret»-sporing (state-basert, wrapper `useUnsavedChangesWarning`) brukt av alle fire admin-skjemaer |
 | `/lib/benefits` | CR-016: `getBenefitDisplayStatus()` — ren funksjon som beregner visningsstatus (aktiv/planlagt/kladd/feilet) for fordeler, ingen I/O |
 | `/lib/pwa` | PWA manifest og install-helpers |
 | `/lib/utils` | Generelle hjelpefunksjoner |

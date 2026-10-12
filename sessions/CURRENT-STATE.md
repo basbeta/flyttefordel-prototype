@@ -5,7 +5,14 @@
 ## Current Phase
 15 av 19 CRs er nå Done (CR-001–CR-013, CR-015, CR-017). CR-016 og CR-018 er
 implementert/deployet og venter kun på brukerens verifisering i prod (ikke
-kodearbeid). CR-019 er Approved, ikke startet. CR-014 (rate limiting) er
+kodearbeid). **CR-019 er implementert (2026-10-12, Session-18) men UNCOMMITTED
+og IKKE Done** — ny delt hook `src/lib/admin/useDirtyTracking.ts` erstatter
+baselineRef/justSaved-mønsteret i alle 4 admin-skjemaer; lint 0 feil, tsc OK,
+vitest 138/138, build OK. Venter på brukerens manuelle nettleserverifisering
+av dirty-/«Lagret»-indikator i alle fire skjemaer, deretter commit + Done.
+Liten kjent atferdsforskjell: «Lagret»-badgen vises igjen hvis feltet
+redigeres tilbake til nøyaktig lagret verdi (se CR-019 Implementation Notes).
+CR-014 (rate limiting) er
 **implementert (Redis-basert), fullt validert og committed (10d9fd1)**.
 Arkitekturspørsmålet fra forrige økt (Redis vs. Traefik, ISSUE-012) er
 avklart — bruker valgte å beholde Redis (se DECISIONS.md 2026-08-07).
@@ -141,7 +148,7 @@ sesjon og minst én dynamisk route i både admin og forbruker-app → marker
 CR-018 Done.
 
 ## Current Branch
-master (synkronisert med origin/master, 4a30c11)
+master (synkronisert med origin/master, 9ea0c0c). Uncommitted: CR-019-endringer (4 skjemaer, ny hook + test, CR-019.md, specs/architecture.md, sessions/*). Urørt og utenfor CR-er: `tsconfig.json` (kun LF/CRLF-støy, tom diff) og untracked `docs/09–12_ff_*.md` + `docs/Flyttefordel-24-tiltak…docx`
 
 ## Blockers
 Ingen kodeblokker. To brukeroppgaver gjenstår før respektive CR-er kan
@@ -168,7 +175,9 @@ fra bruker (se Next Recommended Actions).
 - CR-016: Beregnet statusindikator for fordeler (Status: Implementert, committed+pushet, IKKE Done — venter på brukerens visuelle verifisering i prod)
 - CR-017: Sperre mot ugyldig Aktiv/Planlagt status (Status: Done — committed 3ec4625, pushet 4a30c11, 2026-08-27)
 - CR-018: Next.js major-oppgradering 14.2.35→16.3.1 (Status: Implementert, committed+pushet e7cc47c, LIVE i prod, IKKE Done — venter på prod-smoke-test)
-- CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Approved, IKKE implementert)
+- CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Implementert, UNCOMMITTED, IKKE Done — venter på manuell nettleserverifisering)
+
+- `src/lib/admin/useDirtyTracking.ts` (NY: `useDirtyTracking(payload)` → `{isDirty, showSaved, markSaved}`, wrapper `useUnsavedChangesWarning`, ren `deriveDirtyState`) + `useDirtyTracking.test.ts` (5 tester), `AdvertiserForm`/`BenefitForm`/`CategoryForm`/`HeroForm` migrert (baselineRef + justSaved/useEffect fjernet), `specs/architecture.md` /lib/admin-rad (2026-10-12, CR-019, UNCOMMITTED)
 
 - `src/lib/benefits/displayStatus.ts` (`findProblems` eksportert som `getBenefitConfigProblems`), `src/app/api/admin/benefits/route.ts` + `[id]/route.ts` + `[id]/status/route.ts` (skrive-tidsvalidering: 400 ved manglende redemption-innhold på `active`/`scheduled`), `BenefitStatusActions.tsx` (Aktiver-knapp deaktiveres når aktivering ville feile), ny `vitest.config.mts` (root, `@/*`-alias for vitest), 3 nye route.test.ts (15 tester) (2026-08-11/2026-08-27, CR-017, commit 3ec4625 — kode skrevet 2026-08-11 i en økt som ble avbrutt før commit/dokumentasjon, verifisert på nytt og committed 2026-08-27)
 - `package.json`/`package-lock.json` — `next`/`eslint-config-next` 14.2.35→16.3.1 (major), `eslint` `^8`→`^9` (peer-dep), `eslint.config.mjs` ny (erstatter `.eslintrc.json`, `next lint` fjernet i Next 16), async-migrering av `params`/`searchParams`/`cookies()`/`headers()` i 21 filer (11 API-ruter, 10 sider inkl. `generateMetadata`), `src/lib/session/index.ts` + `src/lib/admin/auth.ts` (await på `cookies()`/`headers()`) (2026-08-18, CR-018, commit e7cc47c). `npm audit`: 0 vulnerabilities (ned fra 8 high) — løser ISSUE-009 helt
@@ -209,6 +218,7 @@ fra bruker (se Next Recommended Actions).
   sine miljøvariabler (ikke gjenbrukt fra Vercel)
 
 ## Validation Status
+✓ CR-019: `npm run lint` 0 feil (3 urelaterte advarsler: 2× `<img>`, 1× ubrukt eslint-disable), `npx tsc --noEmit` OK, `npx vitest run` 138/138 (opp fra 133, 5 nye), `npm run build` OK (2026-10-12). Manuell nettleserverifisering IKKE gjort
 ✓ CR-018: `npm audit` viser 0 vulnerabilities (ned fra 8 high) — løser ISSUE-009 helt (2026-08-18)
 ✓ CR-018: `npx tsc --noEmit`, `npx vitest run` (118/118), `npm run build` (44 routes) —
   alle grønne, inkl. adversarial sikkerhetsgjennomgang av auth-koden (2026-08-18)
@@ -274,6 +284,14 @@ fra bruker (se Next Recommended Actions).
 - `npm install ioredis` (2026-08-07, CR-014, commit 10d9fd1) endret ikke sårbarhetstallet (fortsatt 12 — 1 kritisk, 10 high, 1 low) — ingen nye sårbarheter introdusert av ioredis selv.
 
 ## Risks
+- **CR-019 uverifisert i nettleser og uncommitted.** Ingen komponenttest-
+  infrastruktur finnes; kun den rene `deriveDirtyState` er enhetstestet.
+  Timing-regresjon i dirty-/«Lagret»-indikatorene fanges kun av manuell test.
+  Arbeidet ligger kun i arbeidskatalogen — avbrutt økt uten commit er den
+  samme prosessrisikoen som i Session-17.
+- Untracked `docs/09–12_ff_*.md` + `.docx` (Flyttefordel dagens løsning/
+  målbilde/24 tiltak) ligger utenfor alle CR-er; uavklart om de skal
+  committes, flyttes eller ignoreres.
 - **CR-018 er allerede LIVE i prod uten bekreftet smoke-test.** Async
   params/searchParams/cookies()/headers()-migreringen er en reell
   kodeendring (ikke bare versjonsbump) i auth-kritisk kode
@@ -310,10 +328,11 @@ fra bruker (se Next Recommended Actions).
 3. **CR-016**: Deployet via Coolify auto-deploy (push 390e844). Bruker verifiserer
    visuelt de 4 fargebøttene (aktiv/planlagt/kladd/feilet) i nettleser på
    `/admin/benefits` og `/admin/benefits/[id]` før CR-016 markeres Done
-4. **CR-019** (Approved, ikke startet): fiks de 8 react-hooks/refs og
-   react-hooks/set-state-in-effect-feilene i de 4 admin-skjemakomponentene —
-   `npm run lint` viser dem nå. Lav risiko, isolert til 4 frittstående
-   klientkomponenter, ingen funksjonell endring tiltenkt
+4. **CR-019** (implementert, uncommitted): bruker tester alle 4 skjemaer i
+   nettleser (rediger → «ulagrede endringer»; lagre → «Lagret»; rediger igjen
+   → badge borte). Når bekreftet: Claude committer med CR-019-referanse
+   (kun CR-019-filene + sessions/specs, IKKE tsconfig.json/docs/09–12) og
+   markerer Done
 5. **CR-014 Infra-checklist (bruker-oppgave i Coolify, ikke noe Claude kan utføre):**
    a. Provisjonér en Redis-ressurs i Coolify (samme prosjekt som appen og Postgres)
    b. Sett `REDIS_URL` som miljøvariabel på app-ressursen

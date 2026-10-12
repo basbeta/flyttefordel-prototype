@@ -141,3 +141,12 @@ ALTERNATIVES CONSIDERED: Ad-hoc prompting; rules-only approach.
 RATIONALE: Ad-hoc prompting loses context between sessions. Explicit structure makes AI behavior deterministic and auditable.
 CONSEQUENCES: All changes require a CR. Sessions start and end with orchestration file updates.
 DECIDED BY: human
+
+DATE: 2026-10-12
+DECISION: CR-019 løses med en delt hook (`useDirtyTracking`), ikke fire inline-fikser
+CONTEXT: CR-019 beskrev begge alternativer som akseptable (punkt 3 i Proposed Solution var valgfritt). Samme copy-paste-mønster fantes byte-identisk i fire admin-skjemaer.
+DECISION: Trekk dirty-/«Lagret»-sporingen ut i `src/lib/admin/useDirtyTracking.ts` som også wrapper `useUnsavedChangesWarning`. Baseline og saved-snapshot holdes i `useState`. Hooken eksponerer `markSaved(payload, showBadge)`.
+ALTERNATIVES CONSIDERED: Fire identiske inline-fikser — forkastet fordi det gjenskaper duplisering og risikerer at én fil driver fra de andre.
+RATIONALE: Én implementasjon, én ren testbar funksjon (`deriveDirtyState`), og repoet mangler komponenttest-infrastruktur så logikken måtte trekkes ut for å kunne enhetstestes.
+CONSEQUENCES: «Lagret»-badgen avledes av snapshot-likhet og vises igjen hvis feltet redigeres tilbake til lagret verdi (tidligere forble den borte til neste lagring). Nye admin-skjemaer skal bruke hooken, ikke gjenskape ref-mønsteret.
+DECIDED BY: human (godkjente delt hook), Claude (design)

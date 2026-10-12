@@ -1,13 +1,13 @@
 'use client'
 // CR-004: Shared create/edit form for heroes.
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { CTAType, HeroStatus } from '@prisma/client'
 import styles from '@/components/admin/AdminTable.module.css'
 import { ImageUploadField } from '@/components/admin/ImageUploadField'
 import { FormSaveBar } from '@/components/admin/FormSaveBar'
-import { useUnsavedChangesWarning } from '@/lib/admin/useUnsavedChangesWarning'
+import { useDirtyTracking } from '@/lib/admin/useDirtyTracking'
 
 type TargetingData = {
   appliesNationally: boolean
@@ -97,14 +97,7 @@ export function HeroForm({ hero }: Props) {
       appliesNationally, includeUnknownLocation, postcodeInput, selectedSegments,
     ],
   )
-  const baselineRef = useRef(JSON.stringify(payload))
-  const isDirty = JSON.stringify(payload) !== baselineRef.current
-  useUnsavedChangesWarning(isDirty)
-
-  const [justSaved, setJustSaved] = useState(false)
-  useEffect(() => {
-    if (isDirty) setJustSaved(false)
-  }, [isDirty])
+  const { isDirty, showSaved, markSaved } = useDirtyTracking(payload)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -122,10 +115,9 @@ export function HeroForm({ hero }: Props) {
       )
 
       if (res.ok) {
-        baselineRef.current = JSON.stringify(payload)
+        markSaved(payload, isEdit)
         setSaving(false)
         if (isEdit) {
-          setJustSaved(true)
           router.refresh()
         } else {
           const data = (await res.json()) as { id: string }
@@ -271,7 +263,7 @@ export function HeroForm({ hero }: Props) {
         label={isEdit ? 'Lagre endringer' : 'Opprett hero'}
         saving={saving}
         isDirty={isDirty}
-        saved={justSaved}
+        saved={showSaved}
         error={error}
       />
     </form>

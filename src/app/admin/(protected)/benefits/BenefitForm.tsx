@@ -1,13 +1,13 @@
 'use client'
 // CR-004: Shared create/edit form for benefits.
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { AdminAdvertiserRow, AdminCodePoolRow } from '@/types/admin'
 import styles from '@/components/admin/AdminTable.module.css'
 import { ImageUploadField } from '@/components/admin/ImageUploadField'
 import { FormSaveBar } from '@/components/admin/FormSaveBar'
-import { useUnsavedChangesWarning } from '@/lib/admin/useUnsavedChangesWarning'
+import { useDirtyTracking } from '@/lib/admin/useDirtyTracking'
 
 type Category = { id: string; name: string; slug: string }
 
@@ -167,14 +167,7 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
       appliesNationally, includeUnknownLocation, postcodeInput, selectedSegments,
     ],
   )
-  const baselineRef = useRef(JSON.stringify(payload))
-  const isDirty = JSON.stringify(payload) !== baselineRef.current
-  useUnsavedChangesWarning(isDirty)
-
-  const [justSaved, setJustSaved] = useState(false)
-  useEffect(() => {
-    if (isDirty) setJustSaved(false)
-  }, [isDirty])
+  const { isDirty, showSaved, markSaved } = useDirtyTracking(payload)
 
   function handleTitleChange(val: string) {
     setTitle(val)
@@ -197,10 +190,9 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
       )
 
       if (res.ok) {
-        baselineRef.current = JSON.stringify(payload)
+        markSaved(payload, isEdit)
         setSaving(false)
         if (isEdit) {
-          setJustSaved(true)
           router.refresh()
         } else {
           const data = (await res.json()) as { id: string }
@@ -437,7 +429,7 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
         label={isEdit ? 'Lagre endringer' : 'Opprett fordel'}
         saving={saving}
         isDirty={isDirty}
-        saved={justSaved}
+        saved={showSaved}
         error={error}
       />
     </form>

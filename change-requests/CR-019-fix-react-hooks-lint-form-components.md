@@ -1,6 +1,6 @@
 # CR-019: Fiks react-hooks-lint-feil i admin-skjemakomponentene
 
-Status: Approved
+Status: Implementert (ikke committed) — venter på manuell nettleserverifisering
 Created: 2026-08-18
 Approved: 2026-08-18
 
@@ -129,8 +129,8 @@ Performance Impact:
   skjema, ingen negativ effekt.
 
 Required Tests:
-- [ ] `npm run lint` viser 0 feil for de 4 berørte filene
-- [ ] `npx tsc --noEmit`, `npx vitest run`, `npm run build` — ingen
+- [x] `npm run lint` viser 0 feil for de 4 berørte filene
+- [x] `npx tsc --noEmit`, `npx vitest run`, `npm run build` — ingen
       regresjon (eksisterende suite har ingen dekning av disse
       komponentene, så dette bekrefter kun at ingenting annet brekker)
 - [ ] Manuell (i nettleser): for alle fire skjemaer — rediger et felt →
@@ -138,10 +138,10 @@ Required Tests:
       "Lagret"-badge vises; rediger igjen → badge forsvinner igjen
 
 ## Acceptance Criteria
-- [ ] Alle 8 `react-hooks/refs`/`react-hooks/set-state-in-effect`-feil
+- [x] Alle 8 `react-hooks/refs`/`react-hooks/set-state-in-effect`-feil
       borte fra `npm run lint`
-- [ ] Ingen ny lint-feil introdusert
-- [ ] `npx tsc --noEmit`, `npx vitest run`, `npm run build` — alle grønne
+- [x] Ingen ny lint-feil introdusert
+- [x] `npx tsc --noEmit`, `npx vitest run`, `npm run build` — alle grønne
 - [ ] Manuell verifisering av dirty-/lagret-indikator i alle fire skjemaer
       bekreftet uendret atferd
 
@@ -171,3 +171,10 @@ datamigrering. Ved problemer: revert commit.
 - Ingen avhengighet av andre åpne CR-er. Oppdaget under og følger opp
   CR-018 (Next.js 16-oppgraderingen), men er en uavhengig, separat fiks
   som kan gjøres når som helst etter CR-018.
+
+## Implementation Notes (2026-10-12)
+- Ny delt hook `src/lib/admin/useDirtyTracking.ts` (`useDirtyTracking(payload)` → `{ isDirty, showSaved, markSaved }`), inkluderer `useUnsavedChangesWarning`. Baseline og saved-snapshot ligger i `useState`; ingen ref-lesing i render, ingen setState i effect. Ren funksjon `deriveDirtyState` + 5 tester.
+- Alle fire skjemaer migrert. `markSaved(payload, isEdit)`: opprett-flyt oppdaterer baseline uten badge (navigerer bort).
+- Liten atferdsforskjell: "Lagret"-badgen vises igjen hvis admin redigerer feltet tilbake til eksakt lagret verdi (avledet av snapshot-likhet). Tidligere ble den borte til neste lagring.
+- Validering: lint 0 feil (3 urelaterte advarsler), tsc OK, vitest 138/138 (opp fra 133), build OK.
+- Gjenstår: manuell nettleserverifisering av alle fire skjemaer, deretter commit og Done.
