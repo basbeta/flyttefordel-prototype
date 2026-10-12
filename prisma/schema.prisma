@@ -236,6 +236,7 @@ model Benefit {
   targeting  TargetingRule?     @relation("BenefitTargeting")
   events     BenefitEvent[]
   savedBy    SavedBenefit[]
+  views      BenefitView[]
 
   @@map("benefits")
 }
@@ -381,6 +382,28 @@ model BenefitEvent {
 
   @@map("benefit_events")
 }
+
+// CR-021: A surface + variant of a benefit. Only overrides; no row = inherit everything
+// from Benefit. format is validated against src/lib/views/formats.ts (not a DB enum).
+model BenefitView {
+  id        String   @id @default(uuid()) @db.Uuid
+  benefitId String   @map("benefit_id") @db.Uuid
+  format    String
+  variant   String   @default("standard")
+  title     String?
+  text      String?
+  imageUrl  String?  @map("image_url")
+  imageAlt  String?  @map("image_alt")
+  badgeText String?  @map("badge_text")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  benefit Benefit @relation(fields: [benefitId], references: [id])
+
+  @@unique([benefitId, format, variant])
+  @@map("benefit_views")
+}
+
 
 model SavedBenefit {
   id        String    @id @default(uuid()) @db.Uuid

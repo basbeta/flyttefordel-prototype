@@ -1,12 +1,14 @@
 // CR-002: Fase 2 — Fordeler i app
 // CR-003: Fase 3 — isSaved join added (requires sessionId)
 // CR-005: Fase 5 — Targeting filter added (in-memory after DB fetch)
+// CR-021: Card list content resolved via BenefitView overrides (app_card), default = inherit.
 // Public-facing benefit queries — maps Prisma objects to API response types.
 // Pages call these directly as Server Components. Never import prisma directly in components.
 
 import QRCode from 'qrcode'
 import { prisma } from '@/lib/db/client'
 import { matchesSession } from '@/lib/targeting'
+import { resolveBenefitView } from '@/lib/views'
 import type { TargetingSession } from '@/lib/targeting'
 import type { BenefitCard, BenefitDetail, CategorySummary, BenefitRedemptionConfig, LeadFormField } from '@/types/app'
 import type { BenefitRedemptionType, Prisma } from '@prisma/client'
@@ -51,6 +53,7 @@ export async function getActiveBenefits(
         advertiser: { select: { id: true, name: true, slug: true, logoUrl: true, websiteUrl: true } },
         category: { select: { id: true, name: true, slug: true, icon: true, sortOrder: true } },
         targeting: true,
+        views: { where: { format: 'app_card' } },
       },
       orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
     }),
@@ -68,7 +71,19 @@ export async function getActiveBenefits(
     : { postcode: null, movingStatus: 'unknown' }
   return benefits
     .filter((b) => matchesSession(b.targeting, targetingCtx))
-    .map((b) => ({ ...mapBenefitCard(b), isSaved: savedIds.has(b.id) }))
+    .map((b) => {
+      // CR-021: card content = override from BenefitView, else the benefit's own content.
+      const view = resolveBenefitView(b, b.views, 'app_card')
+      const card = mapBenefitCard({
+        ...b,
+        title: view.title,
+        shortDescription: view.text,
+        imageUrl: view.imageUrl,
+        imageAlt: view.imageAlt,
+        badgeText: view.badgeText,
+      })
+      return { ...card, isSaved: savedIds.has(b.id) }
+    })
 }
 
 // ---- Benefit detail ----

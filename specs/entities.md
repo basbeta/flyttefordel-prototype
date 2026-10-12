@@ -192,6 +192,30 @@ Relations:
 - has_one: TargetingRule
 - has_many: BenefitEvent
 - has_many: SavedBenefit
+- has_many: BenefitView (CR-021)
+
+---
+
+## Entity: BenefitView
+
+CR-021: En flate pluss variant for en fordel. Inneholder bare overstyringer, alle innholdsfelt er valgfrie. Fravær av rad betyr at alt arves fra Benefit. Løses av `resolveBenefitView()` i `src/lib/views`.
+
+Fields:
+- id: uuid (PK)
+- benefit_id: uuid FK Benefit (uten kaskade, Benefit bruker soft delete)
+- format: string (validert mot format-registeret i `src/lib/views/formats.ts`, ikke en DB-enum. Nå kun `app_card`)
+- variant: string (default 'standard')
+- title: string? (overstyrer Benefit.title)
+- text: string? (overstyrer Benefit.short_description)
+- image_url: string? (overstyrer Benefit.image_url)
+- image_alt: string? (løses sammen med image_url som et par)
+- badge_text: string? (overstyrer Benefit.badge_text)
+- created_at / updated_at: timestamp
+
+Constraints:
+- UNIQUE (benefit_id, format, variant)
+
+Regler (se CR-021): tom eller bare-mellomrom-overstyring er ingen overstyring. Manglende variant faller tilbake til 'standard', så til ren arv. Overstyring av felt formatet ikke tillater ignoreres. Visningens id i hendelser (`BenefitEvent.view_id`) er `{format}:{variant}`, ikke tatt i bruk ennå.
 
 ---
 
