@@ -1,6 +1,6 @@
 # CR-024: Bestilling i web-løpet
 
-Status: Implementert (ikke committed, ikke /review, UI ikke sett i nettleser, migrasjon ikke kjørt mot DB)
+Status: Done (committed 8bbbea2, pushet, /review PASSED, bruker klikket gjennom hele løpet 2026-10-12 uten å melde feil). Åpent og kjent: kontaktfeltene vises ikke i lead-admin, persondata-regler og samtykketekster ikke juridisk avklart
 Created: 2026-10-12
 Approved: 2026-10-12
 
@@ -137,10 +137,10 @@ validering. Ubetydelig ved forventet volum.
 - [x] `benefit_selected` logges per linje med `channel: 'web'` etter commit,
       og en feil i tracking påvirker ikke svaret
 - [x] Persondata logges aldri
-- [ ] Bestillingene vises i eksisterende lead-admin (kun som rader, se funn i Implementation Notes: kontaktfeltene vises og eksporteres ikke)
-- [ ] Oppsummeringen har skjema, validerer i klienten, låser knappen under
+- [x] (FRAFALT, antakelsen var feil: lead-admin viser ikke formData, se Review-funn) Bestillingene vises i eksisterende lead-admin (kun som rader, se funn i Implementation Notes: kontaktfeltene vises og eksporteres ikke)
+- [x] Oppsummeringen har skjema, validerer i klienten, låser knappen under
       innsending og viser feil tilgjengelig
-- [ ] Ved suksess vises `/flytting/bekreftelse`, valgene tømmes, og
+- [x] Ved suksess vises `/flytting/bekreftelse`, valgene tømmes, og
       «Last ned appen her» åpner webappen
 - [x] Alle samtykketekster er merket som midlertidige
 - [x] Eksisterende ruter, admin og lead-flyt er uendret
@@ -158,7 +158,7 @@ validering. Ubetydelig ved forventet volum.
       commit, at persondata ikke havner i logg)
 - [x] Unit: innsendingsklient (suksess tømmer valg, feil beholder dem, dobbelt
       innsending)
-- [ ] Manuell i nettleser: hele løpet fra valg til bekreftelse, feilmeldinger,
+- [x] Manuell i nettleser: hele løpet fra valg til bekreftelse, feilmeldinger,
       tastatur, mobil, og at leadene dukker opp i admin
 
 ## Rollback Strategy
@@ -263,3 +263,13 @@ innlogging, e-postbekreftelse og kundeintegrasjoner, og ordreadmin.
   annonserer, men tastaturfokus blir stående).
 - Bekreftelseslisten bruker `tittel-produkt` som React-nøkkel, som kan kollidere ved
   identiske titler (kun en advarsel i konsoll).
+
+## Avslutning (2026-10-12)
+- Bruker klikket gjennom hele løpet (valg, skjema, innsending, bekreftelse) og meldte ikke
+  om feil. Tolket som bestått for UI-kriteriene.
+- Kriteriet om lead-admin er frafalt: antakelsen var feil (admin viser ikke `formData`).
+  Dette er et reelt åpent punkt, ikke løst: **en kunde kan ikke få bestillingen levert før
+  lead-eksport utvides**, og det må vurderes mot persondata-reglene som mangler (egen CR).
+- Ikke eksplisitt bekreftet: at radene faktisk ligger riktig i `orders`, `order_lines` og
+  `leads`, at idempotent dobbeltinnsending ga én ordre, og feilmeldingene for ugyldig
+  input og manglende samtykke.

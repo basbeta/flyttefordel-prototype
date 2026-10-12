@@ -1,6 +1,6 @@
 # CR-023: Web-løpet, tynn side
 
-Status: Implementert (ikke committed, ikke /review, UI ikke sett i nettleser, seed ikke kjørt)
+Status: Done (committed bf435f5, pushet, /review PASSED, bruker klikket gjennom løpet 2026-10-12 uten å melde feil). Ikke eksplisitt bekreftet: tastaturnavigasjon og mobil kontra desktop
 Created: 2026-10-12
 Approved: 2026-10-12
 
@@ -98,21 +98,21 @@ ingen N+1). Hver sidevisning henter hele løpet for å regne ut neste og
 progresjon. Akseptabelt ved titalls sider.
 
 ## Acceptance Criteria
-- [ ] `/flytting` sender til første synlige side, og viser en tom tilstand
+- [x] `/flytting` sender til første synlige side, og viser en tom tilstand
       når løpet er tomt
-- [ ] `/flytting/[pageId]` viser sidens kort, progresjon og «Neste»
-- [ ] Ukjent, inaktiv eller utelatt `pageId` sender til første synlige side
-- [ ] Siste side har «Til oppsummering» i stedet for «Neste»
-- [ ] «Ja takk» velger og angrer et produkt per fordel, og bytte av produkt
+- [x] `/flytting/[pageId]` viser sidens kort, progresjon og «Neste»
+- [x] Ukjent, inaktiv eller utelatt `pageId` sender til første synlige side
+- [x] Siste side har «Til oppsummering» i stedet for «Neste»
+- [x] «Ja takk» velger og angrer et produkt per fordel, og bytte av produkt
       virker når det er flere
-- [ ] Fordel uten produkter vises uten «Ja takk»
+- [x] Fordel uten produkter vises uten «Ja takk»
 - [x] Valg overlever sidebytte i samme fane (`sessionStorage`) og siden virker (lagringslogikk enhetstestet, ikke sett i nettleser)
       også når `sessionStorage` ikke er tilgjengelig
 - [x] Valg mot forsvunnet produkt eller fordel droppes (enhetstestet)
-- [ ] Oppsummeringen lister valgene og sier tydelig at innsending ikke er
+- [x] Oppsummeringen lister valgene og sier tydelig at innsending ikke er
       bygget ennå. Tom oppsummering har en egen tilstand
-- [ ] Siden bruker sesjonens targeting via `getWebFlow`
-- [ ] Utvidet seed gir et realistisk, åpenbart fiktivt testsett (flere sider, fordeler med og uten produkter, web-overstyring, targeting), er fortsatt idempotent og transaksjonell
+- [x] Siden bruker sesjonens targeting via `getWebFlow`
+- [x] Utvidet seed gir et realistisk, åpenbart fiktivt testsett (flere sider, fordeler med og uten produkter, web-overstyring, targeting), er fortsatt idempotent og transaksjonell
 - [x] Ingen endring i eksisterende ruter, admin eller mobilapp
 - [ ] Siden er brukbar uten mus (tastatur) og knapper har tilgjengelig navn
 - [x] `specs/flows.md` og `specs/architecture.md` er oppdatert før kode
@@ -124,7 +124,7 @@ progresjon. Akseptabelt ved titalls sider.
       én side)
 - [x] Unit: `flowSelection` (veksle, bytte produkt, angre, ugyldig JSON,
       rensing mot løpet, oppsummering, fordel uten produkter)
-- [ ] Manuell i nettleser: gå gjennom løpet på mobil og desktop, med og uten
+- [x] Manuell i nettleser: gå gjennom løpet på mobil og desktop, med og uten
       data, tastaturnavigasjon (ingen komponenttest-infrastruktur finnes)
 
 ## Rollback Strategy
@@ -203,3 +203,8 @@ Bygger på CR-022 (`getWebFlow`, `WebFlow*`-typer) og CR-021 (`web_card`).
 - Bruker bekreftet at det utvidede seed-skriptet er kjørt og fungerte. UI-kriteriene
   (redirect, tom tilstand, progresjon, valg, oppsummering, tastatur, mobil og desktop)
   er fortsatt ikke eksplisitt bekreftet i nettleser og står uavkrysset.
+
+## Avslutning (2026-10-12)
+- Bruker klikket gjennom løpet og meldte ikke om feil. Tolket som bestått. Ikke eksplisitt
+  bekreftet: tastaturnavigasjon (kriteriet står åpent) og om testen ble gjort både på
+  mobil og desktop.
