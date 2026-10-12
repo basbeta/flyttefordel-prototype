@@ -1,0 +1,147 @@
+/* CR-025: Sections on the edit benefit page (products, channels). */
+
+.section {
+  margin-top: var(--space-8);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.title {
+  font-size: var(--font-lg);
+}
+
+.help {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  line-height: var(--leading-relaxed);
+}
+
+.empty {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+}
+
+.list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1.4fr 0.8fr auto;
+  gap: var(--space-3);
+  align-items: end;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+.rowInactive {
+  opacity: 0.7;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.fieldLabel {
+  font-size: var(--font-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-muted);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-sm);
+}
+
+.status {
+  font-size: var(--font-xs);
+  color: var(--color-text-muted);
+}
+
+.statusDirty {
+  font-size: var(--font-xs);
+  color: var(--color-warning);
+}
+
+.statusError {
+  font-size: var(--font-xs);
+  color: var(--color-error);
+}
+
+.problems {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.problemBlocking,
+.problemInfo {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-sm);
+  line-height: var(--leading-relaxed);
+}
+
+.problemBlocking {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+
+.problemInfo {
+  background: var(--color-info-soft);
+  color: var(--color-info);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+
+.group:first-of-type {
+  padding-top: 0;
+  border-top: none;
+}
+
+.groupTitle {
+  font-size: var(--font-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+@media (max-width: 800px) {
+  .row {
+    grid-template-columns: 1fr 1fr;
+  }
+}

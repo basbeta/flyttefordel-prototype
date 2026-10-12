@@ -33,6 +33,8 @@ const patchSchema = z.object({
   priority: z.number().int().optional(),
   isFeatured: z.boolean().optional(),
   isTimeLimited: z.boolean().optional(),
+  // CR-025: false hides the benefit from the app lists.
+  showInApp: z.boolean().optional(),
   badgeText: z.string().nullable().optional(),
   termsText: z.string().nullable().optional(),
   usageInstruction: z.string().nullable().optional(),

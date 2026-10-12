@@ -4,9 +4,19 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireAdminAuth } from '@/lib/admin/auth'
-import { getAdminBenefitById, getAdminAdvertisers, getAdminCategories } from '@/lib/queries/adminQueries'
+import {
+  getAdminBenefitById,
+  getAdminAdvertisers,
+  getAdminCategories,
+  getAdminBenefitProducts,
+  getAdminFlowPageOptions,
+  getAdminWebPlacement,
+} from '@/lib/queries/adminQueries'
 import { getBenefitDisplayStatus } from '@/lib/benefits/displayStatus'
+import { getWebPlacementProblems } from '@/lib/benefits/webPlacement'
 import { BenefitForm } from '../BenefitForm'
+import { BenefitProductsSection } from './BenefitProductsSection'
+import { BenefitChannelsSection } from './BenefitChannelsSection'
 import { BenefitStatusBadge } from '@/components/admin/BenefitStatusBadge'
 import styles from '@/components/admin/AdminTable.module.css'
 
@@ -18,12 +28,28 @@ type Props = { params: Promise<{ id: string }> }
 export default async function EditBenefitPage({ params }: Props) {
   const { id } = await params
   await requireAdminAuth()
-  const [benefit, advertisers, categories] = await Promise.all([
+  const [benefit, advertisers, categories, products, pageOptions, placementView] = await Promise.all([
     getAdminBenefitById(id),
     getAdminAdvertisers(),
     getAdminCategories(),
+    getAdminBenefitProducts(id),
+    getAdminFlowPageOptions(),
+    getAdminWebPlacement(id),
   ])
   if (!benefit) notFound()
+
+  // CR-025: web placement (page + order) and why the benefit may not show in the flow.
+  const placement = { pageId: placementView?.pageId ?? null, sortOrder: placementView?.sortOrder ?? 0 }
+  const placementProblems = getWebPlacementProblems(
+    {
+      benefit,
+      placement: placement.pageId ? { pageId: placement.pageId } : null,
+      page: placementView?.page ?? null,
+      activeProductCount: products.filter((p) => p.isActive).length,
+      hasTargeting: Boolean(benefit.targeting) && !benefit.targeting?.appliesNationally,
+    },
+    new Date()
+  )
 
   // CR-016: Beregnet visningsstatus (aktiv/planlagt/kladd/feilet)
   const displayStatus = getBenefitDisplayStatus(benefit)
@@ -47,6 +73,14 @@ export default async function EditBenefitPage({ params }: Props) {
         <BenefitStatusBadge status={displayStatus} showReasons />
       </div>
       <BenefitForm advertisers={advertisers} categories={categories} benefit={benefitForForm} />
+      <BenefitProductsSection benefitId={benefit.id} products={products} />
+      <BenefitChannelsSection
+        benefitId={benefit.id}
+        pages={pageOptions}
+        placement={placement}
+        problems={placementProblems}
+        showInApp={benefit.showInApp}
+      />
     </div>
   )
 }

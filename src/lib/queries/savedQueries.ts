@@ -19,6 +19,7 @@ export async function getSavedBenefits(sessionId: string): Promise<BenefitCard[]
   })
 
   return saved
-    .filter((s) => s.benefit.status === 'active' && s.benefit.deletedAt === null)
+    // CR-025: benefits switched off for the app are left out of the saved list too.
+    .filter((s) => s.benefit.status === 'active' && s.benefit.deletedAt === null && s.benefit.showInApp)
     .map((s) => ({ ...mapBenefitCardFromSaved(s.benefit), isSaved: true }))
 }

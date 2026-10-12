@@ -216,3 +216,38 @@ export type AdminLeadRow = {
   consentAcceptedAt: string
   createdAt: string
 }
+
+// ---- Web-løpet (CR-025) ----
+
+export type AdminFlowPageRow = {
+  id: string
+  name: string
+  text: string | null
+  imageUrl: string | null
+  imageAlt: string | null
+  sortOrder: number
+  isActive: boolean
+  // Number of benefits placed on the page (web_card/standard rows).
+  placedCount: number
+  createdAt: string
+}
+
+export type AdminFlowPageOption = {
+  id: string
+  name: string
+  isActive: boolean
+}
+
+export type AdminProductRow = {
+  id: string
+  name: string
+  text: string | null
+  priceText: string | null
+  sortOrder: number
+  isActive: boolean
+}
+
+export type AdminWebPlacement = {
+  pageId: string | null
+  sortOrder: number
+}

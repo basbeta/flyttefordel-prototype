@@ -11,6 +11,9 @@ import type {
   AdminCodePoolDetail,
   AdminLeadRow,
   AdminProfitabilityData,
+  AdminFlowPageRow,
+  AdminFlowPageOption,
+  AdminProductRow,
 } from '@/types/admin'
 import type { BenefitStatus, LeadStatus } from '@prisma/client'
 
@@ -458,4 +461,65 @@ export async function getAdminLeads(filters?: {
     consentAcceptedAt: l.consentAcceptedAt.toISOString(),
     createdAt: l.createdAt.toISOString(),
   }))
+}
+
+// ---- Web-løpet (CR-025) ----
+
+export async function getAdminFlowPages(): Promise<AdminFlowPageRow[]> {
+  const pages = await prisma.flowPage.findMany({
+    where: { deletedAt: null },
+    include: {
+      _count: { select: { views: { where: { format: 'web_card', variant: 'standard' } } } },
+    },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+  })
+  return pages.map((p) => ({
+    id: p.id,
+    name: p.name,
+    text: p.text,
+    imageUrl: p.imageUrl,
+    imageAlt: p.imageAlt,
+    sortOrder: p.sortOrder,
+    isActive: p.isActive,
+    placedCount: p._count.views,
+    createdAt: p.createdAt.toISOString(),
+  }))
+}
+
+export async function getAdminFlowPageById(id: string) {
+  return prisma.flowPage.findFirst({ where: { id, deletedAt: null } })
+}
+
+// For the page select on the benefit form: not deleted, inactive ones included (and marked).
+export async function getAdminFlowPageOptions(): Promise<AdminFlowPageOption[]> {
+  const pages = await prisma.flowPage.findMany({
+    where: { deletedAt: null },
+    select: { id: true, name: true, isActive: true },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+  })
+  return pages
+}
+
+export async function getAdminBenefitProducts(benefitId: string): Promise<AdminProductRow[]> {
+  const products = await prisma.product.findMany({
+    where: { benefitId, deletedAt: null },
+    orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+  })
+  return products.map((p) => ({
+    id: p.id,
+    name: p.name,
+    text: p.text,
+    priceText: p.priceText,
+    sortOrder: p.sortOrder,
+    isActive: p.isActive,
+  }))
+}
+
+// The web placement lives on the web_card/standard view row (CR-022).
+export async function getAdminWebPlacement(benefitId: string) {
+  const view = await prisma.benefitView.findUnique({
+    where: { benefitId_format_variant: { benefitId, format: 'web_card', variant: 'standard' } },
+    include: { page: { select: { id: true, isActive: true, deletedAt: true } } },
+  })
+  return view
 }

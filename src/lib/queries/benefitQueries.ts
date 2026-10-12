@@ -43,6 +43,8 @@ export async function getActiveBenefits(
       where: {
         status: 'active',
         deletedAt: null,
+        // CR-025: benefits switched off for the app are left out of the lists.
+        showInApp: true,
         AND: [
           { OR: [{ startsAt: null }, { startsAt: { lte: now } }] },
           { OR: [{ endsAt: null }, { endsAt: { gte: now } }] },

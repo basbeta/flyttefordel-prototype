@@ -104,3 +104,18 @@ describe('PATCH /api/admin/benefits/[id] — CR-017 sperre', () => {
     expect(mockPrisma.benefit.update).toHaveBeenCalled()
   })
 })
+
+// CR-025: showInApp
+describe('PATCH /api/admin/benefits/[id] — CR-025 showInApp', () => {
+  it('sender showInApp videre til oppdateringen', async () => {
+    mockPrisma.benefit.findFirst.mockResolvedValueOnce(existingActiveBenefit())
+    const res = await PATCH(makeRequest({ showInApp: false }), PARAMS)
+    expect(res.status).toBe(200)
+    expect(mockPrisma.benefit.update.mock.calls[0][0].data).toMatchObject({ showInApp: false })
+  })
+
+  it('avviser showInApp som ikke er boolsk', async () => {
+    const res = await PATCH(makeRequest({ showInApp: 'nei' }), PARAMS)
+    expect(res.status).toBe(400)
+  })
+})

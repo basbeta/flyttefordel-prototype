@@ -219,6 +219,8 @@ model Benefit {
   consentText      String?               @map("consent_text")
   isFeatured       Boolean               @default(false) @map("is_featured")
   isTimeLimited    Boolean               @default(false) @map("is_time_limited")
+  // CR-025: false hides the benefit from the app lists (nearby, saved). Detail page and direct links are unaffected.
+  showInApp        Boolean               @default(true) @map("show_in_app")
   // CR-010: Økonomifelter — alle nullable, inntektsmodell er valgfri per kampanje.
   campaignFee      Decimal?              @map("campaign_fee") @db.Decimal(10, 2)
   pricePerView     Decimal?              @map("price_per_view") @db.Decimal(10, 4)

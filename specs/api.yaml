@@ -12,6 +12,79 @@ paths:
   # NOTE (CR-020): kun /api/track er beskrevet her så langt. Resten av API-et
   # er ikke dokumentert i denne filen. Server-URL over er malverdi, faktisk
   # base er /api.
+  # CR-025: admin-ruter for web-løpet. Alle krever admin-cookie (JWT), sjekket i hver rute
+  # (middleware beskytter ikke /api/admin). 401 uten innlogging, 404 ved ukjent id.
+  /api/admin/flow-pages:
+    get: { operationId: listFlowPages, summary: "Liste sider (ikke slettet)", responses: { "200": { description: "OK" }, "401": { description: "Ikke autentisert" } } }
+    post:
+      operationId: createFlowPage
+      summary: "Opprett side"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, maxLength: 120 }
+                text: { type: string, nullable: true, maxLength: 1000 }
+                imageUrl: { type: string, nullable: true }
+                imageAlt: { type: string, nullable: true, maxLength: 200 }
+                sortOrder: { type: integer, default: 0 }
+                isActive: { type: boolean, default: true }
+      responses:
+        "201": { description: "{id}" }
+        "400": { description: "Ugyldig input" }
+        "401": { description: "Ikke autentisert" }
+  /api/admin/flow-pages/{id}:
+    get: { operationId: getFlowPage, summary: "Hent side", responses: { "200": { description: "OK" }, "404": { description: "Ikke funnet" } } }
+    patch: { operationId: updateFlowPage, summary: "Oppdater side (delvis)", responses: { "200": { description: "OK" }, "400": { description: "Ugyldig input" }, "404": { description: "Ikke funnet" } } }
+    delete: { operationId: deleteFlowPage, summary: "Slett side (soft delete)", responses: { "204": { description: "Slettet" }, "404": { description: "Ikke funnet" } } }
+  /api/admin/benefits/{id}/products:
+    get: { operationId: listBenefitProducts, summary: "Liste produkter på en fordel (ikke slettet)", responses: { "200": { description: "OK" }, "404": { description: "Fordel ikke funnet" } } }
+    post:
+      operationId: createBenefitProduct
+      summary: "Opprett produkt på fordel"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, maxLength: 120 }
+                text: { type: string, nullable: true, maxLength: 500 }
+                priceText: { type: string, nullable: true, maxLength: 80 }
+                sortOrder: { type: integer, default: 0 }
+                isActive: { type: boolean, default: true }
+      responses:
+        "201": { description: "{id}" }
+        "400": { description: "Ugyldig input" }
+        "404": { description: "Fordel ikke funnet" }
+  /api/admin/benefits/{id}/products/{productId}:
+    patch: { operationId: updateBenefitProduct, summary: "Oppdater produkt (delvis)", responses: { "200": { description: "OK" }, "404": { description: "Ikke funnet" } } }
+    delete: { operationId: deleteBenefitProduct, summary: "Slett produkt (soft delete)", responses: { "204": { description: "Slettet" }, "404": { description: "Ikke funnet" } } }
+  /api/admin/benefits/{id}/web-placement:
+    put:
+      operationId: setWebPlacement
+      summary: "Plasser fordel på en side i web-løpet, eller fjern plasseringen"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pageId]
+              properties:
+                pageId: { type: string, format: uuid, nullable: true, description: "null = ikke i løpet" }
+                sortOrder: { type: integer, default: 0 }
+      responses:
+        "200": { description: "OK" }
+        "400": { description: "Ugyldig input" }
+        "404": { description: "Fordel eller side ikke funnet" }
+  # PATCH /api/admin/benefits/{id} utvides med showInApp (boolean, CR-025).
   /api/flow/order:
     post:
       operationId: submitFlowOrder

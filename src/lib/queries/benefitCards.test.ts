@@ -95,3 +95,15 @@ describe('getActiveBenefits (CR-021)', () => {
     expect(card.isSaved).toBe(true)
   })
 })
+
+// CR-025: showInApp
+describe('getActiveBenefits (CR-025 showInApp)', () => {
+  it('spør bare etter fordeler som skal vises i appen', async () => {
+    mockPrisma.benefit.findMany.mockResolvedValueOnce([])
+    await getActiveBenefits()
+    const arg = mockPrisma.benefit.findMany.mock.calls[0][0]
+    expect(arg.where.showInApp).toBe(true)
+    expect(arg.where.status).toBe('active')
+    expect(arg.where.deletedAt).toBeNull()
+  })
+})

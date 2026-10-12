@@ -122,6 +122,7 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 | `/app/api/...` | Next.js Route Handlers — validering, auth-sjekk, respons-mapping |
 | `/app/(web)` | CR-023: Web-løpet på `/flytting` (sider, kort, oppsummering). Server Components som leser `getWebFlow`, klientkomponenter for valg. Ingen mobil-navigasjon |
 | `/components/web` | CR-023: Komponenter for web-løpet (progresjon, kort, oppsummering). Importerer ikke fra `/components/mobile` eller `/components/admin` |
+| `/app/admin` (CR-025) | Nye seksjoner: `/admin/flow-pages` (sider i web-løpet) og, på rediger fordel, produkter og "Web-løpet" (plassering og "Vis i appen"). Hver ny `/api/admin`-rute sjekker admin-JWT selv (middleware beskytter ikke API-rutene) |
 | `/components/mobile` | Mobilapp-komponenter |
 | `/components/admin` | Admin-komponenter |
 | `/components/shared` | Delte UI-komponenter (Button, Card, Badge osv.) |

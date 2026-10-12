@@ -84,6 +84,31 @@ Related endpoints: POST /api/flow/order
 
 ---
 
+## Flow: Fylle web-løpet fra admin (CR-025)
+
+Trigger: Admin åpner `/admin/flow-pages` eller rediger fordel.
+
+Steps:
+1. Opprett en side (`FlowPage`) med navn, tekst, bilde, rekkefølge og aktiv-flagg.
+2. På rediger fordel: legg til produkter (`Product`) med navn, tekst, pristekst, rekkefølge og aktiv-flagg.
+3. På rediger fordel, seksjonen "Web-løpet": velg side og rekkefølge. Lagring oppretter eller oppdaterer `BenefitView` (web_card, standard) med `page_id` og `sort_order`. "Ikke i løpet" setter `page_id` til null.
+4. Seksjonen viser hvorfor fordelen ikke vises i løpet (`getWebPlacementProblems`).
+5. Avkrysningen "Vis i appen" styrer `Benefit.show_in_app`.
+
+Decision points:
+- Sletting av side og produkt er soft delete (ordrelinjer refererer produkter). Plasseringer på en slettet side blir stående og utelates fra løpet.
+- Plasseringen er alltid på standard-varianten (variantplassering ignoreres, CR-022).
+- `show_in_app = false` utelater fordelen fra appens lister, "I nærheten" og "Lagret", men ikke fra detaljside eller direktelenke.
+
+Error conditions:
+- Ingen admin-cookie: 401. Ukjent id: 404. Ugyldig input: 400. Uventet feil: 500 med JSON.
+- Plassering på side som ikke finnes eller er slettet: 404.
+
+Related entities: FlowPage, Product, BenefitView, Benefit
+Related endpoints: /api/admin/flow-pages, /api/admin/benefits/[id]/products, /api/admin/benefits/[id]/web-placement, PATCH /api/admin/benefits/[id]
+
+---
+
 ## Flow: [Name]
 
 Trigger: [What starts this flow?]

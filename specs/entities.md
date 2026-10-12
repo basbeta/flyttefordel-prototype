@@ -182,6 +182,7 @@ Fields:
 - consent_text: text? (for lead-fordeler)
 - is_featured: boolean (default: false)
 - is_time_limited: boolean (default: false)
+- show_in_app: boolean (default: true, CR-025: false utelater fordelen fra appens lister, "I nærheten" og "Lagret". Detaljside og direktelenke påvirkes ikke)
 - created_by / updated_by: uuid? (AdminUser)
 - created_at / updated_at / deleted_at: timestamp
 
