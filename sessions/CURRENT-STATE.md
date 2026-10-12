@@ -3,7 +3,7 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-**CR-020 (utvidet hendelsesstrøm, første steg mot målbildet i docs/10) er
+**CR-020 (utvidet hendelsesstrøm, første steg mot målbildet i docs/10) er DONE (127f972, deployet 2026-10-12). Opprinnelig status:
 implementert 2026-10-12 (Session-19) men UNCOMMITTED, uten /review og IKKE
 Done.** `BenefitEvent` har nye felter `channel`/`viewId`/`testId`/`variant`,
 typede hendelsestyper i `src/lib/tracking/eventTypes.ts`, `/api/track` validerer
@@ -186,7 +186,7 @@ fra bruker (se Next Recommended Actions).
 - CR-017: Sperre mot ugyldig Aktiv/Planlagt status (Status: Done — committed 3ec4625, pushet 4a30c11, 2026-08-27)
 - CR-018: Next.js major-oppgradering 14.2.35→16.3.1 (Status: Implementert, committed+pushet e7cc47c, LIVE i prod, IKKE Done — venter på prod-smoke-test)
 - CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Implementert, committed 12b49e6, IKKE Done — venter på manuell nettleserverifisering)
-- CR-020: Utvidet hendelsesstrøm (Status: Implementert, UNCOMMITTED, ikke /review, IKKE Done — migrasjon ikke kjørt mot DB)
+- CR-020: Utvidet hendelsesstrøm (Status: Done — committed 127f972, pushet og deployet 2026-10-12, /review PASSED. Rad-sjekk av channel i benefit_events ikke eksplisitt bekreftet)
 
 - `prisma/schema.prisma` + `prisma/migrations/20261012000000_cr020_event_dimensions/` (BenefitEvent: channel default 'app', viewId, testId, variant), NY `src/lib/tracking/eventTypes.ts` (+ test), `trackEvent.ts` (options som 4. argument, strengt typet eventType, + test), `src/lib/session/index.ts` (`getSessionIdFromRequest`), `src/app/api/track/route.ts` (validering, 400 ved ukjent type/kanal, + test), `save`/`claim-code`/`lead` routes + `benefits/[slug]/page.tsx` (sessionId på hendelser, 3 route-tester), `specs/entities.md`, `specs/architecture.md`, `specs/api.yaml` (2026-10-12, CR-020, UNCOMMITTED)
 
@@ -334,7 +334,7 @@ fra bruker (se Next Recommended Actions).
   DECISIONS.md 2026-08-06/2026-05-22 for begrunnelse.
 
 ## Next Recommended Actions
-0. **CR-020**: kjør `/review`, commit (referer CR-020), push (Coolify kjører migrasjonen ved deploy), og sjekk i prod at en hendelse får `channel = 'app'` og at appen fortsatt logger (klientkall er sjekket mot typelisten, ukjent type gir nå 400 som er stille for brukeren). Deretter Done. Neste steg mot målbildet (docs/10 §10): utvelgelsesfunksjon eller person-ID, egen CR
+0. **CR-020**: Done. Neste steg mot målbildet (docs/10 §10): utvelgelsesfunksjon eller person-ID, egen CR. Valgfritt: bekreft at nye benefit_events-rader har channel = 'app'
 1. **CR-018**: Allerede LIVE i prod (push e7cc47c). Bruker smoke-tester
    admin-innlogging, anonym sesjon og minst én dynamisk route (admin +
    forbruker-app) før CR-018 markeres Done — se CR-018 Acceptance Criteria

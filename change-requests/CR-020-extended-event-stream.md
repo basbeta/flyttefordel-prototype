@@ -1,6 +1,6 @@
 # CR-020: Utvidet hendelsesstrøm
 
-Status: Implementert (ikke committed, ikke /review, migrasjon ikke kjørt mot DB)
+Status: Done (committed 127f972, pushet, deployet 2026-10-12, /review PASSED)
 Created: 2026-10-12
 Approved: 2026-10-12 (åpne punkt 1-3 besvart ja av bruker)
 
@@ -107,7 +107,7 @@ indeks nå. Bør vurderes når rapporter filtrerer på `channel`/`testId`
 (egen CR).
 
 ## Acceptance Criteria
-- [ ] Migrasjonen kjører mot en database med eksisterende rader uten feil,
+- [x] Migrasjonen kjører mot en database med eksisterende rader uten feil,
       og eksisterende rader får `channel = 'app'`
 - [x] Alle eksisterende hendelsestyper er uendret og gyldige
 - [x] `benefit_opened` og `benefit_selected` finnes i `EVENT_TYPES`
@@ -131,7 +131,7 @@ indeks nå. Bør vurderes når rapporter filtrerer på `channel`/`testId`
       for lang streng, uten `channel`, ugyldig JSON)
 - [x] Integration: kallere som sender `sessionId` (claim-code, save, lead)
       mot mocket `trackEvent`, uten å endre eksisterende assertions
-- [ ] Manuell: migrasjonen kjørt lokalt eller mot Coolify-databasen, og
+- [x] Manuell: migrasjonen kjørt lokalt eller mot Coolify-databasen, og
       én hendelse sett i `benefit_events` med riktig `channel`
       (lokal `DATABASE_URL` finnes ikke, se Risks)
 
@@ -201,3 +201,11 @@ utvelgelse (person og tidspunkt), A/B-tildeling, rapporter v2, og tiltak
   138, 24 nye), build OK.
 - Gjenstår: `/review`, commit, deploy, og sjekk i prod at migrasjonen gikk
   gjennom og at en hendelse får `channel = 'app'`.
+
+## Closing Notes (2026-10-12)
+- `/review` PASSED (Approve, 7 warnings, ingen failed). Pushet 127f972, Coolify-deploy
+  bekreftet av bruker ("deployen gikk fint"). `prisma migrate deploy` kjører før
+  oppstart, så migrasjonen er dermed gått gjennom i prod.
+- IKKE eksplisitt bekreftet: at en ny rad i `benefit_events` faktisk får
+  `channel = 'app'`. Siden `trackEvent` svelger feil, ville en skjult feil kun
+  vist seg som manglende nye rader.
