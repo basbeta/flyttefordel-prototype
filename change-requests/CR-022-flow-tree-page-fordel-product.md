@@ -1,6 +1,6 @@
 # CR-022: Treet Page, Fordel, Product (backend for web-løpet)
 
-Status: Implementert (ikke committed, ikke /review, migrasjon og seed ikke kjørt mot DB)
+Status: Done (committed 0d31820, pushet, deployet, prod-sjekk OK av bruker 2026-10-12, /review PASSED). Seed ikke kjørt
 Created: 2026-10-12
 Approved: 2026-10-12
 
@@ -139,7 +139,7 @@ under 500 fordeler.
       grenseverdier)
 - [x] Integration: `getWebFlow` med mocket Prisma, alle regler 1 til 7 i
       lesemodellen, inkludert at ingen interne felter lekker
-- [ ] Manuell: migrasjonen er gått gjennom i prod etter deploy, og appen
+- [x] Manuell: migrasjonen er gått gjennom i prod etter deploy, og appen
       virker som før (ingen lokal `DATABASE_URL`, se Risks)
 
 ## Rollback Strategy

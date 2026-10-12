@@ -3,9 +3,9 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-**CR-022 (treet Page, Fordel, Product, backend for web-løpet) er implementert 2026-10-12 men UNCOMMITTED, uten /review og IKKE Done.** Nye tabeller `flow_pages` og `products`, `BenefitView.pageId/sortOrder`, format `web_card`, `getWebFlow(session)` (smale visningsmodeller, ingen HTTP-endepunkt) og valgfri seed `npm run db:seed-flow` (aldri automatisk). Product eies av fordelen, Page er egen entitet (bekreftet av bruker), bruker ok med å simulere nå. Migrasjon `20261012200000_cr022_flow_tree` og seed er IKKE kjørt mot noen database. tsc OK, lint 0 feil, vitest 203/203, build OK. Se CR-022 Implementation Notes. Neste: CR-023 bestilling, CR-024 web-UI.
+**CR-022 (treet Page, Fordel, Product, backend for web-løpet) er DONE (0d31820, deployet, prod-sjekk OK av bruker 2026-10-12, /review PASSED).** Nye tabeller flow_pages og products, BenefitView.pageId/sortOrder, format web_card, getWebFlow(session) (ingen HTTP-endepunkt) og valgfri seed (npm run db:seed-flow, ikke kjørt). Treet er tomt i prod til seed kjøres. Neste: CR-023 (tynn webside, Draft), deretter bestilling.
 
-**CR-021 (visninger av fordeler, grunnmur) er committed (010aeca) og pushet 2026-10-12, /review PASSED, men IKKE Done** (venter på brukerens prod-sjekk: migrasjonen `20261012100000_cr021_benefit_views` gikk gjennom og kortlisten ser lik ut). Ny `BenefitView`-tabell (kun overstyringer, ingen rad = arv), format-register og ren `resolveBenefitView` i `src/lib/views`; kortlisten (`getActiveBenefits`) går via resolveren. Kjent hull: lagret-siden viser fortsatt kjerneinnhold. Se CR-021 Implementation Notes.
+**CR-021 (visninger av fordeler, grunnmur) er DONE (010aeca, deployet, prod-sjekk OK av bruker 2026-10-12, /review PASSED).** BenefitView, format-register og resolveBenefitView i src/lib/views. Kjent hull: lagret-siden viser fortsatt kjerneinnhold (tas i admin-UI-CR-en).
 
 **CR-020 (utvidet hendelsesstrøm, første steg mot målbildet i docs/10) er DONE (127f972, deployet 2026-10-12). Opprinnelig status:
 implementert 2026-10-12 (Session-19) men UNCOMMITTED, uten /review og IKKE
@@ -16,7 +16,7 @@ migrasjon `20261012000000_cr020_event_dimensions` er IKKE kjørt mot noen
 database (ingen lokal DATABASE_URL). tsc OK, lint 0 feil, vitest 162/162,
 build OK. Se CR-020 Implementation Notes.
 
-15 av 20 CRs er Done (CR-001–CR-013, CR-015, CR-017). CR-016 og CR-018 er
+18 av 23 CRs er Done (CR-001–CR-013, CR-015, CR-017, CR-020, CR-021, CR-022). CR-023 er Draft (tynn webside). CR-016 og CR-018 er
 implementert/deployet og venter kun på brukerens verifisering i prod (ikke
 kodearbeid). **CR-019 er committed (12b49e6) men IKKE Done** — ny delt hook
 `src/lib/admin/useDirtyTracking.ts` erstatter baselineRef/justSaved-mønsteret
@@ -190,8 +190,9 @@ fra bruker (se Next Recommended Actions).
 - CR-017: Sperre mot ugyldig Aktiv/Planlagt status (Status: Done — committed 3ec4625, pushet 4a30c11, 2026-08-27)
 - CR-018: Next.js major-oppgradering 14.2.35→16.3.1 (Status: Implementert, committed+pushet e7cc47c, LIVE i prod, IKKE Done — venter på prod-smoke-test)
 - CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Implementert, committed 12b49e6, IKKE Done — venter på manuell nettleserverifisering)
-- CR-022: Treet Page, Fordel, Product (Status: Implementert, UNCOMMITTED, ikke /review, IKKE Done, migrasjon og seed ikke kjørt mot DB)
-- CR-021: Visninger av fordeler, grunnmur (Status: committed 010aeca, pushet, /review PASSED, IKKE Done, venter på prod-sjekk av migrasjon og kortliste)
+- CR-023: Web-løpet, tynn side (Status: Draft, åpne punkt besvart av bruker 2026-10-12, venter på godkjenning)
+- CR-022: Treet Page, Fordel, Product (Status: Done, committed 0d31820, deployet og prod-sjekk OK 2026-10-12, /review PASSED)
+- CR-021: Visninger av fordeler, grunnmur (Status: Done, committed 010aeca, deployet og prod-sjekk OK 2026-10-12, /review PASSED)
 - CR-020: Utvidet hendelsesstrøm (Status: Done — committed 127f972, pushet og deployet 2026-10-12, /review PASSED. Rad-sjekk av channel i benefit_events ikke eksplisitt bekreftet)
 
 - `prisma/schema.prisma` + `prisma/migrations/20261012000000_cr020_event_dimensions/` (BenefitEvent: channel default 'app', viewId, testId, variant), NY `src/lib/tracking/eventTypes.ts` (+ test), `trackEvent.ts` (options som 4. argument, strengt typet eventType, + test), `src/lib/session/index.ts` (`getSessionIdFromRequest`), `src/app/api/track/route.ts` (validering, 400 ved ukjent type/kanal, + test), `save`/`claim-code`/`lead` routes + `benefits/[slug]/page.tsx` (sessionId på hendelser, 3 route-tester), `specs/entities.md`, `specs/architecture.md`, `specs/api.yaml` (2026-10-12, CR-020, UNCOMMITTED)
@@ -342,8 +343,8 @@ fra bruker (se Next Recommended Actions).
   DECISIONS.md 2026-08-06/2026-05-22 for begrunnelse.
 
 ## Next Recommended Actions
-000. **CR-022**: kjør /review, commit, push, og sjekk i prod at migrasjonen gikk gjennom og appen virker som før. Seed er manuell (demo-fordeler vises også i mobilappen). Deretter CR-023 (bestilling) og CR-024 (web-UI)
-00. **CR-021**: sjekk i prod at migrasjonen gikk gjennom og kortlisten ser lik ut, så Done. Admin-UI for visninger må også dekke lagret-siden
+000. **CR-023**: godkjenn og implementer (tynn webside på /flytting). Testdata: utvid seed til ordentlige testdata (bruker foretrekker det fremfor demo-rute) og kjør den mot prod, f.eks. i Coolify-terminalen til app-containeren (ikke verifisert at tsx finnes der). Deretter bestilling som CR-024
+00. Admin-UI for visninger/sider/produkter må også dekke lagret-siden og avklare kanalpresens (web eksplisitt, app implisitt)
 0. **CR-020**: Done. Neste steg mot målbildet (docs/10 §10): utvelgelsesfunksjon eller person-ID, egen CR. Valgfritt: bekreft at nye benefit_events-rader har channel = 'app'
 1. **CR-018**: Allerede LIVE i prod (push e7cc47c). Bruker smoke-tester
    admin-innlogging, anonym sesjon og minst én dynamisk route (admin +

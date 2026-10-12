@@ -1,6 +1,6 @@
 # CR-021: Visninger av fordeler, grunnmur (arv med overstyring)
 
-Status: Implementert (ikke committed, ikke /review, migrasjon ikke kjørt mot DB)
+Status: Done (committed 010aeca, pushet, deployet, prod-sjekk OK av bruker 2026-10-12, /review PASSED)
 Created: 2026-10-12
 Approved: 2026-10-12
 
@@ -122,7 +122,7 @@ Forventet volum er under 500 aktive fordeler.
       hjelperen)
 - [x] Integration: `getActiveBenefits` med mocket Prisma, både uten og med
       views-rad, og uendret respons uten
-- [ ] Manuell: migrasjonen er gått gjennom i prod etter deploy, og kortlisten
+- [x] Manuell: migrasjonen er gått gjennom i prod etter deploy, og kortlisten
       ser lik ut (ingen lokal `DATABASE_URL`, se Risks)
 
 ## Rollback Strategy

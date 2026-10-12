@@ -98,3 +98,5 @@
 | 2026-10-12 | Session-19 | prisma/schema.prisma, migrations/20261012200000_cr022_flow_tree | FlowPage, Product, BenefitView.pageId/sortOrder (additiv, tom). `prisma format` kjørt ved uhell og rullet tilbake. UNCOMMITTED, ikke kjørt mot DB | CR-022 | prisma generate ✓ |
 | 2026-10-12 | Session-19 | src/lib/views/formats.ts, src/lib/benefits/isBenefitLive.ts, src/lib/queries/flowQueries.ts, src/types/app.ts | `web_card`-format, ren live-sjekk, `getWebFlow` (smale visningsmodeller), WebFlow-typer. 16 nye tester | CR-022 | tsc ✓ lint ✓ vitest 203/203 ✓ build ✓ |
 | 2026-10-12 | Session-19 | prisma/seed-web-flow.ts, package.json | Valgfri idempotent demo-seed (`npm run db:seed-flow`), ikke kjørt (ingen DB). UNCOMMITTED | CR-022 | tsc ✓ |
+| 2026-10-12 | Session-19 | prod-verifisering | Bruker bekreftet prod-sjekk OK etter deploy av 010aeca og 0d31820. CR-021 og CR-022 markert Done | CR-021, CR-022 | prod ✓ |
+| 2026-10-12 | Session-19 | change-requests/CR-023 | Opprettet CR-023 (tynn webside /flytting, Draft). Bruker svarte på åpne punkter: ordentlige testdata (utvid seed), sessionStorage forklart og beholdt, ikke noindex. Ikke godkjent ennå | CR-023 | — |
