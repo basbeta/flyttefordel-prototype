@@ -308,7 +308,11 @@ Fields:
 - user_id: uuid? FK User
 - session_id: uuid? FK UserSession
 - benefit_id: uuid? FK Benefit
-- event_type: string (benefit_viewed, code_revealed, code_copied, qr_opened, external_link_clicked, lead_form_started, lead_submitted, benefit_saved)
+- event_type: string, kun verdier fra `EVENT_TYPES` i `src/lib/tracking/eventTypes.ts` (benefit_viewed, benefit_opened, benefit_selected, code_revealed, code_copied, qr_opened, external_link_clicked, lead_form_started, lead_submitted, benefit_saved, benefit_unsaved, hero_clicked)
+- channel: string, default 'app' (web | app | email). CR-020
+- view_id: string? (hvilken visning av fordelen; ren streng uten FK, visningsentiteten er ikke besluttet). CR-020
+- test_id: string? (A/B-test, kun lagringsplass, settes ikke av kode ennå). CR-020
+- variant: string? (A/B-variant, se test_id). CR-020
 - metadata: jsonb?
 - created_at: timestamp
 

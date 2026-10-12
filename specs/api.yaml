@@ -9,7 +9,36 @@ servers:
     description: "Local development"
 
 paths:
-  # Define endpoints here
+  # NOTE (CR-020): kun /api/track er beskrevet her så langt. Resten av API-et
+  # er ikke dokumentert i denne filen. Server-URL over er malverdi, faktisk
+  # base er /api.
+  /api/track:
+    post:
+      operationId: trackEvent
+      summary: "Logg en hendelse (fire-and-forget fra klient)"
+      description: "Sesjon utledes fra x-anon-id-headeren. Ukjent eventType eller channel gir 400."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [eventType]
+              properties:
+                eventType:
+                  type: string
+                  description: "Verdi fra EVENT_TYPES (src/lib/tracking/eventTypes.ts)"
+                benefitId: { type: string, format: uuid }
+                channel: { type: string, enum: [web, app, email], default: app }
+                viewId: { type: string, maxLength: 64 }
+                testId: { type: string, maxLength: 64 }
+                variant: { type: string, maxLength: 64 }
+                metadata: { type: object }
+      responses:
+        "200": { description: "OK, {ok: true}" }
+        "400": { description: "VALIDATION_ERROR (ukjent eventType/channel, for lang streng)" }
+        "500": { description: "INTERNAL_ERROR" }
+  # Define further endpoints here
   # /resource:
   #   get:
   #     operationId: listResource

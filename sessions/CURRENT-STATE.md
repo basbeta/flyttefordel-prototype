@@ -3,13 +3,23 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-15 av 19 CRs er nå Done (CR-001–CR-013, CR-015, CR-017). CR-016 og CR-018 er
+**CR-020 (utvidet hendelsesstrøm, første steg mot målbildet i docs/10) er
+implementert 2026-10-12 (Session-19) men UNCOMMITTED, uten /review og IKKE
+Done.** `BenefitEvent` har nye felter `channel`/`viewId`/`testId`/`variant`,
+typede hendelsestyper i `src/lib/tracking/eventTypes.ts`, `/api/track` validerer
+(ukjent type/kanal gir 400), og hendelser knyttes til sesjon. Additiv
+migrasjon `20261012000000_cr020_event_dimensions` er IKKE kjørt mot noen
+database (ingen lokal DATABASE_URL). tsc OK, lint 0 feil, vitest 162/162,
+build OK. Se CR-020 Implementation Notes.
+
+15 av 20 CRs er Done (CR-001–CR-013, CR-015, CR-017). CR-016 og CR-018 er
 implementert/deployet og venter kun på brukerens verifisering i prod (ikke
-kodearbeid). **CR-019 er implementert (2026-10-12, Session-18) men UNCOMMITTED
-og IKKE Done** — ny delt hook `src/lib/admin/useDirtyTracking.ts` erstatter
-baselineRef/justSaved-mønsteret i alle 4 admin-skjemaer; lint 0 feil, tsc OK,
-vitest 138/138, build OK. Venter på brukerens manuelle nettleserverifisering
-av dirty-/«Lagret»-indikator i alle fire skjemaer, deretter commit + Done.
+kodearbeid). **CR-019 er committed (12b49e6) men IKKE Done** — ny delt hook
+`src/lib/admin/useDirtyTracking.ts` erstatter baselineRef/justSaved-mønsteret
+i alle 4 admin-skjemaer; lint 0 feil, tsc OK, vitest 138/138, build OK. Venter
+på brukerens manuelle nettleserverifisering av dirty-/«Lagret»-indikator i
+alle fire skjemaer, deretter Done. (Teksten sa tidligere «UNCOMMITTED»;
+rettet i Session-19, git viser commit 12b49e6.)
 Liten kjent atferdsforskjell: «Lagret»-badgen vises igjen hvis feltet
 redigeres tilbake til nøyaktig lagret verdi (se CR-019 Implementation Notes).
 CR-014 (rate limiting) er
@@ -148,7 +158,7 @@ sesjon og minst én dynamisk route i både admin og forbruker-app → marker
 CR-018 Done.
 
 ## Current Branch
-master (synkronisert med origin/master, 9ea0c0c). Uncommitted: CR-019-endringer (4 skjemaer, ny hook + test, CR-019.md, specs/architecture.md, sessions/*). Urørt og utenfor CR-er: `tsconfig.json` (kun LF/CRLF-støy, tom diff) og untracked `docs/09–12_ff_*.md` + `docs/Flyttefordel-24-tiltak…docx`
+master (synkronisert med origin/master, 825ac70 ved sesjonsstart). Uncommitted: CR-020 (schema + migrasjon, `src/lib/tracking`, `src/lib/session`, `/api/track`, save/lead/claim-code/benefit-side, 6 nye testfiler, specs, CR-020.md, sessions/*). docs/09–12 + .docx er committed (825ac70).
 
 ## Blockers
 Ingen kodeblokker. To brukeroppgaver gjenstår før respektive CR-er kan
@@ -175,7 +185,10 @@ fra bruker (se Next Recommended Actions).
 - CR-016: Beregnet statusindikator for fordeler (Status: Implementert, committed+pushet, IKKE Done — venter på brukerens visuelle verifisering i prod)
 - CR-017: Sperre mot ugyldig Aktiv/Planlagt status (Status: Done — committed 3ec4625, pushet 4a30c11, 2026-08-27)
 - CR-018: Next.js major-oppgradering 14.2.35→16.3.1 (Status: Implementert, committed+pushet e7cc47c, LIVE i prod, IKKE Done — venter på prod-smoke-test)
-- CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Implementert, UNCOMMITTED, IKKE Done — venter på manuell nettleserverifisering)
+- CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Implementert, committed 12b49e6, IKKE Done — venter på manuell nettleserverifisering)
+- CR-020: Utvidet hendelsesstrøm (Status: Implementert, UNCOMMITTED, ikke /review, IKKE Done — migrasjon ikke kjørt mot DB)
+
+- `prisma/schema.prisma` + `prisma/migrations/20261012000000_cr020_event_dimensions/` (BenefitEvent: channel default 'app', viewId, testId, variant), NY `src/lib/tracking/eventTypes.ts` (+ test), `trackEvent.ts` (options som 4. argument, strengt typet eventType, + test), `src/lib/session/index.ts` (`getSessionIdFromRequest`), `src/app/api/track/route.ts` (validering, 400 ved ukjent type/kanal, + test), `save`/`claim-code`/`lead` routes + `benefits/[slug]/page.tsx` (sessionId på hendelser, 3 route-tester), `specs/entities.md`, `specs/architecture.md`, `specs/api.yaml` (2026-10-12, CR-020, UNCOMMITTED)
 
 - `src/lib/admin/useDirtyTracking.ts` (NY: `useDirtyTracking(payload)` → `{isDirty, showSaved, markSaved}`, wrapper `useUnsavedChangesWarning`, ren `deriveDirtyState`) + `useDirtyTracking.test.ts` (5 tester), `AdvertiserForm`/`BenefitForm`/`CategoryForm`/`HeroForm` migrert (baselineRef + justSaved/useEffect fjernet), `specs/architecture.md` /lib/admin-rad (2026-10-12, CR-019, UNCOMMITTED)
 
@@ -218,6 +231,7 @@ fra bruker (se Next Recommended Actions).
   sine miljøvariabler (ikke gjenbrukt fra Vercel)
 
 ## Validation Status
+✓ CR-020: `npx tsc --noEmit` OK, `npm run lint` 0 feil (3 gamle advarsler), `npx vitest run` 162/162 (opp fra 138, 24 nye), `npm run build` OK (2026-10-12). Migrasjon-SQL sammenlignet med `prisma migrate diff`, IKKE kjørt mot DB. /review ikke kjørt
 ✓ CR-019: `npm run lint` 0 feil (3 urelaterte advarsler: 2× `<img>`, 1× ubrukt eslint-disable), `npx tsc --noEmit` OK, `npx vitest run` 138/138 (opp fra 133, 5 nye), `npm run build` OK (2026-10-12). Manuell nettleserverifisering IKKE gjort
 ✓ CR-018: `npm audit` viser 0 vulnerabilities (ned fra 8 high) — løser ISSUE-009 helt (2026-08-18)
 ✓ CR-018: `npx tsc --noEmit`, `npx vitest run` (118/118), `npm run build` (44 routes) —
@@ -320,6 +334,7 @@ fra bruker (se Next Recommended Actions).
   DECISIONS.md 2026-08-06/2026-05-22 for begrunnelse.
 
 ## Next Recommended Actions
+0. **CR-020**: kjør `/review`, commit (referer CR-020), push (Coolify kjører migrasjonen ved deploy), og sjekk i prod at en hendelse får `channel = 'app'` og at appen fortsatt logger (klientkall er sjekket mot typelisten, ukjent type gir nå 400 som er stille for brukeren). Deretter Done. Neste steg mot målbildet (docs/10 §10): utvelgelsesfunksjon eller person-ID, egen CR
 1. **CR-018**: Allerede LIVE i prod (push e7cc47c). Bruker smoke-tester
    admin-innlogging, anonym sesjon og minst én dynamisk route (admin +
    forbruker-app) før CR-018 markeres Done — se CR-018 Acceptance Criteria

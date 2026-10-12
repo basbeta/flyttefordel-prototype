@@ -126,7 +126,7 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 | `/lib/auth` | Auth-logikk — isolert for enkel migrering |
 | `/lib/db` | Prisma client og database-tilkobling |
 | `/lib/targeting` | Fordel- og hero-targetinglogikk (postcode, segment, prioritet) |
-| `/lib/tracking` | Hendelseslogging (benefit_viewed, code_revealed osv.) |
+| `/lib/tracking` | Hendelseslogging (benefit_viewed, code_revealed osv.). CR-020: `eventTypes.ts` er eneste kilde til gyldige hendelsestyper og kanaler (`EVENT_TYPES`, `CHANNELS`, `isTrackableEventType`, `isChannel`); `trackEvent` tar valgfrie `channel`/`viewId`/`testId`/`variant`/`sessionId` |
 | `/lib/validation` | Zod-schemas for input-validering |
 | `/lib/codes` | Atomisk unik kode-tildeling |
 | `/lib/storage` | CR-012: S3-kompatibel klient for admin-opplastede bilder — isolert for enkel leverandørbytte |

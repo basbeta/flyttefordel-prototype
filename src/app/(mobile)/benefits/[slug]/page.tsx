@@ -28,7 +28,7 @@ export default async function BenefitDetailPage({ params }: Props) {
   const benefit = await getBenefitBySlug(slug, session?.sessionId)
   if (!benefit) notFound()
 
-  await trackEvent('benefit_viewed', benefit.id)
+  await trackEvent('benefit_viewed', benefit.id, undefined, { sessionId: session?.sessionId })
 
   return (
     <>

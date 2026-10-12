@@ -17,6 +17,22 @@ export type SessionData = {
   movingStatus: UserMovingStatus
 }
 
+// CR-020: Read-only session lookup for route handlers that only need the id
+// (event tracking). Never creates a session, returns null on any failure.
+export async function getSessionIdFromRequest(request: Request): Promise<string | null> {
+  const anonymousId = request.headers.get(ANON_ID_HEADER)
+  if (!anonymousId) return null
+  try {
+    const session = await prisma.userSession.findUnique({
+      where: { anonymousId },
+      select: { id: true },
+    })
+    return session?.id ?? null
+  } catch {
+    return null
+  }
+}
+
 export async function getOrCreateSession(): Promise<SessionData | null> {
   const anonymousId = (await headers()).get(ANON_ID_HEADER)
   if (!anonymousId) return null

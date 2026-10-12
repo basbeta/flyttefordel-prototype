@@ -32,6 +32,7 @@ vi.mock('@/lib/session', () => ({
 import { checkRateLimit } from '@/lib/rateLimit'
 import { prisma } from '@/lib/db/client'
 import { claimCode, NoCodesAvailableError } from '@/lib/codes/claimCode'
+import { trackEvent } from '@/lib/tracking/trackEvent'
 import { ANON_ID_HEADER } from '@/lib/session'
 import { POST } from './route'
 import { NextRequest } from 'next/server'
@@ -109,5 +110,21 @@ describe('POST /api/benefits/[slug]/claim-code', () => {
     expect(res.status).toBe(200)
     const body = await res.json()
     expect(body.code).toBe('ABC123')
+  })
+
+  // CR-020: hendelsen knyttes til sesjonen
+  it('logger code_revealed med sessionId', async () => {
+    mockCheckRateLimit.mockResolvedValueOnce({ allowed: true, retryAfterSeconds: 0 })
+    mockPrisma.userSession.findUnique.mockResolvedValueOnce({ id: 'session-1' })
+    mockPrisma.benefit.findFirst.mockResolvedValueOnce({
+      id: 'benefit-1',
+      redemptionType: 'unique_code',
+      redemption: { codePoolId: 'pool-1' },
+    })
+    mockClaimCode.mockResolvedValueOnce({ codeValue: 'ABC123', alreadyClaimed: false })
+    await POST(makeRequest('anon-1'), PARAMS)
+    expect(trackEvent).toHaveBeenCalledWith('code_revealed', 'benefit-1', undefined, {
+      sessionId: 'session-1',
+    })
   })
 })

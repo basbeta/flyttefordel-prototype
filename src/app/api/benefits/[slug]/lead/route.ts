@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/client'
 import { z } from 'zod'
 import { trackEvent } from '@/lib/tracking/trackEvent'
+import { getSessionIdFromRequest } from '@/lib/session'
 
 const LeadBodySchema = z
   .object({
@@ -51,7 +52,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
       },
     })
 
-    await trackEvent('lead_submitted', benefit.id)
+    const sessionId = await getSessionIdFromRequest(request)
+    await trackEvent('lead_submitted', benefit.id, undefined, { sessionId })
     return NextResponse.json({ ok: true })
   } catch {
     return NextResponse.json(

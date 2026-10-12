@@ -367,6 +367,11 @@ model BenefitEvent {
   sessionId String?      @map("session_id") @db.Uuid
   benefitId String?      @map("benefit_id") @db.Uuid
   eventType String       @map("event_type")
+  // CR-020: channel/view/test dimensions. viewId has no FK until the view entity exists.
+  channel   String       @default("app")
+  viewId    String?      @map("view_id")
+  testId    String?      @map("test_id")
+  variant   String?
   metadata  Json?
   createdAt DateTime     @default(now()) @map("created_at")
 

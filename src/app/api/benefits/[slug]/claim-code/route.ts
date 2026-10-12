@@ -57,7 +57,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
 
     const result = await claimCode(benefit.redemption.codePoolId, session.id)
-    void trackEvent('code_revealed', benefit.id)
+    void trackEvent('code_revealed', benefit.id, undefined, { sessionId: session.id })
     return NextResponse.json({ code: result.codeValue, alreadyClaimed: result.alreadyClaimed })
   } catch (err) {
     if (err instanceof NoCodesAvailableError) {

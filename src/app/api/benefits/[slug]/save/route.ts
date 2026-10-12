@@ -61,7 +61,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       })
     }
 
-    await trackEvent('benefit_saved', benefit.id)
+    await trackEvent('benefit_saved', benefit.id, undefined, { sessionId: session.id })
     return NextResponse.json({ saved: true }, { status: 201 })
   } catch (err) {
     console.error('[benefits/[slug]/save POST] Uventet feil:', err)
@@ -85,7 +85,9 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       data: { deletedAt: new Date() },
     })
 
-    if (count > 0) await trackEvent('benefit_unsaved', benefit.id)
+    if (count > 0) {
+      await trackEvent('benefit_unsaved', benefit.id, undefined, { sessionId: session.id })
+    }
     return new NextResponse(null, { status: 204 })
   } catch (err) {
     console.error('[benefits/[slug]/save DELETE] Uventet feil:', err)
