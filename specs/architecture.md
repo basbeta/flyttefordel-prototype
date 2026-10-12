@@ -133,7 +133,8 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 | `/lib/rateLimit` | CR-014: Redis-basert fixed-window rate limiting (`checkRateLimit`, `getClientIp`) for login og claim-code |
 | `/lib/admin` | CR-013: `useUnsavedChangesWarning` — beforeunload + intern lenke-avskjæring ved ulagrede endringer i admin-former, i tillegg til eksisterende JWT-auth-helpers. CR-019: `useDirtyTracking` — delt dirty-/«Lagret»-sporing (state-basert, wrapper `useUnsavedChangesWarning`) brukt av alle fire admin-skjemaer |
 | `/lib/benefits` | CR-016: `getBenefitDisplayStatus()` — ren funksjon som beregner visningsstatus (aktiv/planlagt/kladd/feilet) for fordeler, ingen I/O |
-| `/lib/views` | CR-021: format-register (`formats.ts`, nå kun `app_card`) og ren funksjon `resolveBenefitView()` som løser en fordels visning (arv med overstyring fra `BenefitView`). Ingen I/O. Brukes av `benefitQueries` for kortlisten |
+| `/lib/views` | CR-021: format-register (`formats.ts`, `app_card` og, fra CR-022, `web_card`) og ren funksjon `resolveBenefitView()` som løser en fordels visning (arv med overstyring fra `BenefitView`). Ingen I/O. Brukes av `benefitQueries` for kortlisten |
+| `/lib/queries` (flowQueries) | CR-022: `getWebFlow(session)` returnerer web-løpet som smale visningsmodeller (sider, kort, produkter). Server-side, ingen HTTP-endepunkt. Ren live-sjekk `isBenefitLive` ligger i `/lib/benefits` |
 | `/lib/pwa` | PWA manifest og install-helpers |
 | `/lib/utils` | Generelle hjelpefunksjoner |
 | `/types` | TypeScript-typer og enums |

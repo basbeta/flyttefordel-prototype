@@ -25,6 +25,11 @@ export const VIEW_FORMATS = {
     overridable: ['title', 'text', 'imageUrl', 'imageAlt', 'badgeText'],
     required: ['title', 'text'],
   },
+  // CR-022: the benefit card in the web flow (placement lives on the standard row).
+  web_card: {
+    overridable: ['title', 'text', 'imageUrl', 'imageAlt', 'badgeText'],
+    required: ['title', 'text'],
+  },
 } as const satisfies Record<string, FormatSpec>
 
 export type ViewFormat = keyof typeof VIEW_FORMATS

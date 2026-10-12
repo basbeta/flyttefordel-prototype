@@ -115,3 +115,34 @@ export type UserProfile = {
   postcode: string | null
   movingStatus: UserMovingStatus
 }
+
+// ---- Web-løpet (CR-022) — smale visningsmodeller, aldri rå Prisma-objekter ----
+
+export type WebFlowProduct = {
+  id: string
+  name: string
+  text: string | null
+  priceText: string | null
+}
+
+export type WebFlowCard = {
+  benefitId: string
+  slug: string
+  title: string
+  text: string
+  imageUrl: string | null
+  imageAlt: string | null
+  badgeText: string | null
+  termsText: string | null
+  advertiser: { name: string; logoUrl: string | null }
+  products: WebFlowProduct[]
+}
+
+export type WebFlowPage = {
+  id: string
+  name: string
+  text: string | null
+  imageUrl: string | null
+  imageAlt: string | null
+  cards: WebFlowCard[]
+}

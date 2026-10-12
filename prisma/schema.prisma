@@ -237,6 +237,7 @@ model Benefit {
   events     BenefitEvent[]
   savedBy    SavedBenefit[]
   views      BenefitView[]
+  products   Product[]
 
   @@map("benefits")
 }
@@ -395,15 +396,57 @@ model BenefitView {
   imageUrl  String?  @map("image_url")
   imageAlt  String?  @map("image_alt")
   badgeText String?  @map("badge_text")
+  // CR-022: web placement, only read from format web_card + variant standard.
+  pageId    String?  @map("page_id") @db.Uuid
+  sortOrder Int      @default(0) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  benefit Benefit @relation(fields: [benefitId], references: [id])
+  benefit Benefit    @relation(fields: [benefitId], references: [id])
+  page    FlowPage? @relation(fields: [pageId], references: [id], onDelete: Restrict)
 
   @@unique([benefitId, format, variant])
+  @@index([pageId])
   @@map("benefit_views")
 }
 
+
+// CR-022: A page in the web flow (Page in the docs). Order is data.
+model FlowPage {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String
+  text      String?
+  imageUrl  String?   @map("image_url")
+  imageAlt  String?   @map("image_alt")
+  sortOrder Int       @default(0) @map("sort_order")
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  views BenefitView[]
+
+  @@map("flow_pages")
+}
+
+// CR-022: A choice on a benefit card. Owned by the benefit, no link table.
+model Product {
+  id        String    @id @default(uuid()) @db.Uuid
+  benefitId String    @map("benefit_id") @db.Uuid
+  name      String
+  text      String?
+  priceText String?   @map("price_text")
+  sortOrder Int       @default(0) @map("sort_order")
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  benefit Benefit @relation(fields: [benefitId], references: [id])
+
+  @@index([benefitId])
+  @@map("products")
+}
 
 model SavedBenefit {
   id        String    @id @default(uuid()) @db.Uuid

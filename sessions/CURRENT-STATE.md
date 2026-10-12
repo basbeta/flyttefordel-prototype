@@ -3,7 +3,9 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-**CR-021 (visninger av fordeler, grunnmur) er implementert 2026-10-12 men UNCOMMITTED, uten /review og IKKE Done.** Ny `BenefitView`-tabell (kun overstyringer, ingen rad = arv), format-register og ren `resolveBenefitView` i `src/lib/views`; kortlisten (`getActiveBenefits`) går via resolveren. Ingen synlig endring, tabellen er tom og ingen UI skriver til den ennå. Migrasjon `20261012100000_cr021_benefit_views` er IKKE kjørt mot noen database. tsc OK, lint 0 feil, vitest 187/187, build OK. Kjent hull: lagret-siden viser fortsatt kjerneinnhold. Se CR-021 Implementation Notes.
+**CR-022 (treet Page, Fordel, Product, backend for web-løpet) er implementert 2026-10-12 men UNCOMMITTED, uten /review og IKKE Done.** Nye tabeller `flow_pages` og `products`, `BenefitView.pageId/sortOrder`, format `web_card`, `getWebFlow(session)` (smale visningsmodeller, ingen HTTP-endepunkt) og valgfri seed `npm run db:seed-flow` (aldri automatisk). Product eies av fordelen, Page er egen entitet (bekreftet av bruker), bruker ok med å simulere nå. Migrasjon `20261012200000_cr022_flow_tree` og seed er IKKE kjørt mot noen database. tsc OK, lint 0 feil, vitest 203/203, build OK. Se CR-022 Implementation Notes. Neste: CR-023 bestilling, CR-024 web-UI.
+
+**CR-021 (visninger av fordeler, grunnmur) er committed (010aeca) og pushet 2026-10-12, /review PASSED, men IKKE Done** (venter på brukerens prod-sjekk: migrasjonen `20261012100000_cr021_benefit_views` gikk gjennom og kortlisten ser lik ut). Ny `BenefitView`-tabell (kun overstyringer, ingen rad = arv), format-register og ren `resolveBenefitView` i `src/lib/views`; kortlisten (`getActiveBenefits`) går via resolveren. Kjent hull: lagret-siden viser fortsatt kjerneinnhold. Se CR-021 Implementation Notes.
 
 **CR-020 (utvidet hendelsesstrøm, første steg mot målbildet i docs/10) er DONE (127f972, deployet 2026-10-12). Opprinnelig status:
 implementert 2026-10-12 (Session-19) men UNCOMMITTED, uten /review og IKKE
@@ -160,7 +162,7 @@ sesjon og minst én dynamisk route i både admin og forbruker-app → marker
 CR-018 Done.
 
 ## Current Branch
-master (127f972 pushet og deployet, ett lokalt chore-commit foran origin ved økt-slutt). Ingen uncommitted endringer. docs/09–12 + .docx er committed (825ac70).
+master (010aeca CR-021 pushet; CR-022 uncommitted i arbeidskatalogen: schema + migrasjon, views/benefits/queries, seed, tester, specs, CR-022.md, sessions/*). tsconfig.json og docs er urørt.
 
 ## Blockers
 Ingen kodeblokker. To brukeroppgaver gjenstår før respektive CR-er kan
@@ -188,7 +190,8 @@ fra bruker (se Next Recommended Actions).
 - CR-017: Sperre mot ugyldig Aktiv/Planlagt status (Status: Done — committed 3ec4625, pushet 4a30c11, 2026-08-27)
 - CR-018: Next.js major-oppgradering 14.2.35→16.3.1 (Status: Implementert, committed+pushet e7cc47c, LIVE i prod, IKKE Done — venter på prod-smoke-test)
 - CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Implementert, committed 12b49e6, IKKE Done — venter på manuell nettleserverifisering)
-- CR-021: Visninger av fordeler, grunnmur (Status: Implementert, UNCOMMITTED, ikke /review, IKKE Done — migrasjon ikke kjørt mot DB)
+- CR-022: Treet Page, Fordel, Product (Status: Implementert, UNCOMMITTED, ikke /review, IKKE Done, migrasjon og seed ikke kjørt mot DB)
+- CR-021: Visninger av fordeler, grunnmur (Status: committed 010aeca, pushet, /review PASSED, IKKE Done, venter på prod-sjekk av migrasjon og kortliste)
 - CR-020: Utvidet hendelsesstrøm (Status: Done — committed 127f972, pushet og deployet 2026-10-12, /review PASSED. Rad-sjekk av channel i benefit_events ikke eksplisitt bekreftet)
 
 - `prisma/schema.prisma` + `prisma/migrations/20261012000000_cr020_event_dimensions/` (BenefitEvent: channel default 'app', viewId, testId, variant), NY `src/lib/tracking/eventTypes.ts` (+ test), `trackEvent.ts` (options som 4. argument, strengt typet eventType, + test), `src/lib/session/index.ts` (`getSessionIdFromRequest`), `src/app/api/track/route.ts` (validering, 400 ved ukjent type/kanal, + test), `save`/`claim-code`/`lead` routes + `benefits/[slug]/page.tsx` (sessionId på hendelser, 3 route-tester), `specs/entities.md`, `specs/architecture.md`, `specs/api.yaml` (2026-10-12, CR-020, UNCOMMITTED)
@@ -234,6 +237,7 @@ fra bruker (se Next Recommended Actions).
   sine miljøvariabler (ikke gjenbrukt fra Vercel)
 
 ## Validation Status
+✓ CR-022: tsc OK, lint 0 feil (3 gamle advarsler), vitest 203/203 (opp fra 187, 16 nye), build OK (2026-10-12). Migrasjon-SQL fra prisma migrate diff og seed IKKE kjørt mot DB. /review ikke kjørt
 ✓ CR-021: tsc OK, lint 0 feil (3 gamle advarsler), vitest 187/187 (opp fra 162, 25 nye), build OK (2026-10-12). Migrasjon-SQL fra prisma migrate diff, IKKE kjørt mot DB. /review ikke kjørt
 ✓ CR-020: `npx tsc --noEmit` OK, `npm run lint` 0 feil (3 gamle advarsler), `npx vitest run` 162/162 (opp fra 138, 24 nye), `npm run build` OK (2026-10-12). Migrasjon-SQL sammenlignet med `prisma migrate diff`, IKKE kjørt mot DB. /review ikke kjørt
 ✓ CR-019: `npm run lint` 0 feil (3 urelaterte advarsler: 2× `<img>`, 1× ubrukt eslint-disable), `npx tsc --noEmit` OK, `npx vitest run` 138/138 (opp fra 133, 5 nye), `npm run build` OK (2026-10-12). Manuell nettleserverifisering IKKE gjort
@@ -338,7 +342,8 @@ fra bruker (se Next Recommended Actions).
   DECISIONS.md 2026-08-06/2026-05-22 for begrunnelse.
 
 ## Next Recommended Actions
-00. **CR-021**: kjør /review, commit, push, og sjekk i prod at migrasjonen gikk gjennom og kortlisten ser lik ut. Deretter neste CR i visningsserien: admin-UI for visninger (inkl. lagret-siden), så test og tildeling
+000. **CR-022**: kjør /review, commit, push, og sjekk i prod at migrasjonen gikk gjennom og appen virker som før. Seed er manuell (demo-fordeler vises også i mobilappen). Deretter CR-023 (bestilling) og CR-024 (web-UI)
+00. **CR-021**: sjekk i prod at migrasjonen gikk gjennom og kortlisten ser lik ut, så Done. Admin-UI for visninger må også dekke lagret-siden
 0. **CR-020**: Done. Neste steg mot målbildet (docs/10 §10): utvelgelsesfunksjon eller person-ID, egen CR. Valgfritt: bekreft at nye benefit_events-rader har channel = 'app'
 1. **CR-018**: Allerede LIVE i prod (push e7cc47c). Bruker smoke-tester
    admin-innlogging, anonym sesjon og minst én dynamisk route (admin +

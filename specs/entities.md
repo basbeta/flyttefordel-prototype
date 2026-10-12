@@ -193,6 +193,42 @@ Relations:
 - has_many: BenefitEvent
 - has_many: SavedBenefit
 - has_many: BenefitView (CR-021)
+- has_many: Product (CR-022)
+
+---
+
+## Entity: FlowPage
+
+CR-022: En side i web-løpet (Page i docs). Rekkefølgen er data. Kalt FlowPage i kode for å unngå forveksling med Next.js-sider.
+
+Fields:
+- id: uuid (PK)
+- name: string
+- text: string?
+- image_url: string?
+- image_alt: string?
+- sort_order: integer (default: 0)
+- is_active: boolean (default: true)
+- created_at / updated_at / deleted_at: timestamp
+
+Relations:
+- has_many: BenefitView (placering via `page_id`)
+
+---
+
+## Entity: Product
+
+CR-022: Et valg på et fordelskort. Eies av fordelen (ingen koblingstabell). Kunden er fordelens Advertiser. Fakturering ligger fortsatt på Benefit.
+
+Fields:
+- id: uuid (PK)
+- benefit_id: uuid FK Benefit
+- name: string
+- text: string?
+- price_text: string? (fritekst som vises, ingen priselogikk)
+- sort_order: integer (default: 0)
+- is_active: boolean (default: true)
+- created_at / updated_at / deleted_at: timestamp
 
 ---
 
@@ -210,6 +246,8 @@ Fields:
 - image_url: string? (overstyrer Benefit.image_url)
 - image_alt: string? (løses sammen med image_url som et par)
 - badge_text: string? (overstyrer Benefit.badge_text)
+- page_id: uuid? FK FlowPage (CR-022: web-plassering, kun lest fra format 'web_card' variant 'standard')
+- sort_order: integer (default: 0, CR-022: rekkefølge på siden, samme regel som page_id)
 - created_at / updated_at: timestamp
 
 Constraints:

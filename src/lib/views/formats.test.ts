@@ -3,6 +3,11 @@ import { describe, it, expect } from 'vitest'
 import { VIEW_FORMATS, isViewFormat, getMissingRequiredFields, DEFAULT_VARIANT } from './formats'
 
 describe('format registry', () => {
+  it('har web_card (CR-022) med samme felt som app_card', () => {
+    expect(isViewFormat('web_card')).toBe(true)
+    expect(VIEW_FORMATS.web_card.overridable).toEqual(VIEW_FORMATS.app_card.overridable)
+  })
+
   it('har app_card, og standard er default-variant', () => {
     expect(isViewFormat('app_card')).toBe(true)
     expect(DEFAULT_VARIANT).toBe('standard')
