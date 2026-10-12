@@ -1,7 +1,8 @@
 # CR-023: Web-løpet, tynn side
 
-Status: Draft
+Status: Implementert (ikke committed, ikke /review, UI ikke sett i nettleser, seed ikke kjørt)
 Created: 2026-10-12
+Approved: 2026-10-12
 
 ## Business Goal
 Gi en første side man kan åpne og klikke gjennom, som viser Page → Fordel →
@@ -105,23 +106,23 @@ progresjon. Akseptabelt ved titalls sider.
 - [ ] «Ja takk» velger og angrer et produkt per fordel, og bytte av produkt
       virker når det er flere
 - [ ] Fordel uten produkter vises uten «Ja takk»
-- [ ] Valg overlever sidebytte i samme fane (`sessionStorage`) og siden virker
+- [x] Valg overlever sidebytte i samme fane (`sessionStorage`) og siden virker (lagringslogikk enhetstestet, ikke sett i nettleser)
       også når `sessionStorage` ikke er tilgjengelig
-- [ ] Valg mot forsvunnet produkt eller fordel droppes
+- [x] Valg mot forsvunnet produkt eller fordel droppes (enhetstestet)
 - [ ] Oppsummeringen lister valgene og sier tydelig at innsending ikke er
       bygget ennå. Tom oppsummering har en egen tilstand
 - [ ] Siden bruker sesjonens targeting via `getWebFlow`
 - [ ] Utvidet seed gir et realistisk, åpenbart fiktivt testsett (flere sider, fordeler med og uten produkter, web-overstyring, targeting), er fortsatt idempotent og transaksjonell
-- [ ] Ingen endring i eksisterende ruter, admin eller mobilapp
+- [x] Ingen endring i eksisterende ruter, admin eller mobilapp
 - [ ] Siden er brukbar uten mus (tastatur) og knapper har tilgjengelig navn
-- [ ] `specs/flows.md` og `specs/architecture.md` er oppdatert før kode
-- [ ] `npx tsc --noEmit`, `npx vitest run`, `npm run lint` og
+- [x] `specs/flows.md` og `specs/architecture.md` er oppdatert før kode
+- [x] `npx tsc --noEmit`, `npx vitest run`, `npm run lint` og
       `npm run build` er grønne
 
 ## Required Tests
-- [ ] Unit: `flowNavigation` (første, midten, siste, ukjent id, tomt løp,
+- [x] Unit: `flowNavigation` (første, midten, siste, ukjent id, tomt løp,
       én side)
-- [ ] Unit: `flowSelection` (veksle, bytte produkt, angre, ugyldig JSON,
+- [x] Unit: `flowSelection` (veksle, bytte produkt, angre, ugyldig JSON,
       rensing mot løpet, oppsummering, fordel uten produkter)
 - [ ] Manuell i nettleser: gå gjennom løpet på mobil og desktop, med og uten
       data, tastaturnavigasjon (ingen komponenttest-infrastruktur finnes)
@@ -164,3 +165,36 @@ Ingen migrasjon. Siden er tom til treet har data.
 ## Dependencies
 Bygger på CR-022 (`getWebFlow`, `WebFlow*`-typer) og CR-021 (`web_card`).
 Åpner for CR-024 (bestilling) og admin-UI for sider og produkter.
+
+## Implementation Notes (2026-10-12)
+- Nytt: `src/app/(web)/` (layout, `flytting`, `flytting/[pageId]`,
+  `flytting/oppsummering`), `src/components/web/` (FlowCard, FlowProgress,
+  FlowNav, FlowEmpty, FlowSummary, `useFlowSelection`) og `src/lib/flow/`
+  (`flowNavigation`, `flowSelection`, `selectionStore`). Ingen endring i
+  eksisterende app, admin, middleware, schema eller queries.
+- **Avvik fra CR-teksten (rettet i /review: knappetekst er konstant, «✓» er kun visuelt):** «første produkt er forhåndsvalgt» er ikke
+  bygget. I stedet har hvert produkt sin egen knapp («Ja takk» ved ett
+  produkt, «Velg» ved flere). Trykk velger, trykk igjen angrer, trykk på et
+  annet produkt bytter. Det matcher dok 09 (lokalavis med to knapper) og
+  unngår skjulte forhåndsvalg. Vil du ha forhåndsvalg, er det en liten endring.
+- `sessionStorage` leses via `useSyncExternalStore` (ikke setState i effect,
+  som lint-reglene fra CR-019 avviser). Verdien holdes også i minnet, så
+  klient-navigasjon beholder valgene selv når lagring er blokkert. Dette er
+  litt mer enn CR-teksten sa («virker også uten lagring»).
+- Alle tre rutene bruker `getOrCreateSession()` og dermed sesjonens targeting.
+- `<img>` er brukt med `eslint-disable`-kommentar slik at lint holder seg på
+  de samme 3 gamle advarslene.
+- Seed utvidet til et ordentlig testsett: 8 sider (eksempelkategoriene fra
+  docs/09), 8 fiktive kunder, 13 fordeler. Dekker ett produkt, flere produkter
+  og ingen produkter, web-overstyring av tittel, tekst og merketekst,
+  vilkårstekst, targeting kun for Oslo-området (postnummer 0001-1299, krever
+  postnummer i profilen) og en kladd som ikke skal vises. Transaksjonell og
+  idempotent. **Ikke kjørt** (ingen DB).
+- **Ikke gjort:** komponentene er ikke sett rendret og ikke klikket i
+  nettleser. `/flytting` er ikke kjørt mot en database. Redirect, tom
+  tilstand, tastatur og layout er derfor ikke verifisert, bare typesjekket,
+  linted og bygget. Kryss av disse først når du har testet.
+- Validering: tsc OK, lint 0 feil (3 gamle advarsler), vitest 233/233 (opp
+  fra 203, 30 nye), build OK (rutene `/flytting`, `/flytting/[pageId]`,
+  `/flytting/oppsummering` vises i build-output).
+- Gjenstår: `/review`, commit, deploy, seed mot en database, og manuell test.

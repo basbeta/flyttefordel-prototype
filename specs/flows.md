@@ -29,6 +29,33 @@ Related endpoints: ingen
 
 ---
 
+## Flow: Web-løpet, sider og klientvalg (CR-023)
+
+Trigger: Besøk på `/flytting` (ruter i `src/app/(web)/flytting`).
+
+Steps:
+1. `/flytting` henter løpet med `getWebFlow(session)` og sender til første synlige side, eller viser tom tilstand når løpet er tomt.
+2. `/flytting/[pageId]` viser én side: progresjon ("Side X av N", "Neste: <navn>"), sidens navn og tekst, og kortene.
+3. Hvert produkt på et kort har en knapp. Trykk velger produktet, trykk igjen angrer, trykk på et annet produkt på samme kort bytter. Valg er ett produkt per fordel.
+4. Valgene holdes kun i klienten (`sessionStorage`, nøkkel `flyttefordel.flow.selection.v1`) som {fordelId: produktId}. Ingenting lagres på serveren og ingen hendelser sendes.
+5. Siste side har lenke til `/flytting/oppsummering`, som lister valgene gruppert på side. Ingen innsending (CR-024).
+
+Decision points:
+- `pageId` som ikke finnes i personens synlige løp: send til første synlige side.
+- Fordel uten produkter: vises som ren informasjon uten valgknapp.
+- Lagret valg som peker på produkt eller fordel som ikke lenger er i løpet: droppes ved lesing.
+- `sessionStorage` utilgjengelig: siden virker, og valg huskes i minnet så lenge siden ikke lastes på nytt (klient-navigasjon mellom sidene beholder dem).
+
+Error conditions:
+- Tomt løp: tom tilstand med forklaring, ingen feil.
+- Ugyldig JSON i lagret valg: tolkes som ingen valg.
+- Prisma-feil i `getWebFlow`: kastes til Next sin feilside.
+
+Related entities: FlowPage, Benefit, Product, BenefitView
+Related endpoints: ingen
+
+---
+
 ## Flow: [Name]
 
 Trigger: [What starts this flow?]

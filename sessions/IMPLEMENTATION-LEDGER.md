@@ -100,3 +100,8 @@
 | 2026-10-12 | Session-19 | prisma/seed-web-flow.ts, package.json | Valgfri idempotent demo-seed (`npm run db:seed-flow`), ikke kjørt (ingen DB). UNCOMMITTED | CR-022 | tsc ✓ |
 | 2026-10-12 | Session-19 | prod-verifisering | Bruker bekreftet prod-sjekk OK etter deploy av 010aeca og 0d31820. CR-021 og CR-022 markert Done | CR-021, CR-022 | prod ✓ |
 | 2026-10-12 | Session-19 | change-requests/CR-023 | Opprettet CR-023 (tynn webside /flytting, Draft). Bruker svarte på åpne punkter: ordentlige testdata (utvid seed), sessionStorage forklart og beholdt, ikke noindex. Ikke godkjent ennå | CR-023 | — |
+| 2026-10-12 | Session-19 | change-requests/CR-023 | CR-023 godkjent av bruker og implementert | CR-023 | — |
+| 2026-10-12 | Session-19 | specs/flows.md, architecture.md | Spec først: web-løpets sider og klientvalg, `/app/(web)`, `/components/web`, `/lib/flow` | CR-023 | — |
+| 2026-10-12 | Session-19 | src/lib/flow/ | `flowNavigation`, `flowSelection`, `selectionStore` (useSyncExternalStore, minne + sessionStorage i try/catch) + 30 tester. UNCOMMITTED | CR-023 | tsc ✓ vitest 233/233 ✓ |
+| 2026-10-12 | Session-19 | src/app/(web)/, src/components/web/ | Ruter `/flytting`, `/flytting/[pageId]`, `/flytting/oppsummering`, komponenter med CSS Modules og tokens. Ett produkt-valg per fordel via knapp per produkt (avvik fra CR: ingen forhåndsvalg). UI ikke sett i nettleser. UNCOMMITTED | CR-023 | lint ✓ build ✓ |
+| 2026-10-12 | Session-19 | prisma/seed-web-flow.ts | Utvidet til ordentlig testsett (8 sider, 8 kunder, 13 fordeler inkl. targeting og en kladd). Ikke kjørt (ingen DB) | CR-023 | tsc ✓ |

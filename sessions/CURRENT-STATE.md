@@ -3,6 +3,8 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
+**CR-023 (web-løpet, tynn side på /flytting) er implementert 2026-10-12 men UNCOMMITTED, uten /review og IKKE Done.** Ruter /flytting, /flytting/[pageId], /flytting/oppsummering (route group (web)), komponenter i src/components/web, ren logikk i src/lib/flow. Valg holdes kun i klienten (sessionStorage + minne), ett produkt per fordel, ingen innsending. Seed utvidet til ordentlig testsett (8 sider, 13 fordeler). Avvik fra CR: ingen forhåndsvalgt produkt, knapp per produkt. UI er ikke sett i nettleser og seed ikke kjørt. tsc OK, lint 0 feil, vitest 233/233, build OK. Se CR-023 Implementation Notes.
+
 **CR-022 (treet Page, Fordel, Product, backend for web-løpet) er DONE (0d31820, deployet, prod-sjekk OK av bruker 2026-10-12, /review PASSED).** Nye tabeller flow_pages og products, BenefitView.pageId/sortOrder, format web_card, getWebFlow(session) (ingen HTTP-endepunkt) og valgfri seed (npm run db:seed-flow, ikke kjørt). Treet er tomt i prod til seed kjøres. Neste: CR-023 (tynn webside, Draft), deretter bestilling.
 
 **CR-021 (visninger av fordeler, grunnmur) er DONE (010aeca, deployet, prod-sjekk OK av bruker 2026-10-12, /review PASSED).** BenefitView, format-register og resolveBenefitView i src/lib/views. Kjent hull: lagret-siden viser fortsatt kjerneinnhold (tas i admin-UI-CR-en).
@@ -16,7 +18,7 @@ migrasjon `20261012000000_cr020_event_dimensions` er IKKE kjørt mot noen
 database (ingen lokal DATABASE_URL). tsc OK, lint 0 feil, vitest 162/162,
 build OK. Se CR-020 Implementation Notes.
 
-18 av 23 CRs er Done (CR-001–CR-013, CR-015, CR-017, CR-020, CR-021, CR-022). CR-023 er Draft (tynn webside). CR-016 og CR-018 er
+18 av 23 CRs er Done (CR-001–CR-013, CR-015, CR-017, CR-020, CR-021, CR-022). CR-023 er implementert men ikke Done (tynn webside, uverifisert i nettleser). CR-016 og CR-018 er
 implementert/deployet og venter kun på brukerens verifisering i prod (ikke
 kodearbeid). **CR-019 er committed (12b49e6) men IKKE Done** — ny delt hook
 `src/lib/admin/useDirtyTracking.ts` erstatter baselineRef/justSaved-mønsteret
@@ -163,7 +165,7 @@ CR-018 Done.
 
 ## Current Branch
 master (010aeca CR-021 pushet; CR-022 uncommitted i arbeidskatalogen: schema + migrasjon, views/benefits/queries, seed, tester, specs, CR-022.md, sessions/*). tsconfig.json og docs er urørt.
-
+master (0d31820 CR-022 pushet, lokal chore-commit 5c95473 foran origin). CR-023 uncommitted i arbeidskatalogen: src/app/(web), src/components/web, src/lib/flow, utvidet seed, specs, CR-023.md, sessions/*.
 ## Blockers
 Ingen kodeblokker. To brukeroppgaver gjenstår før respektive CR-er kan
 markeres Done: CR-014 sin Infra-checklist i Coolify, og CR-018 sin
@@ -190,7 +192,7 @@ fra bruker (se Next Recommended Actions).
 - CR-017: Sperre mot ugyldig Aktiv/Planlagt status (Status: Done — committed 3ec4625, pushet 4a30c11, 2026-08-27)
 - CR-018: Next.js major-oppgradering 14.2.35→16.3.1 (Status: Implementert, committed+pushet e7cc47c, LIVE i prod, IKKE Done — venter på prod-smoke-test)
 - CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Implementert, committed 12b49e6, IKKE Done — venter på manuell nettleserverifisering)
-- CR-023: Web-løpet, tynn side (Status: Draft, åpne punkt besvart av bruker 2026-10-12, venter på godkjenning)
+- CR-023: Web-løpet, tynn side (Status: Implementert, UNCOMMITTED, ikke /review, UI ikke sett i nettleser, seed ikke kjørt, IKKE Done)
 - CR-022: Treet Page, Fordel, Product (Status: Done, committed 0d31820, deployet og prod-sjekk OK 2026-10-12, /review PASSED)
 - CR-021: Visninger av fordeler, grunnmur (Status: Done, committed 010aeca, deployet og prod-sjekk OK 2026-10-12, /review PASSED)
 - CR-020: Utvidet hendelsesstrøm (Status: Done — committed 127f972, pushet og deployet 2026-10-12, /review PASSED. Rad-sjekk av channel i benefit_events ikke eksplisitt bekreftet)
@@ -238,6 +240,7 @@ fra bruker (se Next Recommended Actions).
   sine miljøvariabler (ikke gjenbrukt fra Vercel)
 
 ## Validation Status
+✓ CR-023: tsc OK, lint 0 feil (3 gamle advarsler), vitest 233/233 (opp fra 203, 30 nye), build OK (2026-10-12). UI ikke sett i nettleser, seed ikke kjørt, /review ikke kjørt
 ✓ CR-022: tsc OK, lint 0 feil (3 gamle advarsler), vitest 203/203 (opp fra 187, 16 nye), build OK (2026-10-12). Migrasjon-SQL fra prisma migrate diff og seed IKKE kjørt mot DB. /review ikke kjørt
 ✓ CR-021: tsc OK, lint 0 feil (3 gamle advarsler), vitest 187/187 (opp fra 162, 25 nye), build OK (2026-10-12). Migrasjon-SQL fra prisma migrate diff, IKKE kjørt mot DB. /review ikke kjørt
 ✓ CR-020: `npx tsc --noEmit` OK, `npm run lint` 0 feil (3 gamle advarsler), `npx vitest run` 162/162 (opp fra 138, 24 nye), `npm run build` OK (2026-10-12). Migrasjon-SQL sammenlignet med `prisma migrate diff`, IKKE kjørt mot DB. /review ikke kjørt
@@ -343,7 +346,7 @@ fra bruker (se Next Recommended Actions).
   DECISIONS.md 2026-08-06/2026-05-22 for begrunnelse.
 
 ## Next Recommended Actions
-000. **CR-023**: godkjenn og implementer (tynn webside på /flytting). Testdata: utvid seed til ordentlige testdata (bruker foretrekker det fremfor demo-rute) og kjør den mot prod, f.eks. i Coolify-terminalen til app-containeren (ikke verifisert at tsx finnes der). Deretter bestilling som CR-024
+000. **CR-023**: kjør /review, commit, push. Deretter seed (npm run db:seed-flow) mot en database, og test /flytting manuelt på mobil og desktop (redirect, tom tilstand, valg, oppsummering, tastatur). Kryss av CR-023 sine UI-kriterier først etter testen. Neste: CR-024 (bestilling)
 00. Admin-UI for visninger/sider/produkter må også dekke lagret-siden og avklare kanalpresens (web eksplisitt, app implisitt)
 0. **CR-020**: Done. Neste steg mot målbildet (docs/10 §10): utvelgelsesfunksjon eller person-ID, egen CR. Valgfritt: bekreft at nye benefit_events-rader har channel = 'app'
 1. **CR-018**: Allerede LIVE i prod (push e7cc47c). Bruker smoke-tester

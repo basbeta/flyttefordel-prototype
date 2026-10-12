@@ -120,6 +120,8 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 | `/app/(mobile)` | Sluttbruker PWA — mobil-first, ingen desktop-optimalisering |
 | `/app/admin` | Backoffice admin — desktop-first |
 | `/app/api/...` | Next.js Route Handlers — validering, auth-sjekk, respons-mapping |
+| `/app/(web)` | CR-023: Web-løpet på `/flytting` (sider, kort, oppsummering). Server Components som leser `getWebFlow`, klientkomponenter for valg. Ingen mobil-navigasjon |
+| `/components/web` | CR-023: Komponenter for web-løpet (progresjon, kort, oppsummering). Importerer ikke fra `/components/mobile` eller `/components/admin` |
 | `/components/mobile` | Mobilapp-komponenter |
 | `/components/admin` | Admin-komponenter |
 | `/components/shared` | Delte UI-komponenter (Button, Card, Badge osv.) |
@@ -135,6 +137,7 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 | `/lib/benefits` | CR-016: `getBenefitDisplayStatus()` — ren funksjon som beregner visningsstatus (aktiv/planlagt/kladd/feilet) for fordeler, ingen I/O |
 | `/lib/views` | CR-021: format-register (`formats.ts`, `app_card` og, fra CR-022, `web_card`) og ren funksjon `resolveBenefitView()` som løser en fordels visning (arv med overstyring fra `BenefitView`). Ingen I/O. Brukes av `benefitQueries` for kortlisten |
 | `/lib/queries` (flowQueries) | CR-022: `getWebFlow(session)` returnerer web-løpet som smale visningsmodeller (sider, kort, produkter). Server-side, ingen HTTP-endepunkt. Ren live-sjekk `isBenefitLive` ligger i `/lib/benefits` |
+| `/lib/flow` | CR-023: Rene funksjoner for web-løpet: `flowNavigation` (posisjon, forrige, neste, fallback), `flowSelection` (valg, rensing, oppsummering) og `selectionStore` (sessionStorage via useSyncExternalStore, tåler at lagring mangler) |
 | `/lib/pwa` | PWA manifest og install-helpers |
 | `/lib/utils` | Generelle hjelpefunksjoner |
 | `/types` | TypeScript-typer og enums |
