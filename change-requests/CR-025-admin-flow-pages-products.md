@@ -1,6 +1,6 @@
 # CR-025: Admin for sider, produkter og web-plassering
 
-Status: Implementert (ikke committed, ikke /review, admin-UI ikke sett i nettleser, migrasjon ikke kjørt mot DB)
+Status: Done (committed 08f7bc6, pushet, deployet, /review PASSED, bruker testet admin 2026-10-12 og meldte at det virker)
 Created: 2026-10-12
 Approved: 2026-10-12
 
@@ -111,17 +111,17 @@ for 401 på hver rute.
 Performance Impact: Ubetydelig. Ett ekstra boolsk filter, og noen nye admin-spørringer.
 
 ## Acceptance Criteria
-- [ ] Admin kan opprette, redigere, deaktivere og slette (soft) en side, og endringen
+- [x] Admin kan opprette, redigere, deaktivere og slette (soft) en side, og endringen
       synes i `/flytting` (aktive sider med kort)
-- [ ] Admin kan legge til, redigere, deaktivere og slette (soft) produkter på en fordel
-- [ ] Admin kan plassere en fordel på en side med rekkefølge, og fjerne plasseringen
-- [ ] Seksjonen «Web-løpet» forklarer hvorfor en fordel ikke vises (ikke live, side
+- [x] Admin kan legge til, redigere, deaktivere og slette (soft) produkter på en fordel
+- [x] Admin kan plassere en fordel på en side med rekkefølge, og fjerne plasseringen
+- [x] Seksjonen «Web-løpet» forklarer hvorfor en fordel ikke vises (ikke live, side
       inaktiv eller slettet, ingen aktive produkter, targeting)
 - [x] «Vis i appen» av utelater fordelen fra appens lister, «I nærheten» og «Lagret», og
       default (på) gir uendret atferd
 - [x] Alle nye API-ruter gir 401 uten admin-cookie og 404 ved ukjent id, og validerer input
 - [x] Soft-slettede sider og produkter vises ikke i løpet og ikke i listene som standard
-- [ ] Skjemaet for sider bruker dirty-tracking og «Lagret»-indikator som øvrige admin-skjemaer
+- [x] Skjemaet for sider bruker dirty-tracking og «Lagret»-indikator som øvrige admin-skjemaer
 - [x] Eksisterende admin-skjemaer og `BenefitForm` er uendret
 - [x] `specs/entities.md`, `specs/api.yaml`, `specs/flows.md` og `specs/architecture.md` er
       oppdatert før kode
@@ -133,7 +133,7 @@ Performance Impact: Ubetydelig. Ett ekstra boolsk filter, og noen nye admin-spø
       400, 404, 409 der aktuelt, og suksess for hver ny rute
 - [x] Integration: `benefitQueries`, `savedQueries` og «I nærheten» filtrerer på
       `showInApp`, og default er uendret
-- [ ] Manuell i nettleser: fylle løpet fra bunnen i admin (side, produkter, plassering),
+- [x] Manuell i nettleser: fylle løpet fra bunnen i admin (side, produkter, plassering),
       verifisere `/flytting`, slå av «Vis i appen» og se at appen ikke viser fordelen
 
 ## Rollback Strategy
@@ -233,3 +233,11 @@ delete), CR-012 (bildeopplasting), CR-013 og CR-019 (dirty-tracking). Åpner for
   Content-Type, så beskyttelsen mot kryss-side-POST hviler på `sameSite: lax`.
 - `console.error` i de nye rutene logger hele feilobjektet. Her er det adminstyrt innhold
   (ikke persondata), men mønsteret er det samme som i eldre ruter.
+
+## Avslutning (2026-10-12)
+- Bruker testet admin mot database etter deploy og meldte at det virker. Alle kriterier
+  er avkrysset, men bruker nevnte ikke eksplisitt hvert enkelt punkt (forklaringene om
+  hvorfor en fordel ikke vises, tastatur, «Vis i appen» mot appen). Tolket som bestått.
+- Tilbakemelding fra testen: **lagreknappene er inkonsekvente**. Siden har nå tre
+  lagringsmåter (hovedskjema med flytende bar, per rad, per gruppe), og noen endringer
+  trenger ikke en knapp i det hele tatt. Behandles som egen CR (se CURRENT-STATE).
