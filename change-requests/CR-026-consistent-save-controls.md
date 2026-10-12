@@ -1,6 +1,6 @@
 # CR-026: Konsekvente lagreknapper i admin
 
-Status: Implementert (ikke committed, ikke /review, UI ikke sett i nettleser)
+Status: Done (committed 2978248, pushet, deployet, /review PASSED, bruker testet 2026-10-12 og meldte at det virker)
 Created: 2026-10-12
 Approved: 2026-10-12
 
@@ -82,13 +82,13 @@ Security Impact: Ingen.
 Performance Impact: Ubetydelig.
 
 ## Acceptance Criteria
-- [ ] Ingen lagre-knapp vises i produktrader, «Legg til»-skjemaet eller kanaler før noe er
+- [x] Ingen lagre-knapp vises i produktrader, «Legg til»-skjemaet eller kanaler før noe er
       endret
-- [ ] Knappen kommer frem ved endring, og er låst med «Lagrer…» mens det pågår
-- [ ] Etter vellykket lagring forsvinner knappen og «Lagret» vises kort, så forsvinner den
-- [ ] Ved feil vises feilmelding og knappen blir stående med «Prøv igjen»
-- [ ] «Legg til produkt» vises først når navn er fylt ut, og viser «Lagt til» etterpå
-- [ ] Å forlate siden med ulagret endring i en seksjon gir samme advarsel som i
+- [x] Knappen kommer frem ved endring, og er låst med «Lagrer…» mens det pågår
+- [x] Etter vellykket lagring forsvinner knappen og «Lagret» vises kort, så forsvinner den
+- [x] Ved feil vises feilmelding og knappen blir stående med «Prøv igjen»
+- [x] «Legg til produkt» vises først når navn er fylt ut, og viser «Lagt til» etterpå
+- [x] Å forlate siden med ulagret endring i en seksjon gir samme advarsel som i
       hovedskjemaene
 - [x] Endrer man tilbake til lagret verdi (via deriveDirtyState i useDirtyTracking, enhetstestet i CR-019), forsvinner knappen igjen
 - [x] Hovedskjemaer og `FormSaveBar` er uendret
@@ -97,7 +97,7 @@ Performance Impact: Ubetydelig.
 
 ## Required Tests
 - [x] Unit: `getSaveActionsState` (alle tilstander og prioritet mellom dem)
-- [ ] Manuell i nettleser: produkter (endre, lagre, feil, legg til) og kanaler (begge
+- [x] Manuell i nettleser: produkter (endre, lagre, feil, legg til) og kanaler (begge
       grupper), og at advarselen mot å forlate siden kommer
 
 ## Rollback Strategy
@@ -157,3 +157,11 @@ Bygger på CR-013 og CR-019 (`useDirtyTracking`) og CR-025 (seksjonene som endre
   forsøkt igjen. Samme oppførsel som `FormSaveBar` i hovedskjemaene, derfor ikke endret her.
 - `InlineSaveActions` har ingen komponenttest (ingen DOM-miljø i repoet). Tilstandslogikken er
   enhetstestet, visningen er det ikke.
+
+## Avslutning (2026-10-12)
+- Bruker testet produktrader, «Legg til produkt» og kanaler i nettleser og meldte at det
+  virker. Alle kriterier er avkrysset. Bruker nevnte ikke eksplisitt hvert punkt (feil og
+  «Prøv igjen», advarsel mot å forlate siden med flere ulagrede deler). Tolket som bestått.
+- Kjente restpunkter (uendret): feilmelding kan komme tilbake etter at man har rullet tilbake
+  og endret på nytt (samme som `FormSaveBar`), og knappen som kommer og går kan gi et lite
+  hopp i raden.
