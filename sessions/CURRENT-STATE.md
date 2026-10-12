@@ -158,7 +158,7 @@ sesjon og minst én dynamisk route i både admin og forbruker-app → marker
 CR-018 Done.
 
 ## Current Branch
-master (synkronisert med origin/master, 825ac70 ved sesjonsstart). Uncommitted: CR-020 (schema + migrasjon, `src/lib/tracking`, `src/lib/session`, `/api/track`, save/lead/claim-code/benefit-side, 6 nye testfiler, specs, CR-020.md, sessions/*). docs/09–12 + .docx er committed (825ac70).
+master (127f972 pushet og deployet, ett lokalt chore-commit foran origin ved økt-slutt). Ingen uncommitted endringer. docs/09–12 + .docx er committed (825ac70).
 
 ## Blockers
 Ingen kodeblokker. To brukeroppgaver gjenstår før respektive CR-er kan
