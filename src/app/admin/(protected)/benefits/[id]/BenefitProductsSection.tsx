@@ -1,14 +1,18 @@
 'use client'
 // CR-025: Products on a benefit (the choices on the card in the web flow).
-// NOT part of the main benefit form: each product is saved on its own with its own
-// button, independent of "Lagre" for the benefit above. Delete is soft (orders refer to
-// products, CR-024).
+// CR-026: save controls follow the shared rule: no button until there are changes, then
+// "Lagre", then "Lagret" (InlineSaveActions + useDirtyTracking).
+// NOT part of the main benefit form: each product is saved on its own, independent of
+// "Lagre endringer" for the benefit above. Delete is soft (orders refer to products, CR-024).
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { AdminProductRow } from '@/types/admin'
 import adminStyles from '@/components/admin/AdminTable.module.css'
+import { InlineSaveActions } from '@/components/admin/InlineSaveActions'
 import styles from '@/components/admin/BenefitSections.module.css'
+import { useDirtyTracking } from '@/lib/admin/useDirtyTracking'
+import { useUnsavedChangesWarning } from '@/lib/admin/useUnsavedChangesWarning'
 
 type Props = { benefitId: string; products: AdminProductRow[] }
 
@@ -24,59 +28,67 @@ function ProductRow({ benefitId, product }: { benefitId: string; product: AdminP
   const [priceText, setPriceText] = useState(product.priceText ?? '')
   const [sortOrder, setSortOrder] = useState(product.sortOrder)
   const [isActive, setIsActive] = useState(product.isActive)
-  const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
-  const dirty =
-    name !== product.name ||
-    text !== (product.text ?? '') ||
-    priceText !== (product.priceText ?? '') ||
-    sortOrder !== product.sortOrder ||
-    isActive !== product.isActive
+  const payload = useMemo(
+    () => ({ name, text, priceText, sortOrder, isActive }),
+    [name, text, priceText, sortOrder, isActive],
+  )
+  const { isDirty, showSaved, markSaved } = useDirtyTracking(payload)
 
   const base = `/api/admin/benefits/${benefitId}/products/${product.id}`
   const idp = `product-${product.id}`
 
   async function save() {
-    setBusy(true)
-    setMessage(null)
+    const sent = payload // what is actually sent, not whatever the row holds when the reply arrives
+    setSaving(true)
+    setError(null)
     try {
       const res = await fetch(base, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, text: text || null, priceText: priceText || null, sortOrder, isActive }),
+        body: JSON.stringify({
+          name: sent.name,
+          text: sent.text || null,
+          priceText: sent.priceText || null,
+          sortOrder: sent.sortOrder,
+          isActive: sent.isActive,
+        }),
       })
       if (res.ok) {
-        setMessage({ kind: 'ok', text: 'Lagret' })
+        markSaved(sent)
         router.refresh()
       } else {
-        setMessage({ kind: 'error', text: await readMessage(res) })
+        setError(await readMessage(res))
       }
     } catch {
-      setMessage({ kind: 'error', text: 'Nettverksfeil, prøv igjen' })
+      setError('Nettverksfeil, prøv igjen')
     }
-    setBusy(false)
+    setSaving(false)
   }
 
   async function remove() {
     if (!confirm(`Slette «${product.name}»? Tidligere bestillinger beholder navnet.`)) return
-    setBusy(true)
-    setMessage(null)
+    setDeleting(true)
+    setDeleteError(null)
     try {
       const res = await fetch(base, { method: 'DELETE' })
       if (res.ok) {
         router.refresh()
         return
       }
-      setMessage({ kind: 'error', text: await readMessage(res) })
+      setDeleteError(await readMessage(res))
     } catch {
-      setMessage({ kind: 'error', text: 'Nettverksfeil, prøv igjen' })
+      setDeleteError('Nettverksfeil, prøv igjen')
     }
-    setBusy(false)
+    setDeleting(false)
   }
 
   return (
-    <li className={`${styles.row} ${product.isActive ? '' : styles.rowInactive}`}>
+    <li className={`${styles.row} ${isActive ? '' : styles.rowInactive}`}>
       <div className={styles.field}>
         <label className={styles.fieldLabel} htmlFor={`${idp}-name`}>Navn *</label>
         <input id={`${idp}-name`} className={adminStyles.input} value={name} maxLength={120} onChange={(e) => setName(e.target.value)} />
@@ -98,18 +110,18 @@ function ProductRow({ benefitId, product }: { benefitId: string; product: AdminP
           <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} />
           Aktiv
         </label>
-        <button type="button" className={adminStyles.primaryBtn} onClick={save} disabled={busy || !dirty || name.trim() === ''}>
-          {busy ? '…' : 'Lagre'}
+        <InlineSaveActions
+          isDirty={isDirty}
+          saving={saving}
+          saved={showSaved}
+          error={error}
+          onSave={save}
+          disabled={name.trim() === ''}
+        />
+        <button type="button" className={adminStyles.dangerBtn} onClick={remove} disabled={deleting || saving}>
+          {deleting ? '…' : 'Slett'}
         </button>
-        <button type="button" className={adminStyles.dangerBtn} onClick={remove} disabled={busy}>
-          Slett
-        </button>
-        {dirty && !message && <span className={styles.statusDirty}>Ulagret</span>}
-        {message && (
-          <span role={message.kind === 'error' ? 'alert' : 'status'} className={message.kind === 'error' ? styles.statusError : styles.status}>
-            {message.text}
-          </span>
-        )}
+        {deleteError && <span role="alert" className={styles.statusError}>{deleteError}</span>}
       </div>
     </li>
   )
@@ -120,12 +132,26 @@ function NewProductForm({ benefitId, nextSortOrder }: { benefitId: string; nextS
   const [name, setName] = useState('')
   const [text, setText] = useState('')
   const [priceText, setPriceText] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [justAdded, setJustAdded] = useState(false)
+
+  // The button first appears when a name is filled in. Anything typed and not yet added
+  // warns before the page is left, like unsaved changes elsewhere.
+  const canAdd = name.trim() !== ''
+  useUnsavedChangesWarning(name !== '' || text !== '' || priceText !== '')
+
+  function edit(setter: (v: string) => void) {
+    return (value: string) => {
+      setJustAdded(false)
+      setter(value)
+    }
+  }
 
   async function add(e: React.FormEvent) {
     e.preventDefault()
-    setBusy(true)
+    if (!canAdd || saving) return
+    setSaving(true)
     setError(null)
     try {
       const res = await fetch(`/api/admin/benefits/${benefitId}/products`, {
@@ -137,6 +163,7 @@ function NewProductForm({ benefitId, nextSortOrder }: { benefitId: string; nextS
         setName('')
         setText('')
         setPriceText('')
+        setJustAdded(true)
         router.refresh()
       } else {
         setError(await readMessage(res))
@@ -144,7 +171,7 @@ function NewProductForm({ benefitId, nextSortOrder }: { benefitId: string; nextS
     } catch {
       setError('Nettverksfeil, prøv igjen')
     }
-    setBusy(false)
+    setSaving(false)
   }
 
   return (
@@ -153,21 +180,26 @@ function NewProductForm({ benefitId, nextSortOrder }: { benefitId: string; nextS
       <div className={styles.inline}>
         <div className={styles.field}>
           <label className={styles.fieldLabel} htmlFor="new-product-name">Navn *</label>
-          <input id="new-product-name" className={adminStyles.input} value={name} maxLength={120} onChange={(e) => setName(e.target.value)} required />
+          <input id="new-product-name" className={adminStyles.input} value={name} maxLength={120} onChange={(e) => edit(setName)(e.target.value)} />
         </div>
         <div className={styles.field}>
           <label className={styles.fieldLabel} htmlFor="new-product-text">Tekst</label>
-          <input id="new-product-text" className={adminStyles.input} value={text} maxLength={500} onChange={(e) => setText(e.target.value)} />
+          <input id="new-product-text" className={adminStyles.input} value={text} maxLength={500} onChange={(e) => edit(setText)(e.target.value)} />
         </div>
         <div className={styles.field}>
           <label className={styles.fieldLabel} htmlFor="new-product-price">Pris (tekst)</label>
-          <input id="new-product-price" className={adminStyles.input} value={priceText} maxLength={80} onChange={(e) => setPriceText(e.target.value)} placeholder="f.eks. 149 kr/mnd" />
+          <input id="new-product-price" className={adminStyles.input} value={priceText} maxLength={80} onChange={(e) => edit(setPriceText)(e.target.value)} placeholder="f.eks. 149 kr/mnd" />
         </div>
-        <button type="submit" className={adminStyles.primaryBtn} disabled={busy || name.trim() === ''}>
-          {busy ? '…' : 'Legg til'}
-        </button>
+        <InlineSaveActions
+          type="submit"
+          label="Legg til"
+          savedLabel="Lagt til"
+          isDirty={canAdd}
+          saving={saving}
+          saved={justAdded}
+          error={error}
+        />
       </div>
-      {error && <p role="alert" className={styles.statusError}>{error}</p>}
     </form>
   )
 }
@@ -179,8 +211,8 @@ export function BenefitProductsSection({ benefitId, products }: Props) {
     <section className={styles.section} aria-labelledby="products-title">
       <h2 id="products-title" className={styles.title}>Produkter</h2>
       <p className={styles.help}>
-        Valgene på fordelskortet i web-løpet. Hvert produkt lagres for seg med egen knapp, uavhengig
-        av «Lagre» for fordelen over. En fordel uten aktive produkter vises som ren informasjon.
+        Valgene på fordelskortet i web-løpet. Hvert produkt lagres for seg, uavhengig av «Lagre
+        endringer» for fordelen over. En fordel uten aktive produkter vises som ren informasjon.
       </p>
       {products.length === 0 ? (
         <p className={styles.empty}>Ingen produkter ennå.</p>

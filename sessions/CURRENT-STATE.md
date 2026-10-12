@@ -3,6 +3,8 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
+**CR-026 (konsekvente lagreknapper i admin) er implementert 2026-10-12 men UNCOMMITTED, uten /review og IKKE Done.** Brukerens tilbakemelding: knapper skal bare vises når det finnes endringer, så erstattes de av «Lagret». Ny ren getSaveActionsState og felles InlineSaveActions; produkter og kanaler (CR-025-seksjonene) bruker useDirtyTracking. Hovedskjemaene og FormSaveBar er uendret. tsc OK, lint 0 feil, vitest 364/364, build OK. UI ikke sett i nettleser. Innholdsoverstyringer per flate, forhåndsvisning og lagret-siden er nå CR-027.
+
 **CR-025 (admin for sider, produkter og web-plassering, pluss «Vis i appen») er DONE (08f7bc6, pushet, /review PASSED, bruker testet admin og meldte at det virker 2026-10-12).** Nye ruter /api/admin/flow-pages, benefits/[id]/products og web-placement (alle med per-rute auth, zod, soft delete), ny kolonne Benefit.showInApp (migrasjon 20261012400000_cr025_show_in_app, ikke kjørt mot DB), appens liste og lagret filtrerer på den, ren getWebPlacementProblems. Admin-UI: /admin/flow-pages samt seksjonene «Produkter» og «Kanaler» på rediger fordel. tsc OK, lint 0 feil, vitest 355/355, build OK. Admin-UI ikke sett i nettleser, seed er ikke endret. Se CR-025 Implementation Notes.
 
 **CR-024 (bestilling i web-løpet) er DONE (8bbbea2, pushet, /review PASSED, bruker klikket gjennom 2026-10-12). Åpent: kontaktfeltene vises ikke i lead-admin, persondata-regler og samtykketekster ikke avklart.** Opprinnelig status: Order og OrderLine (migrasjon 20261012300000_cr024_orders, ikke kjørt mot DB), POST /api/flow/order (zod, rate limit 10/time, linjevalidering mot løpet, én transaksjon, idempotent på submissionId, én Lead per fordel, ingen persondata i logg), skjema på /flytting/oppsummering og ny /flytting/bekreftelse med «Last ned appen her». Samtykketekster er plassholdere, ikke juridisk vurdert. tsc OK, lint 0 feil, vitest 303/303, build OK. UI ikke sett i nettleser. Se CR-024 Implementation Notes.
@@ -195,6 +197,7 @@ fra bruker (se Next Recommended Actions).
 - CR-017: Sperre mot ugyldig Aktiv/Planlagt status (Status: Done — committed 3ec4625, pushet 4a30c11, 2026-08-27)
 - CR-018: Next.js major-oppgradering 14.2.35→16.3.1 (Status: Implementert, committed+pushet e7cc47c, LIVE i prod, IKKE Done — venter på prod-smoke-test)
 - CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Implementert, committed 12b49e6, IKKE Done — venter på manuell nettleserverifisering)
+- CR-026: Konsekvente lagreknapper i admin (Status: Implementert, UNCOMMITTED, ikke /review, UI ikke sett, IKKE Done)
 - CR-025: Admin for sider, produkter og web-plassering (Status: Done, committed 08f7bc6, pushet, bruker testet 2026-10-12)
 - CR-024: Bestilling i web-løpet (Status: Done, committed 8bbbea2, pushet, /review PASSED, bruker klikket gjennom 2026-10-12)
 - CR-023: Web-løpet, tynn side (Status: Done, committed bf435f5, pushet, bruker klikket gjennom 2026-10-12)
@@ -245,6 +248,7 @@ fra bruker (se Next Recommended Actions).
   sine miljøvariabler (ikke gjenbrukt fra Vercel)
 
 ## Validation Status
+✓ CR-026: tsc OK, lint 0 feil (3 gamle advarsler), vitest 364/364 (opp fra 355, 9 nye), build OK (2026-10-12). UI ikke sett i nettleser. /review ikke kjørt
 ✓ CR-025: tsc OK, lint 0 feil (3 gamle advarsler), vitest 355/355 (opp fra 303, 52 nye), build OK (2026-10-12). Alt mot mocket Prisma. Migrasjon og skriveflyter IKKE verifisert mot DB. Admin-UI ikke sett i nettleser. /review ikke kjørt
 ✓ Seed (db:seed-flow) kjørt og fungerte mot database (bruker, 2026-10-12). UI og ordreflyt ikke eksplisitt testet ennå
 ✓ CR-024: tsc OK, lint 0 feil (3 gamle advarsler), vitest 303/303 (opp fra 233, 70 nye), build OK (2026-10-12). Alt mot mocket Prisma. Migrasjon, transaksjon, unik indeks og lead-admin IKKE verifisert mot DB. UI ikke sett i nettleser. /review ikke kjørt

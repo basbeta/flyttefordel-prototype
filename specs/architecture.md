@@ -124,7 +124,7 @@ Regel: Avhengigheter flyter kun nedover. Ingen lag importerer fra et lag over se
 | `/components/web` | CR-023: Komponenter for web-løpet (progresjon, kort, oppsummering). Importerer ikke fra `/components/mobile` eller `/components/admin` |
 | `/app/admin` (CR-025) | Nye seksjoner: `/admin/flow-pages` (sider i web-løpet) og, på rediger fordel, produkter og "Web-løpet" (plassering og "Vis i appen"). Hver ny `/api/admin`-rute sjekker admin-JWT selv (middleware beskytter ikke API-rutene) |
 | `/components/mobile` | Mobilapp-komponenter |
-| `/components/admin` | Admin-komponenter |
+| `/components/admin` | Admin-komponenter. CR-026, regler for lagreknapper: aldri en lagre-knapp som vises uten endringer (den kommer frem ved endring, låses med "Lagrer…", forsvinner etter lagring og erstattes kort av "Lagret", ved feil blir den stående med "Prøv igjen"). Skjema med mange felt bruker `FormSaveBar` (flytende). Rader og grupper inne i en side bruker `InlineSaveActions` med `useDirtyTracking` (og dermed advarselen mot å forlate siden). Slett og deaktiver er egne handlinger med bekreftelse, ikke lagring |
 | `/components/shared` | Delte UI-komponenter (Button, Card, Badge osv.) |
 | `/lib/auth` | Auth-logikk — isolert for enkel migrering |
 | `/lib/db` | Prisma client og database-tilkobling |
