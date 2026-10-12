@@ -431,6 +431,51 @@ Fields:
 
 Note: Statuser er begrenset til teknisk håndtering — ingen CRM-statuser for annonsørens oppfølging.
 
+CR-024: Bestillinger fra web-løpet lager én Lead per bestilt fordel. `form_data` inneholder kontaktfelt, valgt produkt og `orderId`.
+
+---
+
+## Entity: Order
+
+CR-024: En bestilling fra web-løpet. Anonym (kun sesjon og kontaktfelt) inntil person-ID finnes. Persondata, aldri logg i klartekst.
+
+Fields:
+- id: uuid (PK)
+- submission_id: uuid (UNIQUE, klientgenerert, gir idempotent innsending)
+- session_id: uuid? (UserSession)
+- name: string
+- email: string
+- phone: string?
+- postcode: string? (4 siffer)
+- consent_share: boolean (påkrevd true, deling av kontaktopplysninger med valgte kunder)
+- consent_email: boolean (valgfritt, ikke forhåndskrysset)
+- consent_mail: boolean (valgfritt, brev)
+- consent_sms: boolean (valgfritt)
+- consent_texts: jsonb (snapshot av tekstene brukeren så, plassholdere inntil juridisk vurdering)
+- created_at: timestamp
+
+Relations:
+- has_many: OrderLine
+
+---
+
+## Entity: OrderLine
+
+CR-024: Ett valgt produkt i en ordre. Ett produkt per fordel per ordre.
+
+Fields:
+- id: uuid (PK)
+- order_id: uuid FK Order
+- product_id: uuid FK Product
+- benefit_id: uuid FK Benefit
+- page_id: uuid? FK FlowPage (opprinnelse, hvilken side ga bestillingen)
+- product_name: string (øyeblikksbilde)
+- benefit_title: string (øyeblikksbilde)
+- created_at: timestamp
+
+Constraints:
+- UNIQUE (order_id, benefit_id)
+
 ---
 
 ## Entity: AdminUser

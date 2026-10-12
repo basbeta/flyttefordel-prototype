@@ -238,6 +238,7 @@ model Benefit {
   savedBy    SavedBenefit[]
   views      BenefitView[]
   products   Product[]
+  orderLines OrderLine[]
 
   @@map("benefits")
 }
@@ -424,7 +425,8 @@ model FlowPage {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  views BenefitView[]
+  views      BenefitView[]
+  orderLines OrderLine[]
 
   @@map("flow_pages")
 }
@@ -442,10 +444,56 @@ model Product {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  benefit Benefit @relation(fields: [benefitId], references: [id])
+  benefit    Benefit     @relation(fields: [benefitId], references: [id])
+  orderLines OrderLine[]
 
   @@index([benefitId])
   @@map("products")
+}
+
+// CR-024: An order from the web flow. Anonymous (session + contact fields) until person id exists.
+// Personal data: never log in plaintext. consentTexts is a snapshot of what the user saw.
+model Order {
+  id           String   @id @default(uuid()) @db.Uuid
+  // Client-generated, unique: makes submitting idempotent.
+  submissionId String   @unique @map("submission_id") @db.Uuid
+  sessionId    String?  @map("session_id") @db.Uuid
+  name         String
+  email        String
+  phone        String?
+  postcode     String?
+  consentShare Boolean  @map("consent_share")
+  consentEmail Boolean  @default(false) @map("consent_email")
+  consentMail  Boolean  @default(false) @map("consent_mail")
+  consentSms   Boolean  @default(false) @map("consent_sms")
+  consentTexts Json     @map("consent_texts")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  lines OrderLine[]
+
+  @@map("orders")
+}
+
+// CR-024: One chosen product in an order. One product per benefit per order.
+model OrderLine {
+  id           String   @id @default(uuid()) @db.Uuid
+  orderId      String   @map("order_id") @db.Uuid
+  productId    String   @map("product_id") @db.Uuid
+  benefitId    String   @map("benefit_id") @db.Uuid
+  pageId       String?  @map("page_id") @db.Uuid
+  // Snapshots: names can change later.
+  productName  String   @map("product_name")
+  benefitTitle String   @map("benefit_title")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  order   Order     @relation(fields: [orderId], references: [id])
+  product Product   @relation(fields: [productId], references: [id])
+  benefit Benefit   @relation(fields: [benefitId], references: [id])
+  page    FlowPage? @relation(fields: [pageId], references: [id], onDelete: Restrict)
+
+  @@unique([orderId, benefitId])
+  @@index([orderId])
+  @@map("order_lines")
 }
 
 model SavedBenefit {

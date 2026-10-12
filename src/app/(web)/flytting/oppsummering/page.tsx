@@ -1,4 +1,5 @@
-// CR-023: Read-only summary of the choices. No submit yet (CR-024).
+// CR-023: Summary of the choices.
+// CR-024: with the order form. The postcode from the session pre-fills the form.
 
 import type { Metadata } from 'next'
 import { getWebFlow } from '@/lib/queries/flowQueries'
@@ -16,5 +17,7 @@ export default async function FlowSummaryPage() {
   const pages = await getWebFlow(session)
   const firstPageId = getFirstPageId(pages)
   if (!firstPageId) return <FlowEmpty />
-  return <FlowSummary pages={pages} firstPageId={firstPageId} />
+  return (
+    <FlowSummary pages={pages} firstPageId={firstPageId} defaultPostcode={session?.postcode ?? null} />
+  )
 }

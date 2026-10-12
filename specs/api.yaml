@@ -12,6 +12,46 @@ paths:
   # NOTE (CR-020): kun /api/track er beskrevet her så langt. Resten av API-et
   # er ikke dokumentert i denne filen. Server-URL over er malverdi, faktisk
   # base er /api.
+  /api/flow/order:
+    post:
+      operationId: submitFlowOrder
+      summary: "Send inn bestilling fra web-løpet (CR-024)"
+      description: >
+        Offentlig, anonym (sesjon fra x-anon-id). Linjene valideres mot løpet slik det er for
+        sesjonen. Samme submissionId to ganger gir samme ordre uten duplikat. Persondata logges aldri.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [submissionId, name, email, consentShare, lines]
+              properties:
+                submissionId: { type: string, format: uuid }
+                name: { type: string, maxLength: 120 }
+                email: { type: string, format: email, maxLength: 200 }
+                phone: { type: string, maxLength: 30 }
+                postcode: { type: string, pattern: "^[0-9]{4}$" }
+                consentShare: { type: boolean, description: "Må være true" }
+                consentEmail: { type: boolean, default: false }
+                consentMail: { type: boolean, default: false }
+                consentSms: { type: boolean, default: false }
+                lines:
+                  type: array
+                  minItems: 1
+                  maxItems: 50
+                  items:
+                    type: object
+                    required: [benefitId, productId]
+                    properties:
+                      benefitId: { type: string, format: uuid }
+                      productId: { type: string, format: uuid }
+      responses:
+        "201": { description: "Ordre opprettet, {orderId}" }
+        "200": { description: "Samme submissionId sendt før, samme {orderId}" }
+        "400": { description: "VALIDATION_ERROR (felt) eller INVALID_LINES (linjer som ikke er i løpet)" }
+        "429": { description: "Rate limit (10 per time per IP), Retry-After settes" }
+        "500": { description: "INTERNAL_ERROR" }
   /api/track:
     post:
       operationId: trackEvent

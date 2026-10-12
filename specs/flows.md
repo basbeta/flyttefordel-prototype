@@ -56,6 +56,34 @@ Related endpoints: ingen
 
 ---
 
+## Flow: Bestilling i web-løpet (CR-024)
+
+Trigger: Bruker trykker «Send inn» på `/flytting/oppsummering`.
+
+Steps:
+1. Klienten genererer en `submissionId` (UUID) per innsendingsforsøk og sender kontaktfelt, samtykker og valgte linjer til `POST /api/flow/order`.
+2. Serveren sjekker rate limit (10 per time per IP, fail-open), validerer input med zod, og finner sesjonen.
+3. Linjene valideres mot løpet for sesjonen (`getWebFlow`): fordelen må være i løpet, produktet må tilhøre fordelen og være aktivt, og det er maks ett produkt per fordel.
+4. I én transaksjon: opprett `Order`, `OrderLine` per produkt og én `Lead` per bestilt fordel (form_data med kontaktfelt, valgt produkt og orderId).
+5. Svar `201` med `orderId`. Etter commit logges `benefit_selected` per linje (channel web, fire-and-forget).
+6. Klienten tømmer valgene og går til `/flytting/bekreftelse`.
+
+Decision points:
+- Samme `submissionId` finnes: svar `200` med samme `orderId`, ingen duplikat (også ved samtidige forsøk, unik indeks).
+- Ugyldig linje: hele ordren avvises med `400` og liste over linjene.
+- Delingssamtykke ikke gitt: `400`.
+- Rate limit overskredet: `429` med Retry-After.
+
+Error conditions:
+- Prisma-feil i transaksjonen: `500`, ingenting lagres.
+- Tracking feiler: svares fortsatt `201`.
+- Persondata logges aldri.
+
+Related entities: Order, OrderLine, Lead, Product, Benefit, FlowPage, UserSession
+Related endpoints: POST /api/flow/order
+
+---
+
 ## Flow: [Name]
 
 Trigger: [What starts this flow?]

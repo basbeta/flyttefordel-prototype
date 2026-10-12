@@ -21,6 +21,10 @@ import {
 export function useFlowSelection(): {
   selection: FlowSelection
   toggle: (benefitId: string, productId: string) => void
+  // CR-024: drop choices (for example benefits the server says are no longer available).
+  remove: (benefitIds: readonly string[]) => void
+  // CR-024: clear everything after a successful order.
+  clear: () => void
 } {
   const raw = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
   const selection = useMemo(() => parseSelection(raw), [raw])
@@ -28,5 +32,11 @@ export function useFlowSelection(): {
     // Read the latest stored value, not the render-time one, so fast taps never lose a choice.
     writeRaw(serializeSelection(toggleProduct(parseSelection(getSnapshot()), benefitId, productId)))
   }, [])
-  return { selection, toggle }
+  const remove = useCallback((benefitIds: readonly string[]) => {
+    const next = { ...parseSelection(getSnapshot()) }
+    for (const id of benefitIds) delete next[id]
+    writeRaw(serializeSelection(next))
+  }, [])
+  const clear = useCallback(() => writeRaw(serializeSelection({})), [])
+  return { selection, toggle, remove, clear }
 }

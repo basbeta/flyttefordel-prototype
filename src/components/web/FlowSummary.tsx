@@ -1,21 +1,23 @@
 'use client'
 
-// CR-023: Read-only summary of the choices made in the flow. Nothing is submitted
-// (CR-024). Selection is cleaned against the current flow before it is shown.
+// CR-023: Summary of the choices made in the flow.
+// CR-024: followed by the order form (contact details, consents, "Send inn").
+// Selection is cleaned against the current flow before it is shown.
 
 import Link from 'next/link'
 import { useMemo } from 'react'
 import { Button } from '@/components/shared/Button'
 import { buildSummary, type SummaryItem } from '@/lib/flow'
 import type { WebFlowPage } from '@/types/app'
+import { OrderForm } from './OrderForm'
 import { useFlowSelection } from './useFlowSelection'
 import styles from './FlowSummary.module.css'
 
-type Props = { pages: WebFlowPage[]; firstPageId: string }
+type Props = { pages: WebFlowPage[]; firstPageId: string; defaultPostcode: string | null }
 
 type Group = { pageId: string; pageName: string; items: SummaryItem[] }
 
-export function FlowSummary({ pages, firstPageId }: Props) {
+export function FlowSummary({ pages, firstPageId, defaultPostcode }: Props) {
   const { selection, toggle } = useFlowSelection()
   // buildSummary sanitizes the selection against the flow, so stale choices never show.
   const items = useMemo(() => buildSummary(selection, pages), [selection, pages])
@@ -71,19 +73,19 @@ export function FlowSummary({ pages, firstPageId }: Props) {
               </ul>
             </section>
           ))}
+
+          <OrderForm items={items} defaultPostcode={defaultPostcode} />
+
+          <Link href={`/flytting/${firstPageId}`} className={styles.secondaryLink}>
+            Tilbake til løpet
+          </Link>
         </>
       )}
 
       <p className={styles.notice} role="note">
-        Innsending er ikke bygget ennå. Valgene dine huskes bare i denne nettleseren og er ikke
-        sendt noe sted.
+        Valgene sendes først når du trykker «Send inn». Frem til da huskes de bare i denne
+        nettleseren.
       </p>
-
-      {items.length > 0 && (
-        <Link href={`/flytting/${firstPageId}`} className={styles.link}>
-          Tilbake til løpet
-        </Link>
-      )}
     </div>
   )
 }
