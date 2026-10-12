@@ -242,6 +242,7 @@ fra bruker (se Next Recommended Actions).
   sine miljøvariabler (ikke gjenbrukt fra Vercel)
 
 ## Validation Status
+✓ Seed (db:seed-flow) kjørt og fungerte mot database (bruker, 2026-10-12). UI og ordreflyt ikke eksplisitt testet ennå
 ✓ CR-024: tsc OK, lint 0 feil (3 gamle advarsler), vitest 303/303 (opp fra 233, 70 nye), build OK (2026-10-12). Alt mot mocket Prisma. Migrasjon, transaksjon, unik indeks og lead-admin IKKE verifisert mot DB. UI ikke sett i nettleser. /review ikke kjørt
 ✓ CR-023: tsc OK, lint 0 feil (3 gamle advarsler), vitest 233/233 (opp fra 203, 30 nye), build OK (2026-10-12). UI ikke sett i nettleser, seed ikke kjørt, /review ikke kjørt
 ✓ CR-022: tsc OK, lint 0 feil (3 gamle advarsler), vitest 203/203 (opp fra 187, 16 nye), build OK (2026-10-12). Migrasjon-SQL fra prisma migrate diff og seed IKKE kjørt mot DB. /review ikke kjørt

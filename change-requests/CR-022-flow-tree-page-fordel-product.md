@@ -214,3 +214,9 @@ visninger.
   187, 16 nye), build OK.
 - Gjenstår: `/review`, commit, deploy, og sjekk i prod at migrasjonen gikk
   gjennom og at appen virker som før.
+
+## Etterskrift (2026-10-12)
+- Bruker bekreftet at `npm run db:seed-flow` er kjørt mot en database og fungerte. Det
+  verifiserer at tabellene fra migrasjonene finnes og at skriptet (transaksjon, nested
+  creates, targeting-regel) går gjennom. Idempotens ved gjentatt kjøring og at
+  `getWebFlow` returnerer riktig innhold er ikke eksplisitt bekreftet.

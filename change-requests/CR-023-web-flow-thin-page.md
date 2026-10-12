@@ -198,3 +198,8 @@ Bygger på CR-022 (`getWebFlow`, `WebFlow*`-typer) og CR-021 (`web_card`).
   fra 203, 30 nye), build OK (rutene `/flytting`, `/flytting/[pageId]`,
   `/flytting/oppsummering` vises i build-output).
 - Gjenstår: `/review`, commit, deploy, seed mot en database, og manuell test.
+
+## Etterskrift (2026-10-12)
+- Bruker bekreftet at det utvidede seed-skriptet er kjørt og fungerte. UI-kriteriene
+  (redirect, tom tilstand, progresjon, valg, oppsummering, tastatur, mobil og desktop)
+  er fortsatt ikke eksplisitt bekreftet i nettleser og står uavkrysset.
