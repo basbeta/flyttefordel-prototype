@@ -1,6 +1,6 @@
 # CR-029: Utvelgelsesfunksjon (hvilke fordeler er en person kvalifisert for)
 
-Status: Implementert, /review PASSED (2026-10-13), IKKE Done: ikke deployet, migrasjon og demo-seed ikke kjørt, e2e ikke kjørt mot prod
+Status: Implementert, pushet (b2fe45d), deployet, e2e mot prod 124/124. IKKE Done: venter på at brukeren markerer Done (UI ikke sett visuelt)
 Approved: 2026-10-13
 Created: 2026-10-13
 
@@ -128,7 +128,7 @@ skaleringsgrense (se DECISIONS 2026-05-22).
       med `requiresChosenBenefitIds`
 - [x] `specs/*` er oppdatert før kode
 - [x] `npx tsc --noEmit`, `npx vitest run`, `npm run lint` og `npm run build` er grønne
-- [ ] E2E mot prod (e2e-tester) bekrefter at de seedede personene får forventet utvalg
+- [x] E2E mot prod (e2e-tester) bekrefter at de seedede personene får forventet utvalg
 
 ## Required Tests
 - [x] Unit: `isQualified` per dimensjon og kombinasjoner, grensedager (inkl. skuddår og
@@ -138,7 +138,7 @@ skaleringsgrense (se DECISIONS 2026-05-22).
 - [x] Integration (mocket Prisma): `getActiveBenefits`, `getWebFlow` og `getActiveHeroes` for
       personer med ulike data, inkl. person med og uten tidligere valg
 - [x] Integration: admin-ruter validerer og lagrer de nye feltene
-- [ ] E2E: smoke-suiten utvides med forventet utvalg per seedet person (krever at seeden har regler
+- [x] E2E: smoke-suiten utvides med forventet utvalg per seedet person (krever at seeden har regler
       som bruker de nye dimensjonene)
 - [ ] Manuell: sett en regel i admin og se effekten som to ulike testpersoner
 
@@ -226,3 +226,10 @@ person-ID), CR-025/027 (admin og visninger). Åpner for A/B-tildeling og e-postk
 - **Ikke gjort:** UI ikke sett i nettleser, migrasjon og seed ikke kjørt mot DB, e2e ikke kjørt mot prod.
 - **Utrulling:** (1) push (Coolify kjører migrasjonen), (2) `npm run db:seed-persons` (oppdaterer datoene,
   hvis ikke kjørt nylig), (3) `npm run db:seed-selection`, (4) kjør e2e-tester.
+
+## E2E-agent mot prod (2026-10-13, etter deploy av b2fe45d og kjørt seeds)
+Suiten 124 av 124 bestått, pluss utforskning (agenten la til 5 sjekker i `smoke.py`, nå 115 uten admin):
+- **Bevist i prod:** forventet utvalg for de 5 seedede personene i appen og i web-løpet (like). Dagsgrenser er riktige, grenser inkludert, også før flytting (-1 og -30 skjult, 0, 1, 59, 60 vist, 61 og 179 skjult, 180 og 181 vist for etter-180). Dagsregelen er uavhengig av `movingStatus`. Boligtype, kryssalg og skjul etter valg virker, også i ny sesjon. Bestillingsvalideringen kjenner tidligere valg, og skjulte fordeler kan ikke bestilles med andres ids (400). Admin-API validerer (alle ugyldige varianter 400) og lagrer, effekten vises straks, utelatte felt endrer ingenting. Postnummer-targeting er uendret (0150 ser demo-bakeri og demo-frisor, 9008 ikke).
+- **Funn, ingen alvorlige:** (1) skjult er ikke utilgjengelig (detaljsiden og lagring ignorerer targeting, dokumentert begrensning). (2) Eksisterende feil, ikke CR-029: `PATCH /api/admin/benefits/abc` (ikke-uuid) gir 500 i stedet for 400/404. (3) Ukjente nøkler i `targeting` godtas stille og ignoreres (zod strip). (4) `demo-sel-forste-60` står etter gjenoppretting med `[]` der seeden hadde null (samme oppførsel, ikke bit-identisk). (5) `recently_moved` med 61 dager siden flytting får statusfordeler men ikke «første 60 dager» (som avklart i punkt 3).
+- **Ikke testet:** UI visuelt, hero-targeting og hero-admin med nye felt, opprett fordel (POST) med nye felt, dagsgrensen rundt midnatt UTC mot norsk tid, at kryssalg kan settes til en gyldig uuid i admin og få effekt.
+- **Testdata i prod:** ca. 30 testpersoner («Test QA-…»), 5 bestillinger, `demo-sel-forste-60` patchet og gjenopprettet. Ingenting slettet.

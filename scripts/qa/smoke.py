@@ -376,6 +376,20 @@ def main():
                         s, b, _ = p3.request("POST", "/api/flow/order", order_payload(k2[0], k2[1], f"qa-agent+utvalg3-{stamp}@example.test"))
                         check("uten å ha valgt grunnpakken avvises bestilling av kryssalget (400)", s == 400, f"{s} {b[:100]}")
 
+        # Day boundaries of "første 60 dager" (0..60 inclusive, UTC days) with fresh people (no orders).
+        import datetime as _dt
+        today = _dt.datetime.now(_dt.timezone.utc).date()
+        for days, want in [(-1, False), (0, True), (60, True), (61, False)]:
+            pc = Client()
+            s, b, _ = pc.request("POST", "/api/auth/test-persons", {"name": f"Test QA-Dager {days} {stamp}", "movingStatus": "unknown", "movedAt": (today - _dt.timedelta(days=days)).isoformat()})
+            if s == 201:
+                login(pc, json.loads(b)["person"]["id"], f"qa-agent+dager-{stamp}@example.test")
+                got = (DEMO_PREFIX + "forste-60") in app_slugs(pc, DEMO_PREFIX)
+                check(f"{days} dager siden flytting: forste-60 {'vises' if want else 'skjules'}", got == want, str(got))
+        # Documented limitation: targeting hides from lists, not from the detail page.
+        s, _, _ = probe.request("GET", f"/benefits/{DEMO_PREFIX}etter-180")
+        check("skjult fordel er fortsatt tilgjengelig på detaljsiden (kjent begrensning)", s == 200, str(s))
+
     # ------------------------------------------------------------------ 6. token / role security
     start("Token og roller")
     if "Test Nylig-Flyttet" in names:
