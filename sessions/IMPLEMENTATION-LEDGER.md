@@ -150,3 +150,4 @@
 | 2026-10-13 | Session-20 | prisma/seed-selection-demo.ts, src/lib/selection/demo.ts, scripts/qa/smoke.py | Seed med seks demo-fordeler, delt data + test som beviser forventet utvalg per testperson, e2e-seksjon (utvalg per person og kryssalg) | CR-029 | smoke 98/98 ✓ |
 | 2026-10-13 | Session-20 | /review CR-029 | Funn fikset: stille feil i loadSelectionExtras (nå logget, bare feilnavn). 90 nye tester | CR-029 | vitest 596/596 ✓ PASSED |
 | 2026-10-13 | Session-20 | prod CR-029 | Pushet (acb9042..b2fe45d), deploy bekreftet, bruker kjørte db:seed-persons og db:seed-selection. E2E-agent: suiten 124/124 mot prod, utforsket dagsgrenser, boligtype, kryssalg, admin-API. Ingen alvorlige funn. 5 nye sjekker i smoke.py, .pyc fjernet fra git og __pycache__ ignorert | CR-029 | smoke 124/124 ✓ |
+| 2026-10-13 | Session-20 | CR-029 | Bruker markerte CR-029 Done, 9000616 pushet | CR-029 | e2e 124/124 ✓ |

@@ -1,6 +1,6 @@
 # CR-029: Utvelgelsesfunksjon (hvilke fordeler er en person kvalifisert for)
 
-Status: Implementert, pushet (b2fe45d), deployet, e2e mot prod 124/124. IKKE Done: venter på at brukeren markerer Done (UI ikke sett visuelt)
+Status: Done (b2fe45d + 9000616, pushet, deployet, e2e mot prod 124/124, bruker markerte Done 2026-10-13)
 Approved: 2026-10-13
 Created: 2026-10-13
 
