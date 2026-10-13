@@ -279,3 +279,5 @@ Test-agenten (`.claude/agents/e2e-tester.md`, `scripts/qa/smoke.py`) kjørte mot
 - **Ikke testet:** UI visuelt, utløpt token, admin positivt, hvilken person ordre/hendelser fikk i DB, innlogging som ikke-testperson.
 - **Testdata i prod som bør ryddes:** flere «Test QA-…»-personer (bl.a. én med XSS-navn som vises i listen på /logg-inn, og én med postnummer 0000, én med år 2099) og 4 bestillinger (`@example.test`).
 
+
+- **Etter deploy av d01a2c9 (2026-10-13):** suiten 105 av 105 bestått mot prod, inkludert admin-innlogging (egen QA-admin via .env.qa) og at 2026-02-31 nå avvises. Admin-sidene gir 200, admin-token alene gir ikke forbrukerappen. UI visuelt er fortsatt ikke sett. ISSUE-013 (rate limit) er uløst.
