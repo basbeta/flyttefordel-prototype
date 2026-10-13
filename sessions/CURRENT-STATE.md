@@ -3,7 +3,7 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-**CR-028 (simulert Vipps-innlogging og person-ID) er implementert 2026-10-13 (Session-20), /review PASSED, committed lokalt, IKKE pushet og IKKE Done.** Innlogging er påkrevd for hele forbrukerappen og web-løpet (`/logg-inn`, signert `person_token`, middleware). 5 seedede testpersoner i databasen (`npm run db:seed-persons`), QA fyller inn test-e-post ved innlogging, ny testperson kan opprettes, «Bytt person» i app og web. `ADMIN_JWT_SECRET` gjenbrukes, derfor sjekker admin-vakten nå `role === 'admin'`. Ordre og hendelser får person-ID. Profilsiden er skrivebeskyttet. tsc OK, lint 0 feil, vitest 502/502, build OK. Migrasjon `20261013000000_cr028_persons` og seed IKKE kjørt mot DB, UI ikke sett i nettleser. Se CR-028 Implementation Notes.
+**CR-028 (simulert Vipps-innlogging og person-ID) er implementert 2026-10-13 (Session-20), /review PASSED, pushet (c6ccaee), deployet, HTTP-sjekket i prod av Claude, IKKE Done (venter på seed og brukertest).** Innlogging er påkrevd for hele forbrukerappen og web-løpet (`/logg-inn`, signert `person_token`, middleware). 5 seedede testpersoner i databasen (`npm run db:seed-persons`), QA fyller inn test-e-post ved innlogging, ny testperson kan opprettes, «Bytt person» i app og web. `ADMIN_JWT_SECRET` gjenbrukes, derfor sjekker admin-vakten nå `role === 'admin'`. Ordre og hendelser får person-ID. Profilsiden er skrivebeskyttet. tsc OK, lint 0 feil, vitest 502/502, build OK. Migrasjon `20261013000000_cr028_persons` og seed IKKE kjørt mot DB, UI ikke sett i nettleser. Se CR-028 Implementation Notes.
 
 **CR-027 (innholdsoverstyring per flate i admin) er DONE (9b46140, pushet, /review PASSED, bruker testet 2026-10-13 og meldte at det fungerer).** Opprinnelig status: implementert men UNCOMMITTED, uten /review. Ny seksjon «Visninger» på rediger fordel (App-kort og Web-kort: tittel, tekst, bilde, merketekst, tomt = arv, forhåndsvisning, tilbakestill), ny rute PUT /api/admin/benefits/[id]/views/[format] som bare rører innholdsfelt (ikke plassering), og lagret-siden bruker nå samme kortinnhold som listen (withAppCardView). Ingen migrasjon. tsc OK, lint 0 feil, vitest 394/394, build OK. Admin-UI ikke sett i nettleser. Se CR-027 Implementation Notes.
 
@@ -201,7 +201,7 @@ fra bruker (se Next Recommended Actions).
 - CR-017: Sperre mot ugyldig Aktiv/Planlagt status (Status: Done — committed 3ec4625, pushet 4a30c11, 2026-08-27)
 - CR-018: Next.js major-oppgradering 14.2.35→16.3.1 (Status: Implementert, committed+pushet e7cc47c, LIVE i prod, IKKE Done — venter på prod-smoke-test)
 - CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Implementert, committed 12b49e6, IKKE Done — venter på manuell nettleserverifisering)
-- CR-028: Simulert Vipps-innlogging og person-ID (Status: Implementert, /review PASSED, committed lokalt, ikke pushet, IKKE Done)
+- CR-028: Simulert Vipps-innlogging og person-ID (Status: Implementert, pushet c6ccaee, deployet, HTTP-sjekket i prod, IKKE Done: seed og brukertest gjenstår)
 - CR-027: Innholdsoverstyring per flate i admin (Status: Done, committed 9b46140, pushet, bruker testet 2026-10-13)
 - CR-026: Konsekvente lagreknapper i admin (Status: Done, committed 2978248, pushet, bruker testet 2026-10-12)
 - CR-025: Admin for sider, produkter og web-plassering (Status: Done, committed 08f7bc6, pushet, bruker testet 2026-10-12)

@@ -259,3 +259,13 @@ den eksisterende `User`-modellen. Åpner for A/B-tildeling og utvelgelse per per
 - **Før/etter push:** ingen ny miljøvariabel. Etter deploy kjøres `npm run db:seed-persons` mot prod
   (ellers tom liste, QA kan fortsatt lage ny testperson). Hele forbrukerappen ligger bak `/logg-inn`
   fra deploy.
+
+## Prod-sjekk på HTTP-nivå (Claude, 2026-10-13, etter deploy av c6ccaee)
+Utført med curl mot prod (nettleserutvidelsen var ikke koblet til, så ingen UI er sett):
+- Login-mur: alle forbrukersider redirecter til `/logg-inn` (med `next`), forbruker-API-er gir 401. `/logg-inn`, `/manifest.json`, `/admin/login` er åpne, `/admin/benefits` utlogget redirecter til `/admin/login`.
+- Migrasjonen er kjørt: `/logg-inn` leser `users` uten feil og viser «Ingen testpersoner finnes ennå» (seed ikke kjørt).
+- Ny testperson (201), innlogging (200, `person_token` httpOnly), ugyldig e-post (400), ukjent person (404).
+- Innlogget: `/`, `/benefits`, `/saved`, `/profile`, `/flytting` og oppsummering virker. Profilsiden viser personen og «Bytt person». `PATCH /api/session/profile` gir 403.
+- Et persontoken (som `admin_token` og som `person_token`) gir IKKE admin. Forfalsket `x-person-id` uten innlogging gir 401. Etter logout redirecter `/` til `/logg-inn`.
+- **Ikke testet:** UI visuelt, de 5 seedede personene (seed ikke kjørt), bestilling (ville opprettet en ekte lead i prod), at targeting følger personen, `next`-redirect i nettleseren, admin positivt (krever passord).
+- Rad igjen i prod-databasen: testpersonen «Test Claude-Sjekk» (fiktiv e-post `claude-sjekk@example.test`, id b815561b-8e55-47fd-a95a-123cdf5b227e). Kan slettes direkte i DB.
