@@ -2,6 +2,7 @@
 // Kept in one place so the routes and their tests agree.
 
 import { z } from 'zod'
+import { VIEW_OVERRIDE_LIMITS } from './viewOverrides'
 
 // Image URLs come from the upload route (absolute https URL) or are typed in; only http(s)
 // or site-relative URLs are accepted.
@@ -52,3 +53,29 @@ export const webPlacementSchema = z.object({
   pageId: z.string().uuid('Ugyldig side').nullable(),
   sortOrder: sortOrder.default(0),
 })
+
+// CR-027: content overrides for a benefit on a surface. "" / whitespace / missing = null
+// (inherit from the benefit). The limits are guesses until ui-spec exists.
+function nullableText(max: number, message: string) {
+  return z.preprocess(
+    (v) => (typeof v === 'string' ? (v.trim() === '' ? null : v.trim()) : (v ?? null)),
+    z.string().max(max, message).nullable()
+  )
+}
+
+export const viewOverrideSchema = z
+  .object({
+    title: nullableText(VIEW_OVERRIDE_LIMITS.title, 'Tittelen er for lang'),
+    text: nullableText(VIEW_OVERRIDE_LIMITS.text, 'Teksten er for lang'),
+    imageUrl: z.preprocess(
+      (v) => (typeof v === 'string' ? (v.trim() === '' ? null : v.trim()) : (v ?? null)),
+      z
+        .string()
+        .max(VIEW_OVERRIDE_LIMITS.imageUrl, 'Bilde-URL er for lang')
+        .refine((v) => /^https?:\/\//i.test(v) || v.startsWith('/'), 'Ugyldig bilde-URL')
+        .nullable()
+    ),
+    imageAlt: nullableText(VIEW_OVERRIDE_LIMITS.imageAlt, 'Alt-teksten er for lang'),
+    badgeText: nullableText(VIEW_OVERRIDE_LIMITS.badgeText, 'Merketeksten er for lang'),
+  })
+  .strict()

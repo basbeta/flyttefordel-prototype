@@ -11,12 +11,14 @@ import {
   getAdminBenefitProducts,
   getAdminFlowPageOptions,
   getAdminWebPlacement,
+  getAdminBenefitViewOverrides,
 } from '@/lib/queries/adminQueries'
 import { getBenefitDisplayStatus } from '@/lib/benefits/displayStatus'
 import { getWebPlacementProblems } from '@/lib/benefits/webPlacement'
 import { BenefitForm } from '../BenefitForm'
 import { BenefitProductsSection } from './BenefitProductsSection'
 import { BenefitChannelsSection } from './BenefitChannelsSection'
+import { BenefitViewsSection } from './BenefitViewsSection'
 import { BenefitStatusBadge } from '@/components/admin/BenefitStatusBadge'
 import styles from '@/components/admin/AdminTable.module.css'
 
@@ -28,13 +30,14 @@ type Props = { params: Promise<{ id: string }> }
 export default async function EditBenefitPage({ params }: Props) {
   const { id } = await params
   await requireAdminAuth()
-  const [benefit, advertisers, categories, products, pageOptions, placementView] = await Promise.all([
+  const [benefit, advertisers, categories, products, pageOptions, placementView, viewRows] = await Promise.all([
     getAdminBenefitById(id),
     getAdminAdvertisers(),
     getAdminCategories(),
     getAdminBenefitProducts(id),
     getAdminFlowPageOptions(),
     getAdminWebPlacement(id),
+    getAdminBenefitViewOverrides(id),
   ])
   if (!benefit) notFound()
 
@@ -74,6 +77,17 @@ export default async function EditBenefitPage({ params }: Props) {
       </div>
       <BenefitForm advertisers={advertisers} categories={categories} benefit={benefitForForm} />
       <BenefitProductsSection benefitId={benefit.id} products={products} />
+      <BenefitViewsSection
+        benefitId={benefit.id}
+        core={{
+          title: benefit.title,
+          shortDescription: benefit.shortDescription,
+          imageUrl: benefit.imageUrl,
+          imageAlt: benefit.imageAlt,
+          badgeText: benefit.badgeText,
+        }}
+        rows={viewRows}
+      />
       <BenefitChannelsSection
         benefitId={benefit.id}
         pages={pageOptions}

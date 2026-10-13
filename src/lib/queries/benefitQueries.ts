@@ -8,7 +8,7 @@
 import QRCode from 'qrcode'
 import { prisma } from '@/lib/db/client'
 import { matchesSession } from '@/lib/targeting'
-import { resolveBenefitView } from '@/lib/views'
+import { resolveBenefitView, type BenefitViewRow } from '@/lib/views'
 import type { TargetingSession } from '@/lib/targeting'
 import type { BenefitCard, BenefitDetail, CategorySummary, BenefitRedemptionConfig, LeadFormField } from '@/types/app'
 import type { BenefitRedemptionType, Prisma } from '@prisma/client'
@@ -73,19 +73,7 @@ export async function getActiveBenefits(
     : { postcode: null, movingStatus: 'unknown' }
   return benefits
     .filter((b) => matchesSession(b.targeting, targetingCtx))
-    .map((b) => {
-      // CR-021: card content = override from BenefitView, else the benefit's own content.
-      const view = resolveBenefitView(b, b.views, 'app_card')
-      const card = mapBenefitCard({
-        ...b,
-        title: view.title,
-        shortDescription: view.text,
-        imageUrl: view.imageUrl,
-        imageAlt: view.imageAlt,
-        badgeText: view.badgeText,
-      })
-      return { ...card, isSaved: savedIds.has(b.id) }
-    })
+    .map((b) => ({ ...mapBenefitCard(withAppCardView(b)), isSaved: savedIds.has(b.id) }))
 }
 
 // ---- Benefit detail ----
@@ -172,6 +160,30 @@ type BenefitWithRelations = {
 
 export function mapBenefitCardFromSaved(benefit: BenefitWithRelations): BenefitCard {
   return mapBenefitCard(benefit)
+}
+
+// CR-021 / CR-027: the card content on the app surface = override from the benefit's app_card
+// view, else the benefit's own content. One place, so the list, "I nærheten" and "Lagret"
+// always show the same card.
+type CardContentSource = {
+  title: string
+  shortDescription: string
+  imageUrl: string | null
+  imageAlt: string | null
+  badgeText: string | null
+  views: readonly BenefitViewRow[]
+}
+
+export function withAppCardView<T extends CardContentSource>(benefit: T): T {
+  const view = resolveBenefitView(benefit, benefit.views, 'app_card')
+  return {
+    ...benefit,
+    title: view.title,
+    shortDescription: view.text,
+    imageUrl: view.imageUrl,
+    imageAlt: view.imageAlt,
+    badgeText: view.badgeText,
+  }
 }
 
 function mapBenefitCard(benefit: BenefitWithRelations): BenefitCard {

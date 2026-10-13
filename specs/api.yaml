@@ -84,6 +84,32 @@ paths:
         "200": { description: "OK" }
         "400": { description: "Ugyldig input" }
         "404": { description: "Fordel eller side ikke funnet" }
+  /api/admin/benefits/{id}/views/{format}:
+    put:
+      operationId: setBenefitViewOverrides
+      summary: "Sett innholdsoverstyringer for en fordel på en flate (CR-027)"
+      description: >
+        Setter overstyringene for (fordel, format, variant standard). Alle felt erstatter
+        eksisterende verdier, manglende eller tomme felt blir null (arv fra fordelen). Oppretter
+        raden om den mangler. Rører aldri plassering (page_id, sort_order). format må være i
+        format-registeret (app_card, web_card), ellers 404.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string, nullable: true, maxLength: 120 }
+                text: { type: string, nullable: true, maxLength: 500 }
+                imageUrl: { type: string, nullable: true, maxLength: 500 }
+                imageAlt: { type: string, nullable: true, maxLength: 200 }
+                badgeText: { type: string, nullable: true, maxLength: 40 }
+      responses:
+        "200": { description: "OK, de lagrede feltene" }
+        "400": { description: "Ugyldig input" }
+        "401": { description: "Ikke autentisert" }
+        "404": { description: "Fordel eller format ikke funnet" }
   # PATCH /api/admin/benefits/{id} utvides med showInApp (boolean, CR-025).
   /api/flow/order:
     post:

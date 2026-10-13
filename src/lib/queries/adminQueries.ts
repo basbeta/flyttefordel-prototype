@@ -1,6 +1,7 @@
 // CR-004: Admin-facing queries. Never use these in consumer-app routes.
 
 import { prisma } from '@/lib/db/client'
+import { VIEW_FORMATS } from '@/lib/views'
 import type {
   AdminDashboardStats,
   AdminAnalyticsData,
@@ -522,4 +523,12 @@ export async function getAdminWebPlacement(benefitId: string) {
     include: { page: { select: { id: true, isActive: true, deletedAt: true } } },
   })
   return view
+}
+
+// CR-027: the stored content overrides of a benefit, one row per format (variant standard).
+export async function getAdminBenefitViewOverrides(benefitId: string) {
+  return prisma.benefitView.findMany({
+    where: { benefitId, variant: 'standard', format: { in: Object.keys(VIEW_FORMATS) } },
+    select: { format: true, title: true, text: true, imageUrl: true, imageAlt: true, badgeText: true },
+  })
 }

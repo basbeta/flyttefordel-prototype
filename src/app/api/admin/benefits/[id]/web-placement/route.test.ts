@@ -117,3 +117,16 @@ describe('PUT /api/admin/benefits/[id]/web-placement', () => {
     expect((await PUT(req({ pageId: PAGE_ID }), PARAMS)).status).toBe(500)
   })
 })
+
+// CR-027: placement and content overrides share one row (web_card/standard).
+describe('PUT /api/admin/benefits/[id]/web-placement (CR-027: rører ikke overstyringer)', () => {
+  it('update og create inneholder bare plasseringsfelt, aldri innholdsfelt', async () => {
+    await PUT(req({ pageId: PAGE_ID, sortOrder: 4 }), PARAMS)
+    const call = mockPrisma.benefitView.upsert.mock.calls[0][0]
+    expect(Object.keys(call.update).sort()).toEqual(['pageId', 'sortOrder'])
+    for (const field of ['title', 'text', 'imageUrl', 'imageAlt', 'badgeText']) {
+      expect(call.update).not.toHaveProperty(field)
+      expect(call.create).not.toHaveProperty(field)
+    }
+  })
+})

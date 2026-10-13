@@ -109,6 +109,30 @@ Related endpoints: /api/admin/flow-pages, /api/admin/benefits/[id]/products, /ap
 
 ---
 
+## Flow: Sette innholdsoverstyring per flate (CR-027)
+
+Trigger: Admin åpner seksjonen "Visninger" på rediger fordel.
+
+Steps:
+1. Seksjonen viser en gruppe per format (App-kort, Web-kort) med feltene tittel, tekst, bilde (og alt-tekst) og merketekst. Tomt felt betyr "arv fra fordelen", og plassholderen viser den arvede verdien.
+2. Forhåndsvisningen løser innholdet med `resolveBenefitView` på utkastet, mens admin skriver.
+3. Lagre sender `PUT /api/admin/benefits/[id]/views/[format]`. Raden (fordel, format, standard) opprettes om den mangler. Tomme felt lagres som null.
+4. "Tilbakestill til fordelens innhold" sender samme kall med alle felt tomme.
+5. Appens liste, "I nærheten", "Lagret" og web-løpet leser overstyringene via `resolveBenefitView` (samme kort på alle flater i appen).
+
+Decision points:
+- Overstyrings-ruten oppdaterer bare innholdsfeltene. Plassering (`page_id`, `sort_order`) på web_card-raden røres kun av plasserings-ruten (CR-025).
+- Kun variant standard har admin-UI. Varianter og A/B kommer senere.
+- Detaljsiden er ikke en visning og påvirkes ikke.
+
+Error conditions:
+- Ingen admin-cookie: 401. Ukjent fordel eller format: 404. Ugyldig input: 400. Uventet feil: 500 med JSON.
+
+Related entities: BenefitView, Benefit
+Related endpoints: PUT /api/admin/benefits/[id]/views/[format]
+
+---
+
 ## Flow: [Name]
 
 Trigger: [What starts this flow?]
