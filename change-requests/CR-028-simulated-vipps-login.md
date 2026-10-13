@@ -1,6 +1,6 @@
 # CR-028: Simulert Vipps-innlogging og person-ID
 
-Status: Implementert, /review PASSED (2026-10-13), IKKE Done: ikke sett i nettleser, migrasjon og seed ikke kjørt mot DB
+Status: Done (committed c6ccaee og d01a2c9, pushet, /review PASSED, e2e mot prod 105/105 2026-10-13, bruker markerte Done 2026-10-13). Åpent: UI ikke sett visuelt av Claude, rate limit ikke i kraft i prod (ISSUE-013)
 Approved: 2026-10-13
 Created: 2026-10-13
 
