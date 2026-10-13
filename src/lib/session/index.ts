@@ -8,6 +8,7 @@ import { prisma } from '@/lib/db/client'
 import { getIdentityProvider } from '@/lib/identity'
 import { linkSessionToPerson } from '@/lib/identity/linkSession'
 import { PERSON_ID_HEADER } from '@/lib/identity/token'
+import { loadSelectionExtras } from '@/lib/selection/loadPerson'
 import type { UserMovingStatus } from '@prisma/client'
 
 export const ANON_ID_COOKIE = 'anon_id'
@@ -18,6 +19,10 @@ export type SessionData = {
   anonymousId: string
   postcode: string | null
   movingStatus: UserMovingStatus
+  // CR-029: what the selection needs about the logged-in person (absent when not logged in).
+  movedAt?: Date | null
+  housingType?: string | null
+  chosenBenefitIds?: string[]
 }
 
 // CR-020: Read-only session lookup for route handlers that only need the id
@@ -34,6 +39,14 @@ export async function getSessionIdFromRequest(request: Request): Promise<string 
   } catch {
     return null
   }
+}
+
+// CR-029: add what the selection needs about the logged-in person (moved date, housing type and
+// earlier choices). Never fails: without the extras, rules that need them simply do not qualify.
+async function withSelectionExtras(base: SessionData, personId: string | null): Promise<SessionData> {
+  if (!personId) return base
+  const extras = await loadSelectionExtras(personId)
+  return extras ? { ...base, ...extras } : base
 }
 
 export async function getOrCreateSession(): Promise<SessionData | null> {
@@ -64,21 +77,27 @@ export async function getOrCreateSession(): Promise<SessionData | null> {
       const person = await getIdentityProvider().getPerson(personId)
       if (person) {
         await linkSessionToPerson(anonymousId, person)
-        return {
-          sessionId: session.id,
-          anonymousId: session.anonymousId,
-          postcode: person.postcode,
-          movingStatus: person.movingStatus,
-        }
+        return withSelectionExtras(
+          {
+            sessionId: session.id,
+            anonymousId: session.anonymousId,
+            postcode: person.postcode,
+            movingStatus: person.movingStatus,
+          },
+          personId
+        )
       }
     }
 
-    return {
-      sessionId: session.id,
-      anonymousId: session.anonymousId,
-      postcode: session.postcode,
-      movingStatus: session.movingStatus ?? 'unknown',
-    }
+    return withSelectionExtras(
+      {
+        sessionId: session.id,
+        anonymousId: session.anonymousId,
+        postcode: session.postcode,
+        movingStatus: session.movingStatus ?? 'unknown',
+      },
+      personId
+    )
   } catch {
     // Graceful degradation: Supabase free tier may pause after inactivity.
     return null

@@ -8,6 +8,12 @@ import styles from '@/components/admin/AdminTable.module.css'
 import { ImageUploadField } from '@/components/admin/ImageUploadField'
 import { FormSaveBar } from '@/components/admin/FormSaveBar'
 import { useDirtyTracking } from '@/lib/admin/useDirtyTracking'
+import { SelectionFields, type BenefitOption } from '@/components/admin/SelectionFields'
+import {
+  selectionFieldsFromRule,
+  selectionFieldsProblem,
+  selectionFieldsToPayload,
+} from '@/lib/admin/selectionFields'
 
 type TargetingData = {
   appliesNationally: boolean
@@ -15,6 +21,12 @@ type TargetingData = {
   postcodes: unknown
   postcodeRanges: unknown
   movingStatuses: unknown
+  // CR-029
+  daysSinceMoveMin?: number | null
+  daysSinceMoveMax?: number | null
+  housingTypes?: unknown
+  requiresChosenBenefitIds?: unknown
+  hideIfChosen?: boolean | null
 }
 
 type HeroData = {
@@ -34,7 +46,8 @@ type HeroData = {
   targeting?: TargetingData | null
 }
 
-type Props = { hero?: HeroData }
+// CR-029: benefitOptions = the benefits, for the cross-sell condition.
+type Props = { hero?: HeroData; benefitOptions?: BenefitOption[] }
 
 const CTA_TYPES = [
   { value: 'benefit', label: 'Fordel' },
@@ -44,7 +57,7 @@ const CTA_TYPES = [
   { value: 'none', label: 'Ingen' },
 ]
 
-export function HeroForm({ hero }: Props) {
+export function HeroForm({ hero, benefitOptions = [] }: Props) {
   const router = useRouter()
   const isEdit = !!hero
 
@@ -73,6 +86,9 @@ export function HeroForm({ hero }: Props) {
     return Array.isArray(val) ? (val as string[]) : []
   })
 
+  // CR-029: selection fields (a hero has no benefit of its own, so no "hide if chosen")
+  const [selection, setSelection] = useState(() => selectionFieldsFromRule(hero?.targeting))
+
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -89,18 +105,25 @@ export function HeroForm({ hero }: Props) {
         postcodes: postcodeInput.split(',').map((s) => s.trim()).filter(Boolean),
         postcodeRanges: [],
         movingStatuses: selectedSegments,
+        ...selectionFieldsToPayload({ ...selection, hideIfChosen: false }),
       },
     }),
     [
       title, description, imageUrl, imageAlt, ctaLabel, ctaType, ctaTarget,
       status, priority, isFallback, startsAt, endsAt,
-      appliesNationally, includeUnknownLocation, postcodeInput, selectedSegments,
+      appliesNationally, includeUnknownLocation, postcodeInput, selectedSegments, selection,
     ],
   )
   const { isDirty, showSaved, markSaved } = useDirtyTracking(payload)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    // CR-029: do not send a rule the server would reject (from > to, not whole numbers).
+    const selectionProblem = selectionFieldsProblem(selection)
+    if (selectionProblem) {
+      setError(selectionProblem)
+      return
+    }
     setSaving(true)
     setError(null)
 
@@ -258,6 +281,13 @@ export function HeroForm({ hero }: Props) {
         />
         <p className={styles.hint}>Tom = alle postnummer. Overstyres av &laquo;Nasjonalt&raquo;.</p>
       </div>
+
+      <SelectionFields
+        value={selection}
+        onChange={setSelection}
+        benefitOptions={benefitOptions}
+        showHideIfChosen={false}
+      />
 
       <FormSaveBar
         label={isEdit ? 'Lagre endringer' : 'Opprett hero'}

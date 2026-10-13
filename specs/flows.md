@@ -161,6 +161,30 @@ Related endpoints: POST /api/auth/login, POST /api/auth/test-persons, POST /api/
 
 ---
 
+## Flow: Utvelgelse for en person (CR-029)
+
+Trigger: En innlogget person åpner appens liste, «I nærheten», hero-karusellen eller web-løpet.
+
+Steps:
+1. Serveren bygger en SelectionPerson: postnummer og flyttestatus fra sesjonen (satt ved innlogging), flyttedato og boligtype fra personen, og fordelene personen har bestilt før (OrderLine via person_id).
+2. Kandidatene hentes (live: status, datoer, show_in_app, målgruppe-regel).
+3. For hver kandidat avgjør `isQualified(regel, person, nå)` om personen kvalifiserer. Uten regel eller uten nye felt gir den samme svar som den gamle matchesSession.
+4. Resultatet sorteres og vises som før. Alle flater bruker samme funksjon.
+
+Decision points:
+- Gammel del (postnummer, flyttestatus, applies_nationally) og nye kriterier (dager siden flytting, boligtype, kryssalg, skjul etter valg) må alle bestå.
+- Manglende flyttedato eller boligtype på en regel som krever den: personen kvalifiserer ikke.
+- hide_if_chosen: personen har bestilt fordelen før, den skjules. requires_chosen_benefit_ids: vises bare etter at en av de nevnte fordelene er bestilt.
+
+Error conditions:
+- Feil ved lasting av historikk: utvelgelsen fortsetter uten tidligere valg (regler som krever dem slår ikke til), siden en feil aldri skal stoppe visningen.
+- `explainSelection` oppgir hvilke kriterier som slo ut (for testing og feilsøking), og forlater aldri serveren.
+
+Related entities: User, UserSession, TargetingRule, OrderLine, Benefit, Hero
+Related endpoints: (ingen nye, admin-rutene for fordel og hero tar imot de nye feltene)
+
+---
+
 ## Flow: [Name]
 
 Trigger: [What starts this flow?]

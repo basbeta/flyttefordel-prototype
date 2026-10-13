@@ -119,3 +119,68 @@ describe('PATCH /api/admin/benefits/[id] — CR-025 showInApp', () => {
     expect(res.status).toBe(400)
   })
 })
+
+describe('PATCH /api/admin/benefits/[id] — CR-029 utvelgelsesregler', () => {
+  const B1 = '3f2b1c3e-8c58-4a0d-9d3e-111111111111'
+
+  it('lagrer de nye feltene i målgruppe-regelen (både create og update)', async () => {
+    mockPrisma.benefit.findFirst.mockResolvedValueOnce(existingActiveBenefit())
+    const res = await PATCH(
+      makeRequest({
+        targeting: {
+          postcodes: ['0150'],
+          daysSinceMoveMin: 0,
+          daysSinceMoveMax: 60,
+          housingTypes: ['leilighet'],
+          requiresChosenBenefitIds: [B1],
+          hideIfChosen: true,
+        },
+      }),
+      PARAMS
+    )
+    expect(res.status).toBe(200)
+    const upsert = mockPrisma.benefit.update.mock.calls[0][0].data.targeting.upsert
+    const expected = {
+      postcodes: ['0150'],
+      daysSinceMoveMin: 0,
+      daysSinceMoveMax: 60,
+      housingTypes: ['leilighet'],
+      requiresChosenBenefitIds: [B1],
+      hideIfChosen: true,
+    }
+    expect(upsert.create).toMatchObject(expected)
+    expect(upsert.update).toMatchObject(expected)
+  })
+
+  it('en gammel klient uten de nye feltene overskriver dem ikke (undefined, ikke tomme verdier)', async () => {
+    mockPrisma.benefit.findFirst.mockResolvedValueOnce(existingActiveBenefit())
+    await PATCH(makeRequest({ targeting: { postcodes: ['0150'], movingStatuses: [] } }), PARAMS)
+    const update = mockPrisma.benefit.update.mock.calls[0][0].data.targeting.upsert.update
+    expect(update.daysSinceMoveMin).toBeUndefined()
+    expect(update.daysSinceMoveMax).toBeUndefined()
+    expect(update.housingTypes).toBeUndefined()
+    expect(update.requiresChosenBenefitIds).toBeUndefined()
+    expect(update.hideIfChosen).toBeUndefined()
+  })
+
+  it('null fjerner en dagsgrense', async () => {
+    mockPrisma.benefit.findFirst.mockResolvedValueOnce(existingActiveBenefit())
+    await PATCH(makeRequest({ targeting: { daysSinceMoveMin: null, daysSinceMoveMax: null } }), PARAMS)
+    const update = mockPrisma.benefit.update.mock.calls[0][0].data.targeting.upsert.update
+    expect(update.daysSinceMoveMin).toBeNull()
+    expect(update.daysSinceMoveMax).toBeNull()
+  })
+
+  it.each([
+    [{ daysSinceMoveMin: 61, daysSinceMoveMax: 60 }],
+    [{ daysSinceMoveMin: 1.5 }],
+    [{ daysSinceMoveMax: 99999 }],
+    [{ housingTypes: ['slott'] }],
+    [{ requiresChosenBenefitIds: ['ikke-uuid'] }],
+    [{ hideIfChosen: 'ja' }],
+  ])('avviser ugyldig regel %j (400) uten å skrive', async (targeting) => {
+    const res = await PATCH(makeRequest({ targeting }), PARAMS)
+    expect(res.status).toBe(400)
+    expect(mockPrisma.benefit.update).not.toHaveBeenCalled()
+  })
+})

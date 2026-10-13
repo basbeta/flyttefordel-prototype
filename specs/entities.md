@@ -365,7 +365,14 @@ Fields:
 - counties: jsonb?
 - include_unknown_location: boolean (default: true)
 - applies_nationally: boolean (default: false)
+- days_since_move_min: int? (CR-029, hele UTC-kalenderdager siden flyttedato, grense inkludert, negativ = før flytting)
+- days_since_move_max: int? (CR-029, som over)
+- housing_types: jsonb? (CR-029, array av enebolig | leilighet | rekkehus | annet)
+- requires_chosen_benefit_ids: jsonb? (CR-029, array av benefit.id, vises bare for personer som har valgt minst én av dem)
+- hide_if_chosen: boolean (default: false, CR-029, skjul fordelen for personer som allerede har valgt den, gjelder bare benefit-regler)
 - created_at / updated_at: timestamp
+
+CR-029: Utvelgelse (`src/lib/selection`). En person kvalifiserer når den gamle delen (postnummer, flyttestatus, applies_nationally, include_unknown_location, uendret) OG alle de nye kriteriene består. De nye kriteriene er uavhengige av applies_nationally. Manglende persondata (flyttedato, boligtype) betyr at en regel som krever den ikke slår til (streng), unntatt postnummer som følger include_unknown_location. «Har valgt» = bestilt i web-løpet (OrderLine på ordre med person_id).
 
 ---
 

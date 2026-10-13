@@ -125,6 +125,58 @@ def flow_lines(client, first_path):
     return out
 
 
+def flow_cards(client, first_path, max_pages=30):
+    """Crawl the web flow page by page (each page links to the next) and return
+    {slug: (benefitId, productId)} for every card the person is shown."""
+    cards, seen, path = {}, set(), first_path
+    while path and path not in seen and len(seen) < max_pages:
+        seen.add(path)
+        s, html, _ = client.request("GET", path)
+        if s != 200:
+            break
+        for b, slug, p in re.findall(
+            r'benefitId\\?":\\?"(' + UUID_RE + r')\\?",\\?"slug\\?":\\?"([^"\\]+)\\?"(?:(?!benefitId).)*?products\\?":\[\{\\?"id\\?":\\?"(' + UUID_RE + r')',
+            html,
+            re.S,
+        ):
+            cards.setdefault(slug, (b, p))
+        nxt = [h for h in re.findall(r'href="(/flytting/' + UUID_RE + r')"', html) if h not in seen]
+        path = nxt[0] if nxt else None
+    return cards
+
+
+def app_slugs(client, prefix=""):
+    """Slugs of the benefits in the app list (/benefits), optionally only those with a prefix."""
+    s, html, _ = client.request("GET", "/benefits")
+    slugs = set(re.findall(r'href="/benefits/([a-z0-9-]+)"', html)) if s == 200 else set()
+    return {x for x in slugs if x.startswith(prefix)}
+
+
+def order_payload(benefit_id, product_id, email):
+    return {
+        "submissionId": str(uuid.uuid4()),
+        "name": "Test QA-Agent",
+        "email": email,
+        "postcode": "0150",
+        "consentShare": True,
+        "consentEmail": False,
+        "consentMail": False,
+        "consentSms": False,
+        "lines": [{"benefitId": benefit_id, "productId": product_id}],
+    }
+
+
+# Keep in step with src/lib/selection/demo.ts (a unit test guards personas vs rules there).
+DEMO_PREFIX = "demo-sel-"
+EXPECTED_DEMO = {
+    "Test Nylig-Flyttet": {"forste-60", "grunn", "leilighet"},
+    "Test Flyttet-Tidligere": {"enebolig-rekkehus", "etter-180", "grunn"},
+    "Test Ikke-Flytter": {"enebolig-rekkehus", "grunn"},
+    "Test Ukjent": {"grunn"},
+    "Test Nord-Norge": {"enebolig-rekkehus", "forste-60", "grunn"},
+}
+
+
 def benefit_count(client, path="/benefits"):
     s, html, _ = client.request("GET", path)
     return s, len(set(re.findall(r'href="/benefits/([a-z0-9-]+)"', html)))
@@ -264,6 +316,65 @@ def main():
             check("oppsummeringen er forhåndsutfylt med personen", s == 200 and "Test Nylig-Flyttet" in shtml and "qa-agent+order@example.test" in shtml)
             s, _, _ = c.request("GET", "/flytting/bekreftelse")
             check("bekreftelsessiden gir 200", s == 200, str(s))
+
+    # ------------------------------------------------------------------ 5b. selection (CR-029)
+    start("Utvelgelse (CR-029): regler per testperson og kryssalg")
+    seeded_ok = all(n in names for n in EXPECTED_DEMO)
+    probe = Client()
+    if seeded_ok:
+        login(probe, names["Test Nylig-Flyttet"], "qa-agent+utvalg-probe@example.test")
+    has_demo = seeded_ok and bool(app_slugs(probe, DEMO_PREFIX))
+    if not has_demo:
+        skipped.append("Utvelgelse (kjør npm run db:seed-persons og npm run db:seed-selection, og deploy CR-029)")
+        print("  (hoppet over, demo-fordeler for utvalg finnes ikke ennå)")
+    else:
+        for n, expected in EXPECTED_DEMO.items():
+            c = Client()
+            login(c, names[n], f"qa-agent+utvalg-{re.sub('[^a-z]', '', n.lower())}@example.test")
+            want = {DEMO_PREFIX + k for k in expected}
+            got_app = app_slugs(c, DEMO_PREFIX)
+            check(f"{n}: appens liste har riktig utvalg", got_app == want, f"fikk {sorted(got_app)} forventet {sorted(want)}")
+            s, _, h = c.request("GET", "/flytting")
+            got_flow = {k for k in flow_cards(c, location_path(h)) if k.startswith(DEMO_PREFIX)} if s == 307 else set()
+            check(f"{n}: web-løpet har riktig utvalg (samme som appen)", got_flow == want, f"fikk {sorted(got_flow)}")
+
+        # Cross-sell with fresh people (no earlier orders), so the run can be repeated. Creates orders.
+        stamp = time.strftime("%H%M%S")
+        p1 = Client()
+        s, body, _ = p1.request("POST", "/api/auth/test-persons", {"name": f"Test QA-Utvalg {stamp}", "movingStatus": "unknown"})
+        pid = json.loads(body)["person"]["id"] if s == 201 else None
+        check("oppretter en ny testperson uten data for kryssalg-testen", pid is not None, str(s))
+        if pid:
+            email = f"qa-agent+utvalg-{stamp}@example.test"
+            login(p1, pid, email)
+            check("ny person uten data ser bare grunnpakken i appen", app_slugs(p1, DEMO_PREFIX) == {DEMO_PREFIX + "grunn"}, str(sorted(app_slugs(p1, DEMO_PREFIX))))
+            s, _, h = p1.request("GET", "/flytting")
+            cards = flow_cards(p1, location_path(h))
+            g, k = cards.get(DEMO_PREFIX + "grunn"), cards.get(DEMO_PREFIX + "kryssalg")
+            check("web-løpet viser grunnpakken men ikke kryssalget før noe er valgt", g is not None and k is None, f"{sorted(x for x in cards if x.startswith(DEMO_PREFIX))}")
+
+            if "--no-order" in args:
+                skipped.append("Kryssalg-bestillinger (--no-order)")
+            elif g is not None:
+                s, b, _ = p1.request("POST", "/api/flow/order", order_payload(g[0], g[1], email))
+                check("bestiller grunnpakken (201)", s == 201, f"{s} {b[:100]}")
+                after = app_slugs(p1, DEMO_PREFIX)
+                check("etter bestilling er grunnpakken skjult i appen (hideIfChosen)", DEMO_PREFIX + "grunn" not in after, str(sorted(after)))
+                check("etter bestilling vises kryssalget i appen (requiresChosen)", DEMO_PREFIX + "kryssalg" in after, str(sorted(after)))
+                s, _, h = p1.request("GET", "/flytting")
+                cards2 = flow_cards(p1, location_path(h))
+                check("etter bestilling er grunnpakken borte og kryssalget med i web-løpet", DEMO_PREFIX + "grunn" not in cards2 and DEMO_PREFIX + "kryssalg" in cards2, f"{sorted(x for x in cards2 if x.startswith(DEMO_PREFIX))}")
+                k2 = cards2.get(DEMO_PREFIX + "kryssalg")
+                if k2:
+                    s, b, _ = p1.request("POST", "/api/flow/order", order_payload(k2[0], k2[1], email))
+                    check("kan bestille kryssalget etter grunnpakken (valideringen kjenner tidligere valg)", s == 201, f"{s} {b[:100]}")
+                    # Someone who never chose grunn must not be able to order the cross-sell card.
+                    p3 = Client()
+                    s3, b3, _ = p3.request("POST", "/api/auth/test-persons", {"name": f"Test QA-Utvalg3 {stamp}", "movingStatus": "unknown"})
+                    if s3 == 201:
+                        login(p3, json.loads(b3)["person"]["id"], f"qa-agent+utvalg3-{stamp}@example.test")
+                        s, b, _ = p3.request("POST", "/api/flow/order", order_payload(k2[0], k2[1], f"qa-agent+utvalg3-{stamp}@example.test"))
+                        check("uten å ha valgt grunnpakken avvises bestilling av kryssalget (400)", s == 400, f"{s} {b[:100]}")
 
     # ------------------------------------------------------------------ 6. token / role security
     start("Token og roller")

@@ -532,3 +532,13 @@ export async function getAdminBenefitViewOverrides(benefitId: string) {
     select: { format: true, title: true, text: true, imageUrl: true, imageAlt: true, badgeText: true },
   })
 }
+
+// CR-029: id and title of the (not deleted) benefits, for the cross-sell condition in the
+// targeting section of the benefit and hero forms.
+export async function getBenefitOptions(): Promise<{ id: string; title: string }[]> {
+  return prisma.benefit.findMany({
+    where: { deletedAt: null },
+    select: { id: true, title: true },
+    orderBy: { title: 'asc' },
+  })
+}

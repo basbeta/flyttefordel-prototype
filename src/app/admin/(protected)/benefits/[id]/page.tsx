@@ -12,6 +12,7 @@ import {
   getAdminFlowPageOptions,
   getAdminWebPlacement,
   getAdminBenefitViewOverrides,
+  getBenefitOptions,
 } from '@/lib/queries/adminQueries'
 import { getBenefitDisplayStatus } from '@/lib/benefits/displayStatus'
 import { getWebPlacementProblems } from '@/lib/benefits/webPlacement'
@@ -30,7 +31,7 @@ type Props = { params: Promise<{ id: string }> }
 export default async function EditBenefitPage({ params }: Props) {
   const { id } = await params
   await requireAdminAuth()
-  const [benefit, advertisers, categories, products, pageOptions, placementView, viewRows] = await Promise.all([
+  const [benefit, advertisers, categories, products, pageOptions, placementView, viewRows, benefitOptions] = await Promise.all([
     getAdminBenefitById(id),
     getAdminAdvertisers(),
     getAdminCategories(),
@@ -38,6 +39,7 @@ export default async function EditBenefitPage({ params }: Props) {
     getAdminFlowPageOptions(),
     getAdminWebPlacement(id),
     getAdminBenefitViewOverrides(id),
+    getBenefitOptions(),
   ])
   if (!benefit) notFound()
 
@@ -75,7 +77,7 @@ export default async function EditBenefitPage({ params }: Props) {
       <div style={{ marginBottom: 'var(--space-4)' }}>
         <BenefitStatusBadge status={displayStatus} showReasons />
       </div>
-      <BenefitForm advertisers={advertisers} categories={categories} benefit={benefitForForm} />
+      <BenefitForm advertisers={advertisers} categories={categories} benefit={benefitForForm} benefitOptions={benefitOptions} />
       <BenefitProductsSection benefitId={benefit.id} products={products} />
       <BenefitViewsSection
         benefitId={benefit.id}

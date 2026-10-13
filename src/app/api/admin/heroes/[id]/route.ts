@@ -4,21 +4,14 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/db/client'
-import { verifyAdminJWT, ADMIN_TOKEN_COOKIE } from '@/lib/admin/auth'
+import { verifyAdminJWT, ADMIN_TOKEN_COOKIE } from '@/lib/admin/auth'
+import { targetingSchema, toTargetingData } from '@/lib/admin/targetingSchema'
 
 async function authCheck(request: NextRequest) {
   const token = request.cookies.get(ADMIN_TOKEN_COOKIE)?.value
   if (!token) return null
   return verifyAdminJWT(token)
 }
-
-const targetingSchema = z.object({
-  appliesNationally: z.boolean().default(false),
-  includeUnknownLocation: z.boolean().default(true),
-  postcodes: z.array(z.string()).default([]),
-  postcodeRanges: z.array(z.object({ from: z.string(), to: z.string() })).default([]),
-  movingStatuses: z.array(z.string()).default([]),
-})
 
 const patchSchema = z.object({
   title: z.string().min(1).optional(),
@@ -61,18 +54,10 @@ export async function PATCH(request: NextRequest, { params }: Params) {
           targeting: {
             upsert: {
               create: {
-                appliesNationally: targeting.appliesNationally,
-                includeUnknownLocation: targeting.includeUnknownLocation,
-                postcodes: targeting.postcodes,
-                postcodeRanges: targeting.postcodeRanges,
-                movingStatuses: targeting.movingStatuses,
+                ...toTargetingData(targeting),
               },
               update: {
-                appliesNationally: targeting.appliesNationally,
-                includeUnknownLocation: targeting.includeUnknownLocation,
-                postcodes: targeting.postcodes,
-                postcodeRanges: targeting.postcodeRanges,
-                movingStatuses: targeting.movingStatuses,
+                ...toTargetingData(targeting),
               },
             },
           },

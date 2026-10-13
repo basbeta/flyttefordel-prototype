@@ -1,6 +1,7 @@
 # CR-029: Utvelgelsesfunksjon (hvilke fordeler er en person kvalifisert for)
 
-Status: Draft
+Status: Implementert, /review PASSED (2026-10-13), IKKE Done: ikke deployet, migrasjon og demo-seed ikke kjørt, e2e ikke kjørt mot prod
+Approved: 2026-10-13
 Created: 2026-10-13
 
 ## Business Goal
@@ -114,29 +115,29 @@ Utvelgelsen er fortsatt i minnet som i dag (DB-utvalget filtreres etter henting)
 skaleringsgrense (se DECISIONS 2026-05-22).
 
 ## Acceptance Criteria
-- [ ] `isQualified` gir samme svar som `matchesSession` for alle eksisterende regler
+- [x] `isQualified` gir samme svar som `matchesSession` for alle eksisterende regler
       (alle dagens targeting-tester består uendret)
-- [ ] `daysSinceMoveMin/Max` slår til og fra på riktig dag (grenser inkludert), også negative verdier
-- [ ] `housingTypes`, `requiresChosenBenefitIds` og `hideIfChosen` fungerer, alene og sammen med
+- [x] `daysSinceMoveMin/Max` slår til og fra på riktig dag (grenser inkludert), også negative verdier
+- [x] `housingTypes`, `requiresChosenBenefitIds` og `hideIfChosen` fungerer, alene og sammen med
       postnummer og flyttestatus
-- [ ] Manglende persondata (ingen flyttedato eller boligtype) behandles som bestemt i åpent punkt 1
-- [ ] Appens liste, web-løpet, heroer og «I nærheten» bruker samme funksjon
-- [ ] `explainSelection` oppgir alle kriterier som slo ut
-- [ ] Admin kan sette de nye feltene på fordel og hero, med validering
-- [ ] Person med bestilling på en fordel ser den ikke med `hideIfChosen`, og får kryssalgsfordelen
+- [x] Manglende persondata (ingen flyttedato eller boligtype) behandles som bestemt i åpent punkt 1
+- [x] Appens liste, web-løpet, heroer og «I nærheten» bruker samme funksjon
+- [x] `explainSelection` oppgir alle kriterier som slo ut
+- [x] Admin kan sette de nye feltene på fordel og hero, med validering
+- [x] Person med bestilling på en fordel ser den ikke med `hideIfChosen`, og får kryssalgsfordelen
       med `requiresChosenBenefitIds`
-- [ ] `specs/*` er oppdatert før kode
-- [ ] `npx tsc --noEmit`, `npx vitest run`, `npm run lint` og `npm run build` er grønne
+- [x] `specs/*` er oppdatert før kode
+- [x] `npx tsc --noEmit`, `npx vitest run`, `npm run lint` og `npm run build` er grønne
 - [ ] E2E mot prod (e2e-tester) bekrefter at de seedede personene får forventet utvalg
 
 ## Required Tests
-- [ ] Unit: `isQualified` per dimensjon og kombinasjoner, grensedager (inkl. skuddår og
+- [x] Unit: `isQualified` per dimensjon og kombinasjoner, grensedager (inkl. skuddår og
       månedsskifte), negative dager, tomme/ugyldige json-felt, `null`-regel, `appliesNationally`
-- [ ] Unit: `explainSelection` (hvilke kriterier, flere samtidig)
-- [ ] Unit: regresjon, `matchesSession` mot `isQualified` for et sett eksisterende regler
-- [ ] Integration (mocket Prisma): `getActiveBenefits`, `getWebFlow` og `getActiveHeroes` for
+- [x] Unit: `explainSelection` (hvilke kriterier, flere samtidig)
+- [x] Unit: regresjon, `matchesSession` mot `isQualified` for et sett eksisterende regler
+- [x] Integration (mocket Prisma): `getActiveBenefits`, `getWebFlow` og `getActiveHeroes` for
       personer med ulike data, inkl. person med og uten tidligere valg
-- [ ] Integration: admin-ruter validerer og lagrer de nye feltene
+- [x] Integration: admin-ruter validerer og lagrer de nye feltene
 - [ ] E2E: smoke-suiten utvides med forventet utvalg per seedet person (krever at seeden har regler
       som bruker de nye dimensjonene)
 - [ ] Manuell: sett en regel i admin og se effekten som to ulike testpersoner
@@ -171,22 +172,57 @@ utvides med regler som bruker de nye feltene, må `db:seed-flow` kjøres på nyt
 - «Valgt» betyr bestilt i web-løpet. Definisjonen kan utvides senere uten å endre kontrakten.
 - Eksisterende regler uten de nye feltene skal oppføre seg identisk.
 
-## Åpne punkter (trenger svar fra bruker)
-1. **Manglende data:** Hva skal skje når en regel krever flyttedato eller boligtype og personen
+## Avklarte punkter (bruker, 2026-10-13: «anbefalt på alle»)
+1. **Avklart: streng** (personen kvalifiserer ikke), unntatt postnummer som beholder `includeUnknownLocation`. (Spørsmål: Manglende data:) Hva skal skje når en regel krever flyttedato eller boligtype og personen
    mangler den? Anbefaling: personen kvalifiserer **ikke** (streng), unntatt postnummer som
    beholder dagens `includeUnknownLocation`.
-2. **«Har valgt»:** Bare bestillinger i web-løpet (anbefalt nå), eller skal også lead, lagret og
+2. **Avklart: bare web-bestillinger.** (Spørsmål: «Har valgt»:) Bare bestillinger i web-løpet (anbefalt nå), eller skal også lead, lagret og
    hentet kode regnes med?
-3. **Flyttefaser:** Beholde `movingStatus` som den er og legge dagsregelen i tillegg (anbefalt), eller
+3. **Avklart: behold `movingStatus`, dagsregelen kommer i tillegg.** (Spørsmål: Flyttefaser:) Beholde `movingStatus` som den er og legge dagsregelen i tillegg (anbefalt), eller
    la dagsregelen erstatte `movingStatus` slik at det blir én definisjon? (docs/10 §3.4 nevner 60
    mot 180 dager.)
-4. **Admin i samme CR:** Ta de nye feltene i målgruppe-seksjonen med her (anbefalt, ellers kan
+4. **Avklart: admin-felt tas med i samme CR.** (Spørsmål: Admin i samme CR:) Ta de nye feltene i målgruppe-seksjonen med her (anbefalt, ellers kan
    reglene ikke settes), eller dele i utvelgelse nå og admin-felt som egen CR?
-5. **Heroer:** Bruke samme funksjon og de nye feltene også for heroer (anbefalt, de deler
+5. **Avklart: heroer bruker samme funksjon og felt.** (Spørsmål: Heroer:) Bruke samme funksjon og de nye feltene også for heroer (anbefalt, de deler
    `TargetingRule`)?
-6. **Seed:** Skal jeg utvide `db:seed-flow` med et par fordeler som bruker de nye reglene, så
+6. **Avklart: seeden utvides med fordeler som bruker de nye reglene.** (Spørsmål: Seed:) Skal jeg utvide `db:seed-flow` med et par fordeler som bruker de nye reglene, så
    e2e-testen kan bevise effekten per testperson (anbefalt)?
 
 ## Dependencies
 Bygger på CR-005 (targeting), CR-022 (web-løpets lesemodell), CR-024 og CR-028 (bestilling og
 person-ID), CR-025/027 (admin og visninger). Åpner for A/B-tildeling og e-postkampanjer.
+
+## Implementation Notes (2026-10-13)
+- Alle seks åpne punkter avklart («anbefalt på alle»).
+- Ny `src/lib/selection/`: `isQualified`/`explainSelection` (ren), `types`, `loadPerson` (eneste I/O,
+  leser flyttedato, boligtype og tidligere bestillinger, logger bare feilnavn), `demo` (delt data for
+  seed, test og e2e). `matchesSession` er en tynn wrapper. Regresjonstest sammenligner mot en frossen
+  kopi av den gamle funksjonen over 5000+ kombinasjoner av regel og person: ingen avvik.
+- Semantikk: gammel del (postnummer, status, `appliesNationally`, `includeUnknownLocation`) og nye kriterier
+  må alle bestå. De nye er uavhengige av `appliesNationally` (flagget handler om lokasjon).
+  Streng på manglende data. Dager er hele UTC-kalenderdager.
+- `getOrCreateSession` henter nå ekstradata for innlogget person (to spørringer per forespørsel), og
+  `SessionData` har valgfrie felt. **Funn under implementering:** bestillingsruten sendte bare postnummer
+  og status til linjevalideringen, så en person som så et kryssalgskort ville fått bestillingen avvist.
+  Ruten sender nå hele utvelgelsesdataen (testet).
+- Admin: fire ruter hadde hver sin kopi av targeting-skjemaet, samlet i `lib/admin/targetingSchema.ts`
+  (nye felt utelatt = uendret ved oppdatering, så en gammel admin-side ikke nullstiller dem). Delt
+  komponent `SelectionFields` brukes i fordels- og hero-skjemaet (hero uten «skjul etter valg»).
+  Ren hjelper `selectionFields.ts` er testet.
+- Migrasjon `20261013100000_cr029_selection_rules` er additiv (5 kolonner på `targeting_rules`), SQL fra
+  `prisma migrate diff`, IKKE kjørt mot DB.
+- Ny seed `npm run db:seed-selection` (idempotent per slug) med seks demo-fordeler. En enhetstest beviser at
+  personas og regler gir nøyaktig tabellen i seeden. Den eksisterende `db:seed-flow` er uendret (den hopper
+  over når `demo-`-fordeler finnes, så den ville ikke fått med de nye).
+- E2E: `scripts/qa/smoke.py` har ny seksjon som sjekker forventet utvalg per seedet person i appen og i
+  web-løpet, og kryssalg med en ny testperson hver gang (bestiller grunnpakken, den skjules, kryssalget
+  vises og kan bestilles, uten grunnpakke avvises det med 400). Hoppes over til seeden er kjørt.
+- Validering: tsc OK, lint 0 feil (3 gamle advarsler), vitest 596/596 (opp fra 574, 90 nye siden CR-028),
+  build OK, suiten mot prod 98/98 (utvelgelsesdelen hoppet over).
+- **Kjente begrensninger:** (1) Skjult betyr ikke utilgjengelig: detaljsiden `/benefits/[slug]`, lagring og
+  claim-code har aldri brukt targeting, og gjør det fortsatt ikke. (2) Testpersonenes flyttedatoer eldes
+  (kjør `db:seed-persons` på nytt, ellers faller «første 60 dager» bort for de to «nylig flyttet»-personene
+  etter 50 og 20 dager). (3) E-post, A/B og admin-forhåndsvisning «som person» er ikke med.
+- **Ikke gjort:** UI ikke sett i nettleser, migrasjon og seed ikke kjørt mot DB, e2e ikke kjørt mot prod.
+- **Utrulling:** (1) push (Coolify kjører migrasjonen), (2) `npm run db:seed-persons` (oppdaterer datoene,
+  hvis ikke kjørt nylig), (3) `npm run db:seed-selection`, (4) kjør e2e-tester.

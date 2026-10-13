@@ -2,7 +2,7 @@
 // CR-005: Fase 5 — Targeting filter + fallback hero logic added
 
 import { prisma } from '@/lib/db/client'
-import { matchesSession } from '@/lib/targeting'
+import { isQualified } from '@/lib/selection'
 import type { TargetingSession } from '@/lib/targeting'
 import type { HeroCard } from '@/types/app'
 
@@ -26,7 +26,7 @@ export async function getActiveHeroes(session?: TargetingSession | null): Promis
   const nonFallback = heroes.filter((h) => !h.isFallback)
   const fallback = heroes.filter((h) => h.isFallback)
 
-  const matched = nonFallback.filter((h) => matchesSession(h.targeting, ctx))
+  const matched = nonFallback.filter((h) => isQualified(h.targeting, ctx, now))
   const visible = matched.length > 0 ? matched : fallback
 
   return visible.map((h) => ({

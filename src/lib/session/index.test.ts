@@ -9,6 +9,8 @@ vi.mock('@/lib/db/client', () => ({ prisma: { userSession: { upsert: vi.fn() } }
 const mockGetPerson = vi.fn()
 vi.mock('@/lib/identity', () => ({ getIdentityProvider: () => ({ getPerson: mockGetPerson }) }))
 vi.mock('@/lib/identity/linkSession', () => ({ linkSessionToPerson: vi.fn().mockResolvedValue(undefined) }))
+const mockExtras = vi.fn()
+vi.mock('@/lib/selection/loadPerson', () => ({ loadSelectionExtras: (id: string) => mockExtras(id) }))
 
 import { prisma } from '@/lib/db/client'
 import { linkSessionToPerson } from '@/lib/identity/linkSession'
@@ -22,6 +24,7 @@ function dbSession(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  mockExtras.mockResolvedValue(null)
   mockHeaders.clear()
   mockHeaders.set('x-anon-id', 'anon-1')
 })
@@ -65,6 +68,40 @@ describe('getOrCreateSession', () => {
     const s = await getOrCreateSession()
     expect(linkSessionToPerson).not.toHaveBeenCalled()
     expect(s).toEqual({ sessionId: 's1', anonymousId: 'anon-1', postcode: null, movingStatus: 'unknown' })
+  })
+
+  it('CR-029: innlogget person får med flyttedato, boligtype og tidligere valg', async () => {
+    mockHeaders.set('x-person-id', 'person-1')
+    upsert.mockResolvedValueOnce(dbSession({ userId: 'person-1', postcode: '0150', movingStatus: 'recently_moved' }))
+    const extras = { movedAt: new Date('2026-10-03T00:00:00Z'), housingType: 'leilighet', chosenBenefitIds: ['b1'] }
+    mockExtras.mockResolvedValueOnce(extras)
+    const s = await getOrCreateSession()
+    expect(mockExtras).toHaveBeenCalledWith('person-1')
+    expect(s).toMatchObject({ postcode: '0150', movingStatus: 'recently_moved', ...extras })
+  })
+
+  it('CR-029: også etter ny kobling (anon_id slettet) får personen med ekstradata', async () => {
+    mockHeaders.set('x-person-id', 'person-1')
+    upsert.mockResolvedValueOnce(dbSession())
+    mockGetPerson.mockResolvedValueOnce({ id: 'person-1', postcode: '9008', movingStatus: 'recently_moved' })
+    mockExtras.mockResolvedValueOnce({ movedAt: null, housingType: 'enebolig', chosenBenefitIds: [] })
+    const s = await getOrCreateSession()
+    expect(s).toMatchObject({ postcode: '9008', housingType: 'enebolig', chosenBenefitIds: [] })
+  })
+
+  it('CR-029: uten innlogget person leses ingen ekstradata', async () => {
+    upsert.mockResolvedValueOnce(dbSession())
+    const s = await getOrCreateSession()
+    expect(mockExtras).not.toHaveBeenCalled()
+    expect(s).not.toHaveProperty('housingType')
+  })
+
+  it('CR-029: feiler lasting av ekstradata (null), fungerer sesjonen som før', async () => {
+    mockHeaders.set('x-person-id', 'person-1')
+    upsert.mockResolvedValueOnce(dbSession({ userId: 'person-1', postcode: '0150', movingStatus: 'recently_moved' }))
+    mockExtras.mockResolvedValueOnce(null)
+    const s = await getOrCreateSession()
+    expect(s).toEqual({ sessionId: 's1', anonymousId: 'anon-1', postcode: '0150', movingStatus: 'recently_moved' })
   })
 
   it('gir null ved databasefeil (nedgradert, ikke krasj)', async () => {

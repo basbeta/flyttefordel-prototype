@@ -128,6 +128,26 @@ describe('POST /api/flow/order', () => {
     })
   })
 
+  it('CR-029: sender hele utvelgelsesdataen til linjevalideringen (ellers feiler kryssalgskort)', async () => {
+    const movedAt = new Date('2026-10-03T00:00:00Z')
+    mockSession.mockResolvedValueOnce({
+      sessionId: 'sess-1',
+      postcode: '0150',
+      movingStatus: 'recently_moved',
+      movedAt,
+      housingType: 'leilighet',
+      chosenBenefitIds: ['b-tidligere'],
+    })
+    await POST(req(body()))
+    expect(mockSubmit.mock.calls[0][1].targeting).toEqual({
+      postcode: '0150',
+      movingStatus: 'recently_moved',
+      movedAt,
+      housingType: 'leilighet',
+      chosenBenefitIds: ['b-tidligere'],
+    })
+  })
+
   it('CR-028: sender innlogget person videre til bestillingen og hendelsene', async () => {
     const request = new NextRequest('http://localhost/api/flow/order', {
       method: 'POST',

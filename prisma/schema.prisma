@@ -362,6 +362,16 @@ model TargetingRule {
   includeUnknownLocation Boolean  @default(true) @map("include_unknown_location")
   // appliesNationally: true = visible to all users regardless of location.
   appliesNationally      Boolean  @default(false) @map("applies_nationally")
+  // CR-029: selection dimensions (all optional, null/false = no constraint).
+  // Whole UTC calendar days since the person's moved date, bounds inclusive, negative = before the move.
+  daysSinceMoveMin       Int?     @map("days_since_move_min")
+  daysSinceMoveMax       Int?     @map("days_since_move_max")
+  // housingTypes: JSON array of housing types (enebolig, leilighet, rekkehus, annet).
+  housingTypes           Json?    @map("housing_types")
+  // requiresChosenBenefitIds: JSON array of benefit ids, shown only after one of them was chosen.
+  requiresChosenBenefitIds Json?  @map("requires_chosen_benefit_ids")
+  // hideIfChosen: hide the (benefit) for persons who already chose it.
+  hideIfChosen           Boolean  @default(false) @map("hide_if_chosen")
   createdAt              DateTime @default(now()) @map("created_at")
   updatedAt              DateTime @updatedAt @map("updated_at")
 

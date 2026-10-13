@@ -1,50 +1,22 @@
 // CR-005: Targeting evaluation — pure function, no I/O.
 // Determines whether a benefit or hero should be shown to a given session.
+// CR-029: The logic now lives in /lib/selection (isQualified). matchesSession is kept as a thin
+// wrapper with the same behaviour for rules without the new fields, so older callers and tests
+// are unchanged.
 
-type PostcodeRange = { from: string; to: string }
+import { isQualified } from '@/lib/selection/isQualified'
+import type { SelectionPerson, SelectionRule } from '@/lib/selection/types'
 
-export type TargetingSession = {
-  postcode: string | null
-  movingStatus: string
-}
-
-type TargetingRuleInput = {
-  appliesNationally: boolean
-  includeUnknownLocation: boolean
-  postcodes: unknown
-  postcodeRanges: unknown
-  movingStatuses: unknown
-}
-
-function inPostcodeList(postcodes: string[], ranges: PostcodeRange[], code: string): boolean {
-  if (postcodes.includes(code)) return true
-  return ranges.some((r) => code >= r.from && code <= r.to)
-}
+// The person/session data targeting reads. postcode and movingStatus are required, the CR-029
+// fields (moved date, housing type, earlier choices) are optional.
+export type TargetingSession = SelectionPerson
 
 // Returns true if the session matches the targeting rule.
 // null/undefined rule means no targeting — visible to all.
 export function matchesSession(
-  rule: TargetingRuleInput | null | undefined,
+  rule: SelectionRule | null | undefined,
   session: TargetingSession,
+  now: Date = new Date(),
 ): boolean {
-  if (!rule) return true
-  if (rule.appliesNationally) return true
-
-  const postcodes = Array.isArray(rule.postcodes) ? (rule.postcodes as string[]) : []
-  const ranges = Array.isArray(rule.postcodeRanges) ? (rule.postcodeRanges as PostcodeRange[]) : []
-  const segments = Array.isArray(rule.movingStatuses) ? (rule.movingStatuses as string[]) : []
-
-  const hasPostcodeRule = postcodes.length > 0 || ranges.length > 0
-  const hasSegmentRule = segments.length > 0
-
-  // Rule exists but has no criteria — visible to all
-  if (!hasPostcodeRule && !hasSegmentRule) return true
-
-  // User has no location data — respect includeUnknownLocation
-  if (!session.postcode) return rule.includeUnknownLocation
-
-  if (hasPostcodeRule && !inPostcodeList(postcodes, ranges, session.postcode)) return false
-  if (hasSegmentRule && !segments.includes(session.movingStatus)) return false
-
-  return true
+  return isQualified(rule, session, now)
 }

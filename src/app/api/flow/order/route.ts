@@ -61,7 +61,17 @@ export async function POST(request: NextRequest) {
     const result = await submitOrder(parsed.data, {
       sessionId: session?.sessionId ?? null,
       personId,
-      targeting: session ? { postcode: session.postcode, movingStatus: session.movingStatus } : null,
+      // CR-029: the same selection data the person saw the flow with (moved date, housing type,
+      // earlier choices), otherwise a cross-sell card they saw would fail the line validation.
+      targeting: session
+        ? {
+            postcode: session.postcode,
+            movingStatus: session.movingStatus,
+            movedAt: session.movedAt,
+            housingType: session.housingType,
+            chosenBenefitIds: session.chosenBenefitIds,
+          }
+        : null,
     })
 
     if (result.created) {

@@ -8,6 +8,12 @@ import styles from '@/components/admin/AdminTable.module.css'
 import { ImageUploadField } from '@/components/admin/ImageUploadField'
 import { FormSaveBar } from '@/components/admin/FormSaveBar'
 import { useDirtyTracking } from '@/lib/admin/useDirtyTracking'
+import { SelectionFields, type BenefitOption } from '@/components/admin/SelectionFields'
+import {
+  selectionFieldsFromRule,
+  selectionFieldsProblem,
+  selectionFieldsToPayload,
+} from '@/lib/admin/selectionFields'
 
 type Category = { id: string; name: string; slug: string }
 
@@ -17,6 +23,12 @@ type TargetingData = {
   postcodes: unknown
   postcodeRanges: unknown
   movingStatuses: unknown
+  // CR-029
+  daysSinceMoveMin?: number | null
+  daysSinceMoveMax?: number | null
+  housingTypes?: unknown
+  requiresChosenBenefitIds?: unknown
+  hideIfChosen?: boolean | null
 }
 
 type BenefitData = {
@@ -55,6 +67,8 @@ type BenefitData = {
 }
 
 type Props = {
+  // CR-029: the other benefits, for the cross-sell condition.
+  benefitOptions?: BenefitOption[]
   advertisers: AdminAdvertiserRow[]
   categories: Category[]
   benefit?: BenefitData
@@ -77,7 +91,7 @@ function slugify(s: string) {
     .replace(/^-|-$/g, '')
 }
 
-export function BenefitForm({ advertisers, categories, benefit }: Props) {
+export function BenefitForm({ advertisers, categories, benefit, benefitOptions = [] }: Props) {
   const router = useRouter()
   const isEdit = !!benefit
 
@@ -125,6 +139,9 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
     return Array.isArray(val) ? (val as string[]) : []
   })
 
+  // CR-029: selection fields (days since move, housing type, cross-sell, hide if chosen)
+  const [selection, setSelection] = useState(() => selectionFieldsFromRule(benefit?.targeting))
+
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -155,6 +172,7 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
         postcodes: postcodeInput.split(',').map((s) => s.trim()).filter(Boolean),
         postcodeRanges: [],
         movingStatuses: selectedSegments,
+        ...selectionFieldsToPayload(selection),
       },
     }),
     [
@@ -164,7 +182,7 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
       startsAt, endsAt, imageUrl, imageAlt,
       genericCode, externalUrl, qrValue, ctaLabel, opensInNewTab,
       campaignFee, pricePerView, pricePerLead, pricePerRedemption,
-      appliesNationally, includeUnknownLocation, postcodeInput, selectedSegments,
+      appliesNationally, includeUnknownLocation, postcodeInput, selectedSegments, selection,
     ],
   )
   const { isDirty, showSaved, markSaved } = useDirtyTracking(payload)
@@ -176,6 +194,12 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    // CR-029: do not send a rule the server would reject (from > to, not whole numbers).
+    const selectionProblem = selectionFieldsProblem(selection)
+    if (selectionProblem) {
+      setError(selectionProblem)
+      return
+    }
     setSaving(true)
     setError(null)
 
@@ -401,6 +425,14 @@ export function BenefitForm({ advertisers, categories, benefit }: Props) {
         />
         <p className={styles.hint}>Tom = alle postnummer. Overstyres av &laquo;Nasjonalt&raquo;.</p>
       </div>
+
+      <SelectionFields
+        value={selection}
+        onChange={setSelection}
+        benefitOptions={benefitOptions}
+        showHideIfChosen
+        excludeBenefitId={benefit?.id}
+      />
 
       <hr style={{ margin: 'var(--space-4) 0', border: 'none', borderTop: '1px solid var(--color-border)' }} />
       <h3 style={{ fontSize: 'var(--font-sm)', fontWeight: 600, marginBottom: 'var(--space-3)' }}>Økonomi</h3>

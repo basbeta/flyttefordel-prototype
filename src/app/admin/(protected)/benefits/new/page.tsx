@@ -3,7 +3,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireAdminAuth } from '@/lib/admin/auth'
-import { getAdminAdvertisers, getAdminCategories } from '@/lib/queries/adminQueries'
+import { getAdminAdvertisers, getAdminCategories, getBenefitOptions } from '@/lib/queries/adminQueries'
 import { BenefitForm } from '../BenefitForm'
 import styles from '@/components/admin/AdminTable.module.css'
 
@@ -12,7 +12,11 @@ export const metadata: Metadata = { title: 'Ny fordel' }
 
 export default async function NewBenefitPage() {
   await requireAdminAuth()
-  const [advertisers, categories] = await Promise.all([getAdminAdvertisers(), getAdminCategories()])
+  const [advertisers, categories, benefitOptions] = await Promise.all([
+    getAdminAdvertisers(),
+    getAdminCategories(),
+    getBenefitOptions(),
+  ])
 
   return (
     <div>
@@ -20,7 +24,7 @@ export default async function NewBenefitPage() {
         <h1 className={styles.pageTitle}>Ny fordel</h1>
         <Link href="/admin/benefits" className={styles.secondaryBtn}>← Tilbake</Link>
       </div>
-      <BenefitForm advertisers={advertisers} categories={categories} />
+      <BenefitForm advertisers={advertisers} categories={categories} benefitOptions={benefitOptions} />
     </div>
   )
 }

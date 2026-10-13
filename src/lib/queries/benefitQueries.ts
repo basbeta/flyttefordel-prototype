@@ -7,7 +7,7 @@
 
 import QRCode from 'qrcode'
 import { prisma } from '@/lib/db/client'
-import { matchesSession } from '@/lib/targeting'
+import { isQualified } from '@/lib/selection'
 import { resolveBenefitView, type BenefitViewRow } from '@/lib/views'
 import type { TargetingSession } from '@/lib/targeting'
 import type { BenefitCard, BenefitDetail, CategorySummary, BenefitRedemptionConfig, LeadFormField } from '@/types/app'
@@ -68,11 +68,11 @@ export async function getActiveBenefits(
           .then((rows) => new Set(rows.map((r) => r.benefitId)))
       : Promise.resolve(new Set<string>()),
   ])
-  const targetingCtx: TargetingSession = session
-    ? { postcode: session.postcode, movingStatus: session.movingStatus }
-    : { postcode: null, movingStatus: 'unknown' }
+  // CR-029: the whole session (incl. moved date, housing type and earlier choices) goes to the
+  // selection, not only postcode and moving status.
+  const person: TargetingSession = session ?? { postcode: null, movingStatus: 'unknown' }
   return benefits
-    .filter((b) => matchesSession(b.targeting, targetingCtx))
+    .filter((b) => isQualified(b.targeting, person, now))
     .map((b) => ({ ...mapBenefitCard(withAppCardView(b)), isSaved: savedIds.has(b.id) }))
 }
 

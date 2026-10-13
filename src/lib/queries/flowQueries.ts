@@ -6,7 +6,7 @@
 
 import { prisma } from '@/lib/db/client'
 import { isBenefitLive } from '@/lib/benefits/isBenefitLive'
-import { matchesSession } from '@/lib/targeting'
+import { isQualified } from '@/lib/selection'
 import type { TargetingSession } from '@/lib/targeting'
 import { resolveBenefitView } from '@/lib/views'
 import type { WebFlowCard, WebFlowPage } from '@/types/app'
@@ -49,7 +49,7 @@ export async function getWebFlow(
     for (const view of page.views) {
       const benefit = view.benefit
       if (!isBenefitLive(benefit, now)) continue
-      if (!matchesSession(benefit.targeting, targetingCtx)) continue
+      if (!isQualified(benefit.targeting, targetingCtx, now)) continue
 
       const content = resolveBenefitView(benefit, [view], WEB_CARD, STANDARD)
       cards.push({
