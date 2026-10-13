@@ -24,6 +24,8 @@ export class InvalidOrderLinesError extends Error {
 
 export type SubmitOrderContext = {
   sessionId: string | null
+  // CR-028: the logged-in person (null for anonymous/older callers).
+  personId?: string | null
   targeting: TargetingSession | null
 }
 
@@ -58,6 +60,7 @@ export async function submitOrder(
         data: {
           submissionId: input.submissionId,
           sessionId: ctx.sessionId,
+          personId: ctx.personId ?? null,
           name: input.name,
           email: input.email,
           phone: input.phone ?? null,

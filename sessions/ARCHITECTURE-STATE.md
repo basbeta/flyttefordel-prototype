@@ -28,6 +28,7 @@ FASE 3 FULLFØRT — Anonyme sesjoner, lagrede fordeler, profil og nær-deg ferd
 | `/lib/tracking` | Fase 2 ✓ | trackEvent — fire-and-forget BenefitEvent |
 | `/lib/validation` | Ikke startet | Zod-schemas (lead-validering inline per nå) |
 | `/lib/codes` | Fase 6 ✓ | Atomisk unik kode-tildeling via $transaction |
+| `/lib/identity` | CR-028 ✓ | Innlogging som person (simulert Vipps bak kontrakten IdentityProvider), person-token (jose, ADMIN_JWT_SECRET, role=person), personas, kobling av sesjon til person. Middleware krever innlogging på forbrukertrafikk |
 | `/styles` | Fase 1 ✓ | Design tokens og globals |
 
 ## Dependency Rules

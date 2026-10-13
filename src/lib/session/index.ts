@@ -5,6 +5,9 @@
 
 import { headers } from 'next/headers'
 import { prisma } from '@/lib/db/client'
+import { getIdentityProvider } from '@/lib/identity'
+import { linkSessionToPerson } from '@/lib/identity/linkSession'
+import { PERSON_ID_HEADER } from '@/lib/identity/token'
 import type { UserMovingStatus } from '@prisma/client'
 
 export const ANON_ID_COOKIE = 'anon_id'
@@ -34,8 +37,11 @@ export async function getSessionIdFromRequest(request: Request): Promise<string 
 }
 
 export async function getOrCreateSession(): Promise<SessionData | null> {
-  const anonymousId = (await headers()).get(ANON_ID_HEADER)
+  const requestHeaders = await headers()
+  const anonymousId = requestHeaders.get(ANON_ID_HEADER)
   if (!anonymousId) return null
+  // CR-028: set by middleware from the verified person_token (null = not logged in).
+  const personId = requestHeaders.get(PERSON_ID_HEADER)
 
   try {
     const session = await prisma.userSession.upsert({
@@ -44,11 +50,29 @@ export async function getOrCreateSession(): Promise<SessionData | null> {
       create: { anonymousId },
       select: {
         id: true,
+        userId: true,
         anonymousId: true,
         postcode: true,
         movingStatus: true,
       },
     })
+
+    // CR-028: a logged-in person whose session is not linked to them (e.g. the anon_id cookie
+    // was cleared while the login is still valid): fill the session from the person again, so
+    // targeting keeps following the person and not an empty session.
+    if (personId && session.userId !== personId) {
+      const person = await getIdentityProvider().getPerson(personId)
+      if (person) {
+        await linkSessionToPerson(anonymousId, person)
+        return {
+          sessionId: session.id,
+          anonymousId: session.anonymousId,
+          postcode: person.postcode,
+          movingStatus: person.movingStatus,
+        }
+      }
+    }
+
     return {
       sessionId: session.id,
       anonymousId: session.anonymousId,

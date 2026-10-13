@@ -31,6 +31,7 @@ describe('POST /api/track', () => {
       testId: null,
       variant: null,
       sessionId: 'session-1',
+      userId: null,
     })
   })
 
@@ -52,7 +53,25 @@ describe('POST /api/track', () => {
       testId: 't1',
       variant: 'B',
       sessionId: 'session-1',
+      userId: null,
     })
+  })
+
+  it('CR-028: setter userId fra person-id som middleware la på forespørselen', async () => {
+    const res = await POST(
+      new Request('http://localhost/api/track', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-person-id': 'person-1' },
+        body: JSON.stringify({ eventType: 'code_copied', benefitId: 'b1' }),
+      })
+    )
+    expect(res.status).toBe(200)
+    expect(trackEvent).toHaveBeenCalledWith(
+      'code_copied',
+      'b1',
+      undefined,
+      expect.objectContaining({ userId: 'person-1' })
+    )
   })
 
   it('avviser manglende eventType med 400', async () => {

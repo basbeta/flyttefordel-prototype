@@ -31,6 +31,9 @@ export async function signAdminJWT(payload: AdminPayload): Promise<string> {
 export async function verifyAdminJWT(token: string): Promise<AdminPayload | null> {
   try {
     const { payload } = await jwtVerify(token, getSecret())
+    // CR-028: the secret is shared with the person token, so the role MUST be checked here.
+    // A person token (role "person") must never open admin.
+    if (payload.role !== 'admin') return null
     return payload as unknown as AdminPayload
   } catch {
     return null

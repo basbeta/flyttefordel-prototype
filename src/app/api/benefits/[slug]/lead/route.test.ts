@@ -52,6 +52,7 @@ describe('POST /api/benefits/[slug]/lead', () => {
     expect(res.status).toBe(200)
     expect(trackEvent).toHaveBeenCalledWith('lead_submitted', 'benefit-1', undefined, {
       sessionId: 'session-1',
+      userId: null,
     })
   })
 
@@ -61,6 +62,7 @@ describe('POST /api/benefits/[slug]/lead', () => {
     expect(res.status).toBe(200)
     expect(trackEvent).toHaveBeenCalledWith('lead_submitted', 'benefit-1', undefined, {
       sessionId: null,
+      userId: null,
     })
   })
 

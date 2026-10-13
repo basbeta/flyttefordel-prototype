@@ -8,13 +8,35 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.headerInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.personName {
+  font-size: var(--font-sm);
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .brand {
   display: flex;
   align-items: center;
-  max-width: 720px;
-  margin: 0 auto;
   min-height: var(--top-bar-height);
-  padding: 0 var(--space-4);
   font-size: var(--font-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);

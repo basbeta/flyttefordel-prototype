@@ -133,6 +133,34 @@ Related endpoints: PUT /api/admin/benefits/[id]/views/[format]
 
 ---
 
+## Flow: Innlogging som testperson (simulert Vipps, CR-028)
+
+Trigger: En bruker åpner en forbrukerside (app eller /flytting) uten gyldig person_token, eller trykker «Bytt person».
+
+Steps:
+1. Middleware ser ingen gyldig person_token og sender til /logg-inn?next=<relativ sti>. Forbruker-API-er svarer 401.
+2. /logg-inn viser testpersonene fra databasen som kort (navn, postnummer, flyttestatus og dato, boligtype) og et skjema «Ny testperson».
+3. QA velger en person og fyller inn test-e-post (påkrevd).
+4. POST /api/auth/login verifiserer person og e-post, lagrer e-posten på personen, kobler UserSession.user_id, fyller sesjonens postnummer og flyttestatus fra personen og setter person_token.
+5. Brukeren sendes til next (kun relative stier) eller /.
+6. «Bytt person» (POST /api/auth/logout) fjerner cookien og tar tilbake til /logg-inn.
+
+Decision points:
+- Ny testperson: POST /api/auth/test-persons oppretter personen (uten å logge inn), som så kan velges.
+- Er listen tom (db:seed-persons ikke kjørt): tydelig melding, QA kan opprette en ny testperson.
+- Er next ikke en relativ sti: ignoreres, bruker /.
+- Profilsiden er skrivebeskyttet for innloggede (personen eier postnummer og status).
+
+Error conditions:
+- Ugyldig e-post: 400. Ukjent person: 404. For mange forsøk: 429 med Retry-After. Mangler ADMIN_JWT_SECRET: ingen tilgang (feiler lukket).
+- Et persontoken gir aldri tilgang til admin, og et admintoken gir ikke personinnlogging (rolle-sjekk begge veier).
+- E-post logges aldri og står aldri i URL.
+
+Related entities: User, UserSession, Order
+Related endpoints: POST /api/auth/login, POST /api/auth/test-persons, POST /api/auth/logout
+
+---
+
 ## Flow: [Name]
 
 Trigger: [What starts this flow?]

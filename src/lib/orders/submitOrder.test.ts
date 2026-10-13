@@ -183,6 +183,14 @@ describe('submitOrder', () => {
     await expect(submitOrder(input(), CTX)).rejects.toThrow()
   })
 
+  it('CR-028: lagrer innlogget person på ordren, og null uten person', async () => {
+    await submitOrder(input(), { ...CTX, personId: 'person-1' })
+    expect(tx.order.create.mock.calls[0][0].data.personId).toBe('person-1')
+    tx.order.create.mockClear()
+    await submitOrder(input({ submissionId: '22222222-2222-4222-8222-222222222222' }), CTX)
+    expect(tx.order.create.mock.calls[0][0].data.personId).toBeNull()
+  })
+
   it('uten sesjon lagres sessionId som null', async () => {
     await submitOrder(input(), { sessionId: null, targeting: null })
     expect(tx.order.create.mock.calls[0][0].data.sessionId).toBeNull()

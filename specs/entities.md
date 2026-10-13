@@ -76,7 +76,7 @@ ikke en egen enum-verdi) som grupperer statusene over i 4 farge-bøtter:
 
 ## Entity: User
 
-Brukere kan være anonyme eller identifiserte. Appen fungerer uten innlogging.
+Brukere kan være anonyme eller identifiserte. Fra CR-028 krever forbrukerappen og web-løpet innlogging som en person (simulert Vipps i prototypen), og `User` er personen. Anonym sesjon (UserSession) finnes fortsatt under innloggingen.
 
 Fields:
 - id: uuid (PK)
@@ -89,7 +89,14 @@ Fields:
 - county: string? (utledet fra postcode)
 - moving_status: UserMovingStatus (default: unknown)
 - moved_at: date?
+- from_address: string? (CR-028, fra-adresse, fiktiv for testpersoner)
+- to_address: string? (CR-028, til-adresse, fiktiv for testpersoner)
+- housing_type: string? (CR-028, enebolig | leilighet | rekkehus | annet, spørres eksplisitt i virkeligheten)
+- is_test: boolean (default: false, CR-028, simulert testperson)
+- seed_key: string? (UNIQUE, CR-028, fast nøkkel for de seedede testpersonene, gir stabil person-ID)
 - created_at / updated_at / deleted_at: timestamp
+
+CR-028: `email` på en testperson er QA sin test-adresse (ekte persondata, aldri i logg eller URL). Siste innlogging overskriver den.
 
 Relations:
 - has_many: UserSession
@@ -104,7 +111,7 @@ Kobler hendelser til anonym eller kjent bruker.
 
 Fields:
 - id: uuid (PK)
-- user_id: uuid? FK User (null for anonyme)
+- user_id: uuid? FK User (null for anonyme, satt ved innlogging fra CR-028)
 - anonymous_id: string (settes i cookie/localStorage)
 - device_type: string?
 - platform: string?
@@ -444,6 +451,7 @@ Fields:
 - id: uuid (PK)
 - submission_id: uuid (UNIQUE, klientgenerert, gir idempotent innsending)
 - session_id: uuid? (UserSession)
+- person_id: uuid? FK User (CR-028, satt når bestilleren er innlogget, null for eldre anonyme ordrer)
 - name: string
 - email: string
 - phone: string?

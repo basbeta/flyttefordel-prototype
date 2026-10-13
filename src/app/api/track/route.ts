@@ -3,6 +3,7 @@
 
 import { NextResponse } from 'next/server'
 import { trackEvent } from '@/lib/tracking/trackEvent'
+import { getPersonIdFromRequest } from '@/lib/identity/token'
 import {
   DEFAULT_CHANNEL,
   MAX_TRACKING_STRING_LENGTH,
@@ -65,6 +66,7 @@ export async function POST(request: Request) {
       testId: test,
       variant: variantValue,
       sessionId,
+      userId: getPersonIdFromRequest(request),
     })
     return NextResponse.json({ ok: true })
   } catch {

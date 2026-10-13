@@ -150,3 +150,12 @@ ALTERNATIVES CONSIDERED: Fire identiske inline-fikser — forkastet fordi det gj
 RATIONALE: Én implementasjon, én ren testbar funksjon (`deriveDirtyState`), og repoet mangler komponenttest-infrastruktur så logikken måtte trekkes ut for å kunne enhetstestes.
 CONSEQUENCES: «Lagret»-badgen avledes av snapshot-likhet og vises igjen hvis feltet redigeres tilbake til lagret verdi (tidligere forble den borte til neste lagring). Nye admin-skjemaer skal bruke hooken, ikke gjenskape ref-mønsteret.
 DECIDED BY: human (godkjente delt hook), Claude (design)
+
+DATE: 2026-10-13
+DECISION: Simulert Vipps gjenbruker `ADMIN_JWT_SECRET` og `User`-tabellen, og testpersonene ligger i databasen
+CONTEXT: CR-028 krever påkrevd innlogging i prototypen med stabil person-ID, bygget så ekte Vipps kan byttes inn. Tre valg: hvor personene lagres, hvilken hemmelighet cookien signeres med, og om det trengs en ny `Person`-tabell.
+DECISION: (1) De 5 testpersonene og de QA oppretter ligger i `users` (ny `is_test`/`seed_key`), seedet med `npm run db:seed-persons` som oppdaterer flyttedatoene ved hver kjøring. (2) Person-tokenet signeres med `ADMIN_JWT_SECRET`, og både admin- og personvakt sjekker `role`. (3) Eksisterende `User`/`UserSession.userId` brukes, ikke en ny tabell.
+ALTERNATIVES CONSIDERED: Personene definert i kode og upsertet ved innlogging (slapp seed-steget, men to kilder i listen og ikke redigerbart). Egen `PERSON_JWT_SECRET` (ekte skille, men nytt steg i Coolify og risiko for å låse alle ute). Ugjennomsiktig token i DB (ingen hemmelighet, men databasekall i middleware, som kjører i edge-runtime der Prisma ikke virker).
+RATIONALE: DB som kilde gir én liste og samme mønster som `db:seed-flow`. Delt hemmelighet er akseptabelt bare med rolle-sjekk begge veier. Uten den kunne en testperson kopiere sitt token inn i `admin_token`-cookien, siden admin-vakten tidligere bare sjekket signaturen. Det ble funnet og fikset i denne CR-en.
+CONSEQUENCES: Én lekkasje av `ADMIN_JWT_SECRET` gir nå både admin- og personinnlogging. En fremtidig vakt som glemmer rolle-sjekken åpner admin for et persontoken (mitigert av sentrale verifiseringsfunksjoner og kryss-bruk-tester). Seed må kjøres mot prod, og kjøres på nytt når flyttedatoene har blitt gamle. Simulert innlogging er ikke sikkerhet og skal ikke brukes med ekte persondata. Test-e-poster er ekte persondata uten avklart slettepolicy.
+DECIDED BY: both (bruker valgte DB og gjenbruk av hemmeligheten, Claude fant og fikset rolle-sjekk-hullet)

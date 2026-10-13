@@ -7,6 +7,7 @@ import type { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db/client'
 import { ANON_ID_HEADER } from '@/lib/session'
 import { trackEvent } from '@/lib/tracking/trackEvent'
+import { getPersonIdFromRequest } from '@/lib/identity/token'
 
 type Params = { params: Promise<{ slug: string }> }
 
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       })
     }
 
-    await trackEvent('benefit_saved', benefit.id, undefined, { sessionId: session.id })
+    await trackEvent('benefit_saved', benefit.id, undefined, { sessionId: session.id, userId: getPersonIdFromRequest(request) })
     return NextResponse.json({ saved: true }, { status: 201 })
   } catch (err) {
     console.error('[benefits/[slug]/save POST] Uventet feil:', err)
@@ -86,7 +87,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     })
 
     if (count > 0) {
-      await trackEvent('benefit_unsaved', benefit.id, undefined, { sessionId: session.id })
+      await trackEvent('benefit_unsaved', benefit.id, undefined, { sessionId: session.id, userId: getPersonIdFromRequest(request) })
     }
     return new NextResponse(null, { status: 204 })
   } catch (err) {

@@ -125,6 +125,7 @@ describe('POST /api/benefits/[slug]/claim-code', () => {
     await POST(makeRequest('anon-1'), PARAMS)
     expect(trackEvent).toHaveBeenCalledWith('code_revealed', 'benefit-1', undefined, {
       sessionId: 'session-1',
+      userId: null,
     })
   })
 })

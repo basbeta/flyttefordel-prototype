@@ -58,6 +58,7 @@ describe('/api/benefits/[slug]/save', () => {
     expect(res.status).toBe(201)
     expect(trackEvent).toHaveBeenCalledWith('benefit_saved', 'benefit-1', undefined, {
       sessionId: 'session-1',
+      userId: null,
     })
   })
 
@@ -74,6 +75,7 @@ describe('/api/benefits/[slug]/save', () => {
     expect(res.status).toBe(204)
     expect(trackEvent).toHaveBeenCalledWith('benefit_unsaved', 'benefit-1', undefined, {
       sessionId: 'session-1',
+      userId: null,
     })
   })
 })

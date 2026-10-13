@@ -7,6 +7,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 import { getOrCreateSession } from '@/lib/session'
+import { getPersonIdFromRequest } from '@/lib/identity/token'
 import { trackEvent } from '@/lib/tracking/trackEvent'
 import { InvalidOrderLinesError, OrderInputSchema, submitOrder } from '@/lib/orders'
 
@@ -56,8 +57,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const session = await getOrCreateSession()
+    const personId = getPersonIdFromRequest(request)
     const result = await submitOrder(parsed.data, {
       sessionId: session?.sessionId ?? null,
+      personId,
       targeting: session ? { postcode: session.postcode, movingStatus: session.movingStatus } : null,
     })
 
@@ -68,6 +71,7 @@ export async function POST(request: NextRequest) {
           channel: 'web',
           viewId: 'web_card:standard',
           sessionId: session?.sessionId ?? null,
+          userId: personId,
         })
       }
     }

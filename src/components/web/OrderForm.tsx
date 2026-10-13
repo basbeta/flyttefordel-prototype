@@ -23,7 +23,13 @@ import { CONSENT_TEXTS } from '@/lib/orders/consentTexts'
 import { useFlowSelection } from './useFlowSelection'
 import styles from './OrderForm.module.css'
 
-type Props = { items: SummaryItem[]; defaultPostcode: string | null }
+// CR-028: the logged-in person pre-fills name, e-mail and postcode (all still editable).
+type Props = {
+  items: SummaryItem[]
+  defaultPostcode: string | null
+  defaultName?: string | null
+  defaultEmail?: string | null
+}
 
 const EMPTY: OrderFormValues = {
   name: '',
@@ -40,10 +46,15 @@ function firstError(errors: FieldErrors, field: string): string | undefined {
   return errors[field]?.[0]
 }
 
-export function OrderForm({ items, defaultPostcode }: Props) {
+export function OrderForm({ items, defaultPostcode, defaultName, defaultEmail }: Props) {
   const router = useRouter()
   const { remove, clear } = useFlowSelection()
-  const [values, setValues] = useState<OrderFormValues>({ ...EMPTY, postcode: defaultPostcode ?? '' })
+  const [values, setValues] = useState<OrderFormValues>({
+    ...EMPTY,
+    name: defaultName ?? '',
+    email: defaultEmail ?? '',
+    postcode: defaultPostcode ?? '',
+  })
   const [errors, setErrors] = useState<FieldErrors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)

@@ -112,6 +112,7 @@ describe('POST /api/flow/order', () => {
     const [, ctx] = mockSubmit.mock.calls[0]
     expect(ctx).toEqual({
       sessionId: 'sess-1',
+      personId: null,
       targeting: { postcode: '0150', movingStatus: 'unknown' },
     })
   })
@@ -123,7 +124,25 @@ describe('POST /api/flow/order', () => {
       channel: 'web',
       viewId: 'web_card:standard',
       sessionId: 'sess-1',
+      userId: null,
     })
+  })
+
+  it('CR-028: sender innlogget person videre til bestillingen og hendelsene', async () => {
+    const request = new NextRequest('http://localhost/api/flow/order', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-person-id': 'person-1' },
+      body: JSON.stringify(body()),
+    })
+    const res = await POST(request)
+    expect(res.status).toBe(201)
+    expect(mockSubmit.mock.calls[0][1]).toEqual(expect.objectContaining({ personId: 'person-1' }))
+    expect(trackEvent).toHaveBeenCalledWith(
+      'benefit_selected',
+      B1,
+      undefined,
+      expect.objectContaining({ userId: 'person-1' })
+    )
   })
 
   it('200 med samme orderId og ingen ny hendelse når submissionId er sendt før', async () => {
@@ -155,7 +174,7 @@ describe('POST /api/flow/order', () => {
   it('uten sesjon sendes sessionId og targeting som null', async () => {
     mockSession.mockResolvedValueOnce(null)
     await POST(req(body()))
-    expect(mockSubmit.mock.calls[0][1]).toEqual({ sessionId: null, targeting: null })
+    expect(mockSubmit.mock.calls[0][1]).toEqual({ sessionId: null, personId: null, targeting: null })
   })
 
   it('500 ved uventet feil, og persondata havner aldri i loggen', async () => {

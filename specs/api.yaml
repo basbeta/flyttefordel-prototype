@@ -177,6 +177,58 @@ paths:
         "200": { description: "OK, {ok: true}" }
         "400": { description: "VALIDATION_ERROR (ukjent eventType/channel, for lang streng)" }
         "500": { description: "INTERNAL_ERROR" }
+  # CR-028: simulert Vipps-innlogging. Alle forbruker-API-er krever innlogget person (cookie
+  # person_token, JWT med role=person), ellers 401. Unntatt: /api/auth/*, /api/admin/*.
+  /api/auth/login:
+    post:
+      operationId: personLogin
+      summary: "Logg inn som en testperson (simulert Vipps)"
+      description: "Rate limit (Redis). Setter httpOnly cookie person_token, kobler UserSession til personen og lagrer test-e-posten på personen."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [personId, email]
+              properties:
+                personId: { type: string, format: uuid }
+                email: { type: string, format: email, maxLength: 200 }
+      responses:
+        "200": { description: "OK, {person} (uten e-post i logg). Cookie satt." }
+        "400": { description: "VALIDATION_ERROR (ugyldig e-post)" }
+        "404": { description: "Ukjent person" }
+        "429": { description: "RATE_LIMITED, Retry-After" }
+  /api/auth/test-persons:
+    post:
+      operationId: createTestPerson
+      summary: "Opprett en ny testperson"
+      description: "Åpen for alle på /logg-inn (prototype), rate limit. Oppretter ikke innlogging, personen velges deretter via /api/auth/login."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, movingStatus]
+              properties:
+                name: { type: string, maxLength: 80 }
+                postcode: { type: string, pattern: "^[0-9]{4}$" }
+                movingStatus: { type: string, enum: [recently_moved, moved_past, not_moving, unknown] }
+                movedAt: { type: string, format: date }
+                fromAddress: { type: string, maxLength: 120 }
+                toAddress: { type: string, maxLength: 120 }
+                housingType: { type: string, enum: [enebolig, leilighet, rekkehus, annet] }
+      responses:
+        "201": { description: "Opprettet, {person}" }
+        "400": { description: "VALIDATION_ERROR" }
+        "429": { description: "RATE_LIMITED, Retry-After" }
+  /api/auth/logout:
+    post:
+      operationId: personLogout
+      summary: "Logg ut (bytt person)"
+      responses:
+        "200": { description: "OK, cookie fjernet" }
   # Define further endpoints here
   # /resource:
   #   get:

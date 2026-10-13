@@ -13,11 +13,17 @@ import { OrderForm } from './OrderForm'
 import { useFlowSelection } from './useFlowSelection'
 import styles from './FlowSummary.module.css'
 
-type Props = { pages: WebFlowPage[]; firstPageId: string; defaultPostcode: string | null }
+type Props = {
+  pages: WebFlowPage[]
+  firstPageId: string
+  defaultPostcode: string | null
+  defaultName?: string | null
+  defaultEmail?: string | null
+}
 
 type Group = { pageId: string; pageName: string; items: SummaryItem[] }
 
-export function FlowSummary({ pages, firstPageId, defaultPostcode }: Props) {
+export function FlowSummary({ pages, firstPageId, defaultPostcode, defaultName, defaultEmail }: Props) {
   const { selection, toggle } = useFlowSelection()
   // buildSummary sanitizes the selection against the flow, so stale choices never show.
   const items = useMemo(() => buildSummary(selection, pages), [selection, pages])
@@ -74,7 +80,12 @@ export function FlowSummary({ pages, firstPageId, defaultPostcode }: Props) {
             </section>
           ))}
 
-          <OrderForm items={items} defaultPostcode={defaultPostcode} />
+          <OrderForm
+            items={items}
+            defaultPostcode={defaultPostcode}
+            defaultName={defaultName}
+            defaultEmail={defaultEmail}
+          />
 
           <Link href={`/flytting/${firstPageId}`} className={styles.secondaryLink}>
             Tilbake til løpet

@@ -116,6 +116,12 @@ model User {
   county         String?
   movingStatus   UserMovingStatus @default(unknown) @map("moving_status")
   movedAt        DateTime?        @map("moved_at") @db.Date
+  // CR-028: simulated Vipps person. Test persons are fictive; the e-mail is the QA test address.
+  fromAddress    String?          @map("from_address")
+  toAddress      String?          @map("to_address")
+  housingType    String?          @map("housing_type")
+  isTest         Boolean          @default(false) @map("is_test")
+  seedKey        String?          @unique @map("seed_key")
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @updatedAt @map("updated_at")
   deletedAt      DateTime?        @map("deleted_at")
@@ -124,6 +130,7 @@ model User {
   savedBenefits SavedBenefit[]
   events        BenefitEvent[]
   assignedCodes Code[]
+  orders        Order[]
 
   @@map("users")
 }
@@ -460,6 +467,8 @@ model Order {
   // Client-generated, unique: makes submitting idempotent.
   submissionId String   @unique @map("submission_id") @db.Uuid
   sessionId    String?  @map("session_id") @db.Uuid
+  // CR-028: the logged-in person, null for older anonymous orders.
+  personId     String?  @map("person_id") @db.Uuid
   name         String
   email        String
   phone        String?
@@ -471,7 +480,8 @@ model Order {
   consentTexts Json     @map("consent_texts")
   createdAt    DateTime @default(now()) @map("created_at")
 
-  lines OrderLine[]
+  person User?       @relation(fields: [personId], references: [id])
+  lines  OrderLine[]
 
   @@map("orders")
 }
