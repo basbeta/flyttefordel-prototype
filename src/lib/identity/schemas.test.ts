@@ -47,6 +47,12 @@ describe('newPersonSchema', () => {
     }
   })
 
+  it('godtar skuddårsdagen 2028-02-29 og siste dag i måneden', () => {
+    for (const movedAt of ['2028-02-29', '2026-04-30', '2026-12-31']) {
+      expect(newPersonSchema.safeParse({ name: 'T', movingStatus: 'unknown', movedAt }).success, movedAt).toBe(true)
+    }
+  })
+
   it('godtar alle felt', () => {
     const r = newPersonSchema.safeParse({
       name: 'Test Full',
@@ -68,6 +74,9 @@ describe('newPersonSchema', () => {
     [{ name: 'T', movingStatus: 'unknown', postcode: '12' }],
     [{ name: 'T', movingStatus: 'unknown', postcode: 'abcd' }],
     [{ name: 'T', movingStatus: 'unknown', movedAt: '2026-13-45' }],
+    [{ name: 'T', movingStatus: 'unknown', movedAt: '2026-02-31' }],
+    [{ name: 'T', movingStatus: 'unknown', movedAt: '2026-02-29' }],
+    [{ name: 'T', movingStatus: 'unknown', movedAt: '2026-04-31' }],
     [{ name: 'T', movingStatus: 'unknown', movedAt: '01.10.2026' }],
     [{ name: 'T', movingStatus: 'unknown', housingType: 'slott' }],
     [{ name: 'T', movingStatus: 'unknown', fromAddress: 'a'.repeat(121) }],

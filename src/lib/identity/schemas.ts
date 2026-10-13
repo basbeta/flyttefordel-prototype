@@ -22,7 +22,11 @@ export const loginSchema = z
 const isoDate = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Ugyldig dato')
-  .refine((v) => !Number.isNaN(Date.parse(`${v}T00:00:00Z`)), 'Ugyldig dato')
+  // Round trip: JS Date silently rolls 2026-02-31 over to 2026-03-03, so compare the result back.
+  .refine((v) => {
+    const d = new Date(`${v}T00:00:00Z`)
+    return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === v
+  }, 'Ugyldig dato')
 
 export const newPersonSchema = z
   .object({

@@ -22,6 +22,16 @@ Resolution: [how it was resolved]
 
 ## Open Issues
 
+ISSUE-013
+Status: Open
+Priority: High
+Area: rate limiting i prod (CR-014 infra), berører /api/admin/auth/login, /api/auth/login, /api/auth/test-persons, claim-code, bestilling
+Description: E2E-testen (2026-10-13) fant at rate limiting ikke ser ut til å virke i prod. Ca. 35 innloggingsforsøk fra samme IP på kort tid ga ingen 429 (grensen er 30 per 15 min), og ca. 12 opprettelser av testperson på under en time ga ingen 429 (grensen er 10 per time). Koden er fail-open (INCR+EXPIRE, svikter åpent når Redis mangler), så det peker mot at REDIS_URL ikke er satt eller Redis ikke er provisjonert i Coolify, altså at CR-014 sin Infra-checklist aldri ble gjennomført. Ikke bekreftet: årsaken (Redis, eller at IP-nøkkelen er ulik per forespørsel). Konsekvens: admin-innlogging (5 per 15 min) har trolig heller ikke noe vern mot gjetting, og den offentlige opprettelsen av testpersoner (CR-028) er uten vern mot støy. getClientIp stoler på første x-forwarded-for-verdi, som kan forfalskes med mindre proxyen overskriver den (CR-014 infra c).
+Blocker for: CR-014 Done. Bør løses før admin-passordet er noe annet enn et prototypepassord.
+Opened: 2026-10-13
+Resolved:
+Resolution:
+
 ISSUE-012
 Status: Resolved
 Priority: Medium

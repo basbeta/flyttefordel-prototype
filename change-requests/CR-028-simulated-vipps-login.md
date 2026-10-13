@@ -269,3 +269,13 @@ Utført med curl mot prod (nettleserutvidelsen var ikke koblet til, så ingen UI
 - Et persontoken (som `admin_token` og som `person_token`) gir IKKE admin. Forfalsket `x-person-id` uten innlogging gir 401. Etter logout redirecter `/` til `/logg-inn`.
 - **Ikke testet:** UI visuelt, de 5 seedede personene (seed ikke kjørt), bestilling (ville opprettet en ekte lead i prod), at targeting følger personen, `next`-redirect i nettleseren, admin positivt (krever passord).
 - Rad igjen i prod-databasen: testpersonen «Test Claude-Sjekk» (fiktiv e-post `claude-sjekk@example.test`, id b815561b-8e55-47fd-a95a-123cdf5b227e). Kan slettes direkte i DB.
+
+## E2E-agent (2026-10-13)
+Test-agenten (`.claude/agents/e2e-tester.md`, `scripts/qa/smoke.py`) kjørte mot prod: suiten 77 av 77 bestått, pluss utforskning. Funn:
+- **Rettet:** `movedAt: "2026-02-31"` ble lagret som 2026-03-03 (JS Date ruller over). Valideringen sammenligner nå tilbake (`schemas.ts`), med tester. Ikke deployet ennå.
+- **Rate limit virker ikke i prod** (ca. 35 innlogginger og ca. 12 testpersoner uten 429). Eget issue, ISSUE-013 (CR-014 sin Redis-infra). Ikke en feil i CR-028-koden, men gjør at grensene i denne CR-en ikke er i kraft.
+- **Uavklart, akseptert for prototypen:** fremtidig flyttedato (2099) og postnummer 0000 aksepteres. Bestillingsruten godtar skjemadata som ikke stemmer med innlogget person (skjemaet er redigerbart, `personId` settes fra innloggingen). Siste innlogging overskriver test-e-posten, så to QA på samme persona stjeler hverandres e-post (som bestemt).
+- **Bevist:** persontoken gir ikke admin, manipulerte/tomme/alg:none-tokens avvises, `x-person-id` kan ikke forfalskes (heller ikke med gyldig innlogging), `next` saneres (server-HTML), XSS-navn rendres escapet, targeting følger postnummer (0150 gir 2 lokale Oslo-fordeler som 9008 ikke får).
+- **Ikke testet:** UI visuelt, utløpt token, admin positivt, hvilken person ordre/hendelser fikk i DB, innlogging som ikke-testperson.
+- **Testdata i prod som bør ryddes:** flere «Test QA-…»-personer (bl.a. én med XSS-navn som vises i listen på /logg-inn, og én med postnummer 0000, én med år 2099) og 4 bestillinger (`@example.test`).
+

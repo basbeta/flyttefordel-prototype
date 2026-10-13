@@ -91,6 +91,9 @@ Claude MUST ALWAYS:
 - Document risks and assumptions explicitly
 - Preserve modular boundaries
 - Reference the active CR in every commit message
+- After a deploy, run the e2e-tester agent (`python scripts/qa/smoke.py`, see
+  `.claude/agents/e2e-tester.md`) BEFORE asking the human to test manually, and report what it
+  proved and what it did not test
 
 ---
 
@@ -104,6 +107,7 @@ Claude MUST ALWAYS:
 | Code review | `.claude/agents/reviewer.md` |
 | Security review | `.claude/agents/security.md` |
 | Testing / QA | `.claude/agents/qa.md` |
+| E2E-test av kjørende app (prod-prototypen) | `.claude/agents/e2e-tester.md` |
 
 ---
 
