@@ -21,7 +21,7 @@ type Props = { params: Promise<{ pageId: string }> }
 export default async function FlowPageRoute({ params }: Props) {
   const { pageId } = await params
   const session = await getOrCreateSession()
-  const pages = await getWebFlow(session)
+  const pages = await getWebFlow(session, new Date(), session?.personId ?? null)
   const step = resolveFlowStep(pages, pageId)
 
   if (step.status === 'empty') return <FlowEmpty />

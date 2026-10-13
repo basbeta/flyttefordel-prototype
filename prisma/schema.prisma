@@ -604,3 +604,24 @@ model AuditLog {
 
   @@map("audit_log")
 }
+
+// CR-030: An A/B test. Generic: what is tested lives in kind + scope (validated against
+// src/lib/abtest/kinds.ts), so new test types need no migration. The assignment of a person to a
+// variant is never stored, it is computed from person id and test id.
+model AbTest {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  kind        String
+  scope       Json
+  scopeKey    String    @map("scope_key")
+  status      String    @default("draft")
+  variants    Json
+  primaryGoal String?   @map("primary_goal")
+  startsAt    DateTime? @map("starts_at")
+  endsAt      DateTime? @map("ends_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([scopeKey, status])
+  @@map("ab_tests")
+}

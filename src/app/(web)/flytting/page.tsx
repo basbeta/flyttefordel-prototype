@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: 'Flyttefordel' }
 
 export default async function FlowStartPage() {
   const session = await getOrCreateSession()
-  const pages = await getWebFlow(session)
+  const pages = await getWebFlow(session, new Date(), session?.personId ?? null)
   const firstPageId = getFirstPageId(pages)
   if (firstPageId) redirect(`/flytting/${firstPageId}`)
   return <FlowEmpty />

@@ -88,7 +88,7 @@ describe('PUT /api/admin/benefits/[id]/views/[format]', () => {
       create: { benefitId: 'b1', format: 'app_card', variant: 'standard', ...content },
       update: content,
     })
-    expect(await res.json()).toEqual({ format: 'app_card', ...content })
+    expect(await res.json()).toEqual({ format: 'app_card', variant: 'standard', ...content })
   })
 
   it('tomme strenger, bare mellomrom og manglende felt blir null (arv)', async () => {
@@ -120,7 +120,24 @@ describe('PUT /api/admin/benefits/[id]/views/[format]', () => {
     expect(call.where).toEqual(KEY('web_card'))
   })
 
-  it('bruker alltid variant standard', async () => {
+  it('CR-030: en variant i body skriver den raden og bare den (standard urørt)', async () => {
+    const res = await PUT(req({ title: 'Tittel B', variant: 'b' }), params('web_card'))
+    expect(res.status).toBe(200)
+    const call = mockPrisma.benefitView.upsert.mock.calls[0][0]
+    expect(call.where).toEqual({ benefitId_format_variant: { benefitId: 'b1', format: 'web_card', variant: 'b' } })
+    expect(call.create.variant).toBe('b')
+    expect(call).not.toHaveProperty('create.pageId')
+    expect((await res.json()).variant).toBe('b')
+  })
+
+  it('CR-030: ugyldig variantnøkkel gir 400 og rører ikke databasen', async () => {
+    for (const variant of ['Stor', '', 'a b', 5, 'x'.repeat(41)]) {
+      expect((await PUT(req({ title: 'x', variant }), params('app_card'))).status).toBe(400)
+    }
+    expect(mockPrisma.benefitView.upsert).not.toHaveBeenCalled()
+  })
+
+  it('bruker variant standard når ingen variant er oppgitt', async () => {
     await PUT(req({ title: 'x' }), params('app_card'))
     expect(mockPrisma.benefitView.upsert.mock.calls[0][0].create.variant).toBe('standard')
   })

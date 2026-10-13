@@ -11,6 +11,9 @@ vi.mock('@/lib/session', () => ({
 vi.mock('@/lib/tracking/trackEvent', () => ({
   trackEvent: vi.fn().mockResolvedValue(undefined),
 }))
+vi.mock('@/lib/abtest', () => ({
+  testDimensionsFor: vi.fn().mockResolvedValue({}),
+}))
 vi.mock('@/lib/orders', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/orders')>()
   return { ...actual, submitOrder: vi.fn() }
@@ -19,9 +22,13 @@ vi.mock('@/lib/orders', async (importOriginal) => {
 import { checkRateLimit } from '@/lib/rateLimit'
 import { getOrCreateSession } from '@/lib/session'
 import { trackEvent } from '@/lib/tracking/trackEvent'
+import { testDimensionsFor } from '@/lib/abtest'
 import { InvalidOrderLinesError, submitOrder } from '@/lib/orders'
 import { POST } from './route'
 import { NextRequest } from 'next/server'
+
+// Tracking runs after the response, behind an async lookup of the test variant.
+const flush = () => new Promise((resolve) => setTimeout(resolve, 0))
 
 const mockRate = checkRateLimit as unknown as ReturnType<typeof vi.fn>
 const mockSession = getOrCreateSession as unknown as ReturnType<typeof vi.fn>
@@ -119,6 +126,7 @@ describe('POST /api/flow/order', () => {
 
   it('logger benefit_selected per linje med channel web og sessionId etter vellykket ordre', async () => {
     await POST(req(body()))
+    await flush()
     expect(trackEvent).toHaveBeenCalledTimes(1)
     expect(trackEvent).toHaveBeenCalledWith('benefit_selected', B1, undefined, {
       channel: 'web',
@@ -157,6 +165,7 @@ describe('POST /api/flow/order', () => {
     const res = await POST(request)
     expect(res.status).toBe(201)
     expect(mockSubmit.mock.calls[0][1]).toEqual(expect.objectContaining({ personId: 'person-1' }))
+    await flush()
     expect(trackEvent).toHaveBeenCalledWith(
       'benefit_selected',
       B1,
@@ -189,6 +198,37 @@ describe('POST /api/flow/order', () => {
     ;(trackEvent as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('tracking nede'))
     const res = await POST(req(body()))
     expect(res.status).toBe(201)
+    await flush() // no unhandled rejection from the fire-and-forget tracking
+  })
+
+  it('CR-030: hendelsen merkes med test og variant for kortet personen så', async () => {
+    ;(testDimensionsFor as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      testId: 'test-1',
+      variant: 'b',
+      viewId: 'web_card:b',
+    })
+    await POST(req(body()))
+    await flush()
+    expect(testDimensionsFor).toHaveBeenCalledWith(null, B1, 'web_card')
+    expect(trackEvent).toHaveBeenCalledWith(
+      'benefit_selected',
+      B1,
+      undefined,
+      expect.objectContaining({ testId: 'test-1', variant: 'b', viewId: 'web_card:b', channel: 'web' })
+    )
+  })
+
+  it('CR-030: feil i oppslaget av test stopper ikke hendelsen (standard, ingen test)', async () => {
+    ;(testDimensionsFor as unknown as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error('db'))
+    const res = await POST(req(body()))
+    await flush()
+    expect(res.status).toBe(201)
+    expect(trackEvent).toHaveBeenCalledWith(
+      'benefit_selected',
+      B1,
+      undefined,
+      expect.objectContaining({ viewId: 'web_card:standard' })
+    )
   })
 
   it('uten sesjon sendes sessionId og targeting som null', async () => {

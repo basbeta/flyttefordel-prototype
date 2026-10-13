@@ -58,7 +58,7 @@ describe('getOrCreateSession', () => {
     mockGetPerson.mockResolvedValueOnce(person)
     const s = await getOrCreateSession()
     expect(linkSessionToPerson).toHaveBeenCalledWith('anon-1', person)
-    expect(s).toEqual({ sessionId: 's1', anonymousId: 'anon-1', postcode: '9008', movingStatus: 'recently_moved' })
+    expect(s).toEqual({ sessionId: 's1', anonymousId: 'anon-1', postcode: '9008', movingStatus: 'recently_moved', personId: 'person-1' })
   })
 
   it('person finnes ikke lenger: sesjonen returneres som den er', async () => {
@@ -67,7 +67,7 @@ describe('getOrCreateSession', () => {
     mockGetPerson.mockResolvedValueOnce(null)
     const s = await getOrCreateSession()
     expect(linkSessionToPerson).not.toHaveBeenCalled()
-    expect(s).toEqual({ sessionId: 's1', anonymousId: 'anon-1', postcode: null, movingStatus: 'unknown' })
+    expect(s).toEqual({ sessionId: 's1', anonymousId: 'anon-1', postcode: null, movingStatus: 'unknown', personId: 'borte' })
   })
 
   it('CR-029: innlogget person får med flyttedato, boligtype og tidligere valg', async () => {
@@ -101,7 +101,7 @@ describe('getOrCreateSession', () => {
     upsert.mockResolvedValueOnce(dbSession({ userId: 'person-1', postcode: '0150', movingStatus: 'recently_moved' }))
     mockExtras.mockResolvedValueOnce(null)
     const s = await getOrCreateSession()
-    expect(s).toEqual({ sessionId: 's1', anonymousId: 'anon-1', postcode: '0150', movingStatus: 'recently_moved' })
+    expect(s).toEqual({ sessionId: 's1', anonymousId: 'anon-1', postcode: '0150', movingStatus: 'recently_moved', personId: 'person-1' })
   })
 
   it('gir null ved databasefeil (nedgradert, ikke krasj)', async () => {

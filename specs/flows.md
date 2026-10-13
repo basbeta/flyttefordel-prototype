@@ -185,6 +185,30 @@ Related endpoints: (ingen nye, admin-rutene for fordel og hero tar imot de nye f
 
 ---
 
+## Flow: A/B-tildeling og måling (CR-030)
+
+Trigger: en person ser et kort (app-liste, lagret, web-løp) eller åpner en fordel.
+
+Steps:
+1. Utvelgelsen (CR-029) velger hvilke fordeler personen er kvalifisert for.
+2. For hver fordel og format slås kjørende tester opp via `resolveActiveAssignments(personId, scopeKeys)`.
+3. `assignVariant(personId, testId, varianter)` gir variantnøkkel (hash, ingen lagring).
+4. `resolveBenefitView(..., format, variant)` gir innholdet. Frontend får ferdig innhold, aldri varianter eller vekter.
+5. Hendelser fra kortet og fordelssiden merkes med `testId`, `variant` og `viewId`.
+
+Decision points:
+- Ingen person-ID, ingen kjørende test, test utenfor perioden eller ukjent variant: `standard`, ingen test-merking.
+
+Error conditions:
+- Feil i oppslaget av tester: `standard` (fail-open, logger feilnavn, aldri persondata).
+
+Opprette test (admin): velg fordel og format, to eller flere varianter (`standard` påkrevd), vekter, periode. Kjørende test låser varianter og vekter. Maks én kjørende test per scope (409).
+
+Related entities: AbTest, BenefitView, BenefitEvent
+Related endpoints: /api/admin/ab-tests, /api/admin/ab-tests/{id}, /api/track
+
+---
+
 ## Flow: [Name]
 
 Trigger: [What starts this flow?]

@@ -23,6 +23,8 @@ export type SessionData = {
   movedAt?: Date | null
   housingType?: string | null
   chosenBenefitIds?: string[]
+  // CR-030: the logged-in person (A/B assignment is computed from it). Absent when not logged in.
+  personId?: string | null
 }
 
 // CR-020: Read-only session lookup for route handlers that only need the id
@@ -46,7 +48,7 @@ export async function getSessionIdFromRequest(request: Request): Promise<string 
 async function withSelectionExtras(base: SessionData, personId: string | null): Promise<SessionData> {
   if (!personId) return base
   const extras = await loadSelectionExtras(personId)
-  return extras ? { ...base, ...extras } : base
+  return extras ? { ...base, personId, ...extras } : { ...base, personId }
 }
 
 export async function getOrCreateSession(): Promise<SessionData | null> {

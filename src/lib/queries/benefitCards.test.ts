@@ -8,7 +8,13 @@ vi.mock('@/lib/db/client', () => ({
   },
 }))
 
+vi.mock('@/lib/abtest', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/abtest')>()
+  return { ...actual, resolveActiveAssignments: vi.fn().mockResolvedValue(new Map()) }
+})
+
 import { prisma } from '@/lib/db/client'
+import { resolveActiveAssignments } from '@/lib/abtest'
 import { getActiveBenefits } from './benefitQueries'
 
 const mockPrisma = prisma as unknown as {
@@ -105,5 +111,50 @@ describe('getActiveBenefits (CR-025 showInApp)', () => {
     expect(arg.where.showInApp).toBe(true)
     expect(arg.where.status).toBe('active')
     expect(arg.where.deletedAt).toBeNull()
+  })
+})
+
+// CR-030: a running content test picks the variant of the card for the person.
+describe('getActiveBenefits (CR-030 A/B-variant)', () => {
+  const views = [
+    { format: 'app_card', variant: 'standard', title: 'Standard-tittel', text: null },
+    { format: 'app_card', variant: 'b', title: 'Tittel B', text: 'Tekst B' },
+  ]
+  const session = { sessionId: 's1', postcode: null, movingStatus: 'unknown' as const, personId: 'person-1' }
+  const mockAssign = resolveActiveAssignments as unknown as ReturnType<typeof vi.fn>
+
+  it('viser tildelt variant og spør bare om app_card-scopene til de kvalifiserte fordelene', async () => {
+    mockPrisma.benefit.findMany.mockResolvedValueOnce([benefitRow({ views })])
+    mockAssign.mockResolvedValueOnce(
+      new Map([['content:b1:app_card', { testId: 't1', variant: 'b', viewId: 'app_card:b' }]])
+    )
+    const [card] = await getActiveBenefits(undefined, session)
+    expect(card.title).toBe('Tittel B')
+    expect(card.shortDescription).toBe('Tekst B')
+    expect(mockAssign).toHaveBeenCalledWith('person-1', ['content:b1:app_card'])
+  })
+
+  it('uten tildeling (ingen test, ikke innlogget) vises standard', async () => {
+    mockPrisma.benefit.findMany.mockResolvedValueOnce([benefitRow({ views })])
+    const [card] = await getActiveBenefits(undefined, session)
+    expect(card.title).toBe('Standard-tittel')
+  })
+
+  it('kortet lekker ikke test- eller variantfelt til klienten', async () => {
+    mockPrisma.benefit.findMany.mockResolvedValueOnce([benefitRow({ views })])
+    mockAssign.mockResolvedValueOnce(
+      new Map([['content:b1:app_card', { testId: 't1', variant: 'b', viewId: 'app_card:b' }]])
+    )
+    const [card] = await getActiveBenefits(undefined, session)
+    expect(JSON.stringify(card)).not.toMatch(/testId|variant|viewId|t1/)
+  })
+
+  it('ukjent variant faller tilbake til standard-innhold', async () => {
+    mockPrisma.benefit.findMany.mockResolvedValueOnce([benefitRow({ views })])
+    mockAssign.mockResolvedValueOnce(
+      new Map([['content:b1:app_card', { testId: 't1', variant: 'slettet', viewId: 'app_card:slettet' }]])
+    )
+    const [card] = await getActiveBenefits(undefined, session)
+    expect(card.title).toBe('Standard-tittel')
   })
 })

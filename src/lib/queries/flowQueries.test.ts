@@ -2,10 +2,15 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
 vi.mock('@/lib/db/client', () => ({
-  prisma: { flowPage: { findMany: vi.fn() } },
+  prisma: { flowPage: { findMany: vi.fn() }, benefitView: { findMany: vi.fn() } },
 }))
+vi.mock('@/lib/abtest', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/abtest')>()
+  return { ...actual, resolveActiveAssignments: vi.fn().mockResolvedValue(new Map()) }
+})
 
 import { prisma } from '@/lib/db/client'
+import { resolveActiveAssignments } from '@/lib/abtest'
 import { getWebFlow } from './flowQueries'
 
 const mockFindMany = (prisma as unknown as { flowPage: { findMany: ReturnType<typeof vi.fn> } })
@@ -44,6 +49,7 @@ function benefit(id: string, overrides: Record<string, unknown> = {}) {
 
 function view(b: ReturnType<typeof benefit>, overrides: Record<string, unknown> = {}) {
   return {
+    benefitId: b.id,
     format: 'web_card',
     variant: 'standard',
     title: null,
@@ -196,5 +202,66 @@ describe('getWebFlow', () => {
   it('returnerer tom liste når det ikke finnes sider', async () => {
     mockFindMany.mockResolvedValueOnce([])
     expect(await getWebFlow(null, NOW)).toEqual([])
+  })
+})
+
+// CR-030: a running web_card content test picks the content variant; placement stays on standard.
+describe('getWebFlow (CR-030 A/B-variant)', () => {
+  const mockAssign = resolveActiveAssignments as unknown as ReturnType<typeof vi.fn>
+  const mockViews = (prisma as unknown as { benefitView: { findMany: ReturnType<typeof vi.fn> } }).benefitView
+    .findMany
+
+  function flowWith(b: ReturnType<typeof benefit>) {
+    return [page('p1', [view(b, { title: 'Standard-tittel' })])]
+  }
+
+  it('viser innholdet til tildelt variant og henter bare de tildelte variantradene', async () => {
+    const b = benefit('b1')
+    mockFindMany.mockResolvedValueOnce(flowWith(b))
+    mockAssign.mockResolvedValueOnce(
+      new Map([['content:b1:web_card', { testId: 't1', variant: 'b', viewId: 'web_card:b' }]])
+    )
+    mockViews.mockResolvedValueOnce([
+      { benefitId: 'b1', format: 'web_card', variant: 'b', title: 'Tittel B', text: null, imageUrl: null, imageAlt: null, badgeText: null },
+    ])
+    const flow = await getWebFlow(null, NOW, 'person-1')
+    expect(flow[0].cards[0].title).toBe('Tittel B')
+    expect(mockAssign).toHaveBeenCalledWith('person-1', ['content:b1:web_card'])
+    expect(mockViews.mock.calls[0][0].where).toEqual({
+      format: 'web_card',
+      OR: [{ benefitId: 'b1', variant: 'b' }],
+    })
+  })
+
+  it('tildelt standard gir ingen ekstra spørring og standard-innhold', async () => {
+    const b = benefit('b1')
+    mockFindMany.mockResolvedValueOnce(flowWith(b))
+    mockAssign.mockResolvedValueOnce(
+      new Map([['content:b1:web_card', { testId: 't1', variant: 'standard', viewId: 'web_card:standard' }]])
+    )
+    const flow = await getWebFlow(null, NOW, 'person-1')
+    expect(flow[0].cards[0].title).toBe('Standard-tittel')
+    expect(mockViews).not.toHaveBeenCalled()
+  })
+
+  it('feil ved henting av variantrader gir standard-innhold, ikke tom side', async () => {
+    const b = benefit('b1')
+    mockFindMany.mockResolvedValueOnce(flowWith(b))
+    mockAssign.mockResolvedValueOnce(
+      new Map([['content:b1:web_card', { testId: 't1', variant: 'b', viewId: 'web_card:b' }]])
+    )
+    mockViews.mockRejectedValueOnce(new Error('db'))
+    const flow = await getWebFlow(null, NOW, 'person-1')
+    expect(flow[0].cards[0].title).toBe('Standard-tittel')
+  })
+
+  it('kortet lekker ikke test- eller variantfelt', async () => {
+    const b = benefit('b1')
+    mockFindMany.mockResolvedValueOnce(flowWith(b))
+    mockAssign.mockResolvedValueOnce(
+      new Map([['content:b1:web_card', { testId: 't1', variant: 'standard', viewId: 'web_card:standard' }]])
+    )
+    const json = JSON.stringify(await getWebFlow(null, NOW, 'person-1'))
+    expect(json).not.toMatch(/testId|viewId|"variant"/)
   })
 })

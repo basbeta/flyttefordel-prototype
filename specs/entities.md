@@ -494,6 +494,26 @@ Constraints:
 
 ---
 
+## Entity: AbTest
+
+CR-030: En A/B-test. Generell: hva som testes ligger i `kind` og `scope`, ikke i egne kolonner, slik at nye testtyper (format, plassering, struktur) kommer uten migrasjon. Tildelingen lagres ikke, den regnes fra person-ID og test-ID (`assignVariant` i `src/lib/abtest`).
+
+Fields:
+- id: uuid PK (inngår i hashen, en ny test gir ny fordeling)
+- name: string
+- kind: string (validert mot `src/lib/abtest/kinds.ts`, ikke DB-enum). Nå bare `content`
+- scope: json (kind-spesifikk, for `content`: `{benefitId, format}`)
+- scope_key: string (utledet av kind og scope, f.eks. `content:{benefitId}:{format}`). Maks én `running` test per scope_key
+- status: string (`draft` | `running` | `ended`)
+- variants: json `[{key, weight}]` (for `content`: key = `BenefitView.variant`, `standard` må være med)
+- primary_goal: string? (fritekst, f.eks. `opened`, `redeemed`)
+- starts_at / ends_at: timestamp?
+- created_at, updated_at
+
+Regler: en test gjelder bare når status er `running` og nå ligger innenfor perioden. Varianter og vekter kan ikke endres mens testen kjører. Uten person-ID, uten kjørende test eller ved ukjent variant brukes `standard`. Hendelser fra en test har `BenefitEvent.test_id` = test-id, `variant` og `view_id` = `{format}:{variant}`.
+
+---
+
 ## Entity: AdminUser
 
 Interne brukere med tilgang til backoffice.

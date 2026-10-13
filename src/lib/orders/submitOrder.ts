@@ -49,7 +49,7 @@ export async function submitOrder(
   const existing = await findExisting(input.submissionId)
   if (existing) return { orderId: existing.id, created: false, lines: [] }
 
-  const pages = await getWebFlow(ctx.targeting)
+  const pages = await getWebFlow(ctx.targeting, new Date(), ctx.personId ?? null)
   const validation = validateOrderLines(input.lines, pages)
   if (!validation.ok) throw new InvalidOrderLinesError(validation.invalid)
   const lines = validation.lines

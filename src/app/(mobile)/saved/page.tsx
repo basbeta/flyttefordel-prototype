@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: 'Mine fordeler' }
 
 export default async function SavedPage() {
   const session = await getOrCreateSession()
-  const benefits = session ? await getSavedBenefits(session.sessionId) : []
+  const benefits = session ? await getSavedBenefits(session.sessionId, session.personId ?? null) : []
 
   return (
     <>

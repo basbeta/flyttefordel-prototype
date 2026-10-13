@@ -1,4 +1,5 @@
 // CR-027: Admin, set the content overrides of a benefit on a surface (format, variant standard).
+// CR-030: an optional `variant` in the body sets another variant (the content of an A/B variant).
 // PUT replaces all override fields: empty or missing fields become null (inherit from the
 // benefit). The row is created if it does not exist.
 // IMPORTANT: this route only touches the content fields. For web_card the same row also holds
@@ -9,6 +10,7 @@ import type { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db/client'
 import { authCheck } from '@/lib/admin/apiAuth'
 import { viewOverrideSchema } from '@/lib/admin/flowSchemas'
+import { variantKey } from '@/lib/abtest/kinds'
 import { DEFAULT_VARIANT, VIEW_FORMATS, isViewFormat } from '@/lib/views'
 
 type Params = { params: Promise<{ id: string; format: string }> }
@@ -20,10 +22,21 @@ export async function PUT(request: NextRequest, { params }: Params) {
   if (!isViewFormat(format)) return NextResponse.json({ message: 'Ukjent format' }, { status: 404 })
 
   const body: unknown = await request.json().catch(() => null)
-  const parsed = viewOverrideSchema.safeParse(body)
+  // `variant` is not a content field: split it off before the strict content schema.
+  const { variant: rawVariant, ...contentBody } =
+    body !== null && typeof body === 'object' && !Array.isArray(body)
+      ? (body as Record<string, unknown>)
+      : ({} as Record<string, unknown>)
+  const parsed = viewOverrideSchema.safeParse(body !== null && typeof body === 'object' && !Array.isArray(body) ? contentBody : body)
   if (!parsed.success) {
     return NextResponse.json({ message: parsed.error.errors[0]?.message ?? 'Ugyldig input' }, { status: 400 })
   }
+
+  const variantParsed = rawVariant === undefined ? null : variantKey.safeParse(rawVariant)
+  if (variantParsed && !variantParsed.success) {
+    return NextResponse.json({ message: variantParsed.error.errors[0]?.message ?? 'Ugyldig variant' }, { status: 400 })
+  }
+  const variant = variantParsed?.success ? variantParsed.data : DEFAULT_VARIANT
 
   // Fields the format does not allow to override are ignored (stored as null).
   const allowed: readonly string[] = VIEW_FORMATS[format].overridable
@@ -40,11 +53,11 @@ export async function PUT(request: NextRequest, { params }: Params) {
     if (!benefit) return NextResponse.json({ message: 'Fordel ikke funnet' }, { status: 404 })
 
     await prisma.benefitView.upsert({
-      where: { benefitId_format_variant: { benefitId: id, format, variant: DEFAULT_VARIANT } },
-      create: { benefitId: id, format, variant: DEFAULT_VARIANT, ...content },
+      where: { benefitId_format_variant: { benefitId: id, format, variant } },
+      create: { benefitId: id, format, variant, ...content },
       update: content,
     })
-    return NextResponse.json({ format, ...content })
+    return NextResponse.json({ format, variant, ...content })
   } catch (err) {
     console.error('[admin/benefits/[id]/views/[format] PUT] Uventet feil:', err)
     return NextResponse.json({ message: 'Noe gikk galt' }, { status: 500 })

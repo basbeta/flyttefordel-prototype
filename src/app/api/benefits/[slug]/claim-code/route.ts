@@ -11,6 +11,7 @@ import type { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db/client'
 import { ANON_ID_HEADER } from '@/lib/session'
 import { trackEvent } from '@/lib/tracking/trackEvent'
+import { testDimensionsFor } from '@/lib/abtest'
 import { getPersonIdFromRequest } from '@/lib/identity/token'
 import { claimCode, NoCodesAvailableError } from '@/lib/codes/claimCode'
 import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
 
     const result = await claimCode(benefit.redemption.codePoolId, session.id)
-    void trackEvent('code_revealed', benefit.id, undefined, { sessionId: session.id, userId: getPersonIdFromRequest(request) })
+    void trackEvent('code_revealed', benefit.id, undefined, { sessionId: session.id, userId: getPersonIdFromRequest(request), ...(await testDimensionsFor(getPersonIdFromRequest(request), benefit.id, 'app_card')) })
     return NextResponse.json({ code: result.codeValue, alreadyClaimed: result.alreadyClaimed })
   } catch (err) {
     if (err instanceof NoCodesAvailableError) {

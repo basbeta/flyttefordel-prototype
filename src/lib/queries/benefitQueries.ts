@@ -8,12 +8,13 @@
 import QRCode from 'qrcode'
 import { prisma } from '@/lib/db/client'
 import { isQualified } from '@/lib/selection'
+import { contentScopeKey, resolveActiveAssignments } from '@/lib/abtest'
 import { resolveBenefitView, type BenefitViewRow } from '@/lib/views'
 import type { TargetingSession } from '@/lib/targeting'
 import type { BenefitCard, BenefitDetail, CategorySummary, BenefitRedemptionConfig, LeadFormField } from '@/types/app'
 import type { BenefitRedemptionType, Prisma } from '@prisma/client'
 
-type BenefitListSession = TargetingSession & { sessionId: string }
+type BenefitListSession = TargetingSession & { sessionId: string; personId?: string | null }
 
 // ---- Categories ----
 
@@ -71,9 +72,13 @@ export async function getActiveBenefits(
   // CR-029: the whole session (incl. moved date, housing type and earlier choices) goes to the
   // selection, not only postcode and moving status.
   const person: TargetingSession = session ?? { postcode: null, movingStatus: 'unknown' }
-  return benefits
-    .filter((b) => isQualified(b.targeting, person, now))
-    .map((b) => ({ ...mapBenefitCard(withAppCardView(b)), isSaved: savedIds.has(b.id) }))
+  const qualified = benefits.filter((b) => isQualified(b.targeting, person, now))
+  // CR-030: a running content test picks the variant of the card for this person.
+  const variants = await getAppCardVariants(session?.personId ?? null, qualified.map((b) => b.id))
+  return qualified.map((b) => ({
+    ...mapBenefitCard(withAppCardView(b, variants.get(b.id))),
+    isSaved: savedIds.has(b.id),
+  }))
 }
 
 // ---- Benefit detail ----
@@ -174,8 +179,8 @@ type CardContentSource = {
   views: readonly BenefitViewRow[]
 }
 
-export function withAppCardView<T extends CardContentSource>(benefit: T): T {
-  const view = resolveBenefitView(benefit, benefit.views, 'app_card')
+export function withAppCardView<T extends CardContentSource>(benefit: T, variant?: string): T {
+  const view = resolveBenefitView(benefit, benefit.views, 'app_card', variant)
   return {
     ...benefit,
     title: view.title,
@@ -229,4 +234,19 @@ function mapRedemptionConfig(redemption: RedemptionWithRelations): BenefitRedemp
     codePoolAvailable: redemption.codePool != null ? redemption.codePool.availableCodes > 0 : undefined,
     leadFormFields: redemption.leadForm != null ? (redemption.leadForm.fields as LeadFormField[]) : undefined,
   }
+}
+
+// CR-030: benefit id -> assigned variant for the app card (only benefits with a running test).
+export async function getAppCardVariants(
+  personId: string | null,
+  benefitIds: readonly string[],
+): Promise<Map<string, string>> {
+  const keys = benefitIds.map((id) => contentScopeKey(id, 'app_card'))
+  const assignments = await resolveActiveAssignments(personId, keys)
+  const result = new Map<string, string>()
+  for (const id of benefitIds) {
+    const a = assignments.get(contentScopeKey(id, 'app_card'))
+    if (a) result.set(id, a.variant)
+  }
+  return result
 }

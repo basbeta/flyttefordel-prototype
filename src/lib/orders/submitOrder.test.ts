@@ -194,11 +194,16 @@ describe('submitOrder', () => {
   it('uten sesjon lagres sessionId som null', async () => {
     await submitOrder(input(), { sessionId: null, targeting: null })
     expect(tx.order.create.mock.calls[0][0].data.sessionId).toBeNull()
-    expect(mockGetWebFlow).toHaveBeenCalledWith(null)
+    expect(mockGetWebFlow).toHaveBeenCalledWith(null, expect.any(Date), null)
   })
 
   it('løpet lastes med sesjonens targeting', async () => {
     await submitOrder(input(), CTX)
-    expect(mockGetWebFlow).toHaveBeenCalledWith(CTX.targeting)
+    expect(mockGetWebFlow).toHaveBeenCalledWith(CTX.targeting, expect.any(Date), null)
+  })
+
+  it('CR-030: løpet lastes for innlogget person, så linjene valideres mot samme kortvariant', async () => {
+    await submitOrder(input(), { ...CTX, personId: 'person-1' })
+    expect(mockGetWebFlow).toHaveBeenCalledWith(CTX.targeting, expect.any(Date), 'person-1')
   })
 })

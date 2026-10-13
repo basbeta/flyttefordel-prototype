@@ -8,6 +8,7 @@ import { prisma } from '@/lib/db/client'
 import { isBenefitLive } from '@/lib/benefits/isBenefitLive'
 import { isQualified } from '@/lib/selection'
 import type { TargetingSession } from '@/lib/targeting'
+import { contentScopeKey, resolveActiveAssignments } from '@/lib/abtest'
 import { resolveBenefitView } from '@/lib/views'
 import type { WebFlowCard, WebFlowPage } from '@/types/app'
 
@@ -17,6 +18,8 @@ const STANDARD = 'standard'
 export async function getWebFlow(
   session?: TargetingSession | null,
   now: Date = new Date(),
+  // CR-030: the logged-in person, for A/B assignment of the card content.
+  personId: string | null = null,
 ): Promise<WebFlowPage[]> {
   const targetingCtx: TargetingSession = session ?? { postcode: null, movingStatus: 'unknown' }
 
@@ -43,6 +46,23 @@ export async function getWebFlow(
     },
   })
 
+  // CR-030: a running web_card content test picks the variant of the card content. Placement
+  // always comes from the standard row, the variant rows only carry content.
+  const benefitIds = [...new Set(pages.flatMap((pg) => pg.views.map((v) => v.benefitId)))]
+  const assignments = await resolveActiveAssignments(
+    personId,
+    benefitIds.map((id) => contentScopeKey(id, WEB_CARD)),
+  )
+  const assigned = benefitIds.flatMap((id) => {
+    const a = assignments.get(contentScopeKey(id, WEB_CARD))
+    return a && a.variant !== STANDARD ? [{ benefitId: id, variant: a.variant }] : []
+  })
+  const variantRows = assigned.length
+    ? await prisma.benefitView
+        .findMany({ where: { format: WEB_CARD, OR: assigned } })
+        .catch(() => [])
+    : []
+
   const result: WebFlowPage[] = []
   for (const page of pages) {
     const cards: WebFlowCard[] = []
@@ -51,7 +71,9 @@ export async function getWebFlow(
       if (!isBenefitLive(benefit, now)) continue
       if (!isQualified(benefit.targeting, targetingCtx, now)) continue
 
-      const content = resolveBenefitView(benefit, [view], WEB_CARD, STANDARD)
+      const variant = assignments.get(contentScopeKey(benefit.id, WEB_CARD))?.variant ?? STANDARD
+      const rows = [view, ...variantRows.filter((r) => r.benefitId === benefit.id)]
+      const content = resolveBenefitView(benefit, rows, WEB_CARD, variant)
       cards.push({
         benefitId: benefit.id,
         slug: benefit.slug,

@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db/client'
 import { z } from 'zod'
 import { trackEvent } from '@/lib/tracking/trackEvent'
+import { testDimensionsFor } from '@/lib/abtest'
 import { getPersonIdFromRequest } from '@/lib/identity/token'
 import { getSessionIdFromRequest } from '@/lib/session'
 
@@ -54,7 +55,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ slu
     })
 
     const sessionId = await getSessionIdFromRequest(request)
-    await trackEvent('lead_submitted', benefit.id, undefined, { sessionId, userId: getPersonIdFromRequest(request) })
+    await trackEvent('lead_submitted', benefit.id, undefined, { sessionId, userId: getPersonIdFromRequest(request), ...(await testDimensionsFor(getPersonIdFromRequest(request), benefit.id, 'app_card')) })
     return NextResponse.json({ ok: true })
   } catch {
     return NextResponse.json(

@@ -5,7 +5,13 @@ vi.mock('@/lib/db/client', () => ({
   prisma: { savedBenefit: { findMany: vi.fn() } },
 }))
 
+vi.mock('@/lib/abtest', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/abtest')>()
+  return { ...actual, resolveActiveAssignments: vi.fn().mockResolvedValue(new Map()) }
+})
+
 import { prisma } from '@/lib/db/client'
+import { resolveActiveAssignments } from '@/lib/abtest'
 import { getSavedBenefits } from './savedQueries'
 
 const mockFindMany = (prisma as unknown as { savedBenefit: { findMany: ReturnType<typeof vi.fn> } })
@@ -99,5 +105,24 @@ describe('getSavedBenefits', () => {
     ])
     const [card] = await getSavedBenefits('s1')
     expect(card.title).toBe('Fordel b1')
+  })
+})
+
+describe('getSavedBenefits (CR-030 A/B-variant)', () => {
+  it('lagret-siden viser samme variant som listen', async () => {
+    mockFindMany.mockResolvedValueOnce([
+      saved('b1', {
+        views: [
+          { format: 'app_card', variant: 'standard', title: 'Standard', text: null },
+          { format: 'app_card', variant: 'b', title: 'Tittel B', text: null },
+        ],
+      }),
+    ])
+    ;(resolveActiveAssignments as unknown as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
+      new Map([['content:b1:app_card', { testId: 't1', variant: 'b', viewId: 'app_card:b' }]])
+    )
+    const [card] = await getSavedBenefits('s1', 'person-1')
+    expect(card.title).toBe('Tittel B')
+    expect(resolveActiveAssignments).toHaveBeenCalledWith('person-1', ['content:b1:app_card'])
   })
 })

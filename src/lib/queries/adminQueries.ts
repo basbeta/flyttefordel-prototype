@@ -542,3 +542,29 @@ export async function getBenefitOptions(): Promise<{ id: string; title: string }
     orderBy: { title: 'asc' },
   })
 }
+
+// CR-030: A/B tests of a benefit (content tests: the benefit id is part of the scope key) and the
+// content of their non-standard variants, for the "A/B-test" section on the edit page.
+export async function getAdminBenefitAbTests(benefitId: string) {
+  const [tests, variantViews] = await Promise.all([
+    prisma.abTest.findMany({
+      where: { scopeKey: { startsWith: `content:${benefitId}:` } },
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.benefitView.findMany({
+      where: { benefitId, variant: { not: 'standard' }, format: { in: Object.keys(VIEW_FORMATS) } },
+      select: { format: true, variant: true, title: true, text: true, imageUrl: true, imageAlt: true, badgeText: true },
+    }),
+  ])
+  return {
+    tests: tests.map((t) => ({
+      id: t.id,
+      name: t.name,
+      status: t.status,
+      format: (t.scope as { format?: string } | null)?.format ?? '',
+      variants: t.variants as { key: string; weight: number }[],
+      primaryGoal: t.primaryGoal,
+    })),
+    variantViews,
+  }
+}

@@ -9,6 +9,7 @@ import { checkRateLimit, getClientIp } from '@/lib/rateLimit'
 import { getOrCreateSession } from '@/lib/session'
 import { getPersonIdFromRequest } from '@/lib/identity/token'
 import { trackEvent } from '@/lib/tracking/trackEvent'
+import { testDimensionsFor } from '@/lib/abtest'
 import { InvalidOrderLinesError, OrderInputSchema, submitOrder } from '@/lib/orders'
 
 const ORDER_RATE_LIMIT = 10
@@ -77,12 +78,19 @@ export async function POST(request: NextRequest) {
     if (result.created) {
       // Fire-and-forget: a tracking failure must never change the response.
       for (const line of result.lines) {
-        void trackEvent('benefit_selected', line.benefitId, undefined, {
-          channel: 'web',
-          viewId: 'web_card:standard',
-          sessionId: session?.sessionId ?? null,
-          userId: personId,
-        })
+        // CR-030: the variant of the card the person saw (recomputed from person and test id).
+        void testDimensionsFor(personId, line.benefitId, 'web_card')
+          .catch(() => ({}))
+          .then((dims) =>
+            trackEvent('benefit_selected', line.benefitId, undefined, {
+              channel: 'web',
+              viewId: 'web_card:standard',
+              ...dims,
+              sessionId: session?.sessionId ?? null,
+              userId: personId,
+            })
+          )
+          .catch(() => {})
       }
     }
 

@@ -7,6 +7,7 @@ import { getBenefitBySlug } from '@/lib/queries/benefitQueries'
 import { getOrCreateSession } from '@/lib/session'
 import { trackEvent } from '@/lib/tracking/trackEvent'
 import { getCurrentPersonId } from '@/lib/identity/current'
+import { testDimensionsFor } from '@/lib/abtest'
 import { TopBar } from '@/components/mobile/TopBar'
 import { SaveButton } from '@/components/mobile/SaveButton'
 import { RedemptionSection } from './RedemptionSection'
@@ -29,9 +30,13 @@ export default async function BenefitDetailPage({ params }: Props) {
   const benefit = await getBenefitBySlug(slug, session?.sessionId)
   if (!benefit) notFound()
 
+  const personId = await getCurrentPersonId()
+  // CR-030: the variant of the card the person came from, so the funnel can be split per variant.
+  const testDims = await testDimensionsFor(personId, benefit.id, 'app_card')
   await trackEvent('benefit_viewed', benefit.id, undefined, {
     sessionId: session?.sessionId,
-    userId: await getCurrentPersonId(),
+    userId: personId,
+    ...testDims,
   })
 
   return (
@@ -62,7 +67,7 @@ export default async function BenefitDetailPage({ params }: Props) {
           <h1 className={styles.title}>{benefit.title}</h1>
           <p className={styles.shortDesc}>{benefit.shortDescription}</p>
 
-          <RedemptionSection benefit={benefit} />
+          <RedemptionSection benefit={benefit} testDims={testDims} />
 
           <div className={styles.divider} />
 

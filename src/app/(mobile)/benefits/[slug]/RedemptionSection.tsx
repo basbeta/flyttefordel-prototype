@@ -6,9 +6,12 @@ import { Button } from '@/components/shared/Button'
 import type { BenefitDetail, LeadFormField } from '@/types/app'
 import styles from './RedemptionSection.module.css'
 
-type Props = { benefit: BenefitDetail }
+// CR-030: test dimensions for events from this surface (empty when no test is running).
+type TestDims = { testId?: string; variant?: string; viewId?: string }
 
-export function RedemptionSection({ benefit }: Props) {
+type Props = { benefit: BenefitDetail; testDims?: TestDims }
+
+export function RedemptionSection({ benefit, testDims = {} }: Props) {
   const r = benefit.redemption
   if (!r) return null
 
@@ -19,6 +22,7 @@ export function RedemptionSection({ benefit }: Props) {
           code={r.genericCode}
           ctaLabel={r.ctaLabel}
           benefitId={benefit.id}
+          testDims={testDims}
         />
       )
     case 'external_link':
@@ -28,6 +32,7 @@ export function RedemptionSection({ benefit }: Props) {
           ctaLabel={r.ctaLabel}
           opensInNewTab={r.opensInNewTab}
           benefitId={benefit.id}
+          testDims={testDims}
         />
       )
     case 'lead_form':
@@ -59,10 +64,12 @@ function GenericCodeSection({
   code,
   ctaLabel,
   benefitId,
+  testDims,
 }: {
   code?: string
   ctaLabel: string | null
   benefitId: string
+  testDims: TestDims
 }) {
   const [revealed, setRevealed] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -72,7 +79,7 @@ function GenericCodeSection({
     void fetch('/api/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventType: 'code_revealed', benefitId }),
+      body: JSON.stringify({ eventType: 'code_revealed', benefitId, ...testDims }),
     })
   }
 
@@ -84,7 +91,7 @@ function GenericCodeSection({
     void fetch('/api/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventType: 'code_copied', benefitId }),
+      body: JSON.stringify({ eventType: 'code_copied', benefitId, ...testDims }),
     })
   }
 
@@ -113,11 +120,13 @@ function ExternalLinkSection({
   ctaLabel,
   opensInNewTab,
   benefitId,
+  testDims,
 }: {
   url?: string
   ctaLabel: string | null
   opensInNewTab: boolean
   benefitId: string
+  testDims: TestDims
 }) {
   if (!url) return null
   const resolvedUrl = url // const binding preserves TypeScript's string narrowing in closures
@@ -126,7 +135,7 @@ function ExternalLinkSection({
     void fetch('/api/track', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ eventType: 'external_link_clicked', benefitId }),
+      body: JSON.stringify({ eventType: 'external_link_clicked', benefitId, ...testDims }),
     })
     if (opensInNewTab) {
       window.open(resolvedUrl, '_blank', 'noopener,noreferrer')

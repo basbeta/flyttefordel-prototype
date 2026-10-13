@@ -13,6 +13,7 @@ import {
   getAdminWebPlacement,
   getAdminBenefitViewOverrides,
   getBenefitOptions,
+  getAdminBenefitAbTests,
 } from '@/lib/queries/adminQueries'
 import { getBenefitDisplayStatus } from '@/lib/benefits/displayStatus'
 import { getWebPlacementProblems } from '@/lib/benefits/webPlacement'
@@ -20,6 +21,7 @@ import { BenefitForm } from '../BenefitForm'
 import { BenefitProductsSection } from './BenefitProductsSection'
 import { BenefitChannelsSection } from './BenefitChannelsSection'
 import { BenefitViewsSection } from './BenefitViewsSection'
+import { BenefitAbTestsSection } from './BenefitAbTestsSection'
 import { BenefitStatusBadge } from '@/components/admin/BenefitStatusBadge'
 import styles from '@/components/admin/AdminTable.module.css'
 
@@ -31,7 +33,7 @@ type Props = { params: Promise<{ id: string }> }
 export default async function EditBenefitPage({ params }: Props) {
   const { id } = await params
   await requireAdminAuth()
-  const [benefit, advertisers, categories, products, pageOptions, placementView, viewRows, benefitOptions] = await Promise.all([
+  const [benefit, advertisers, categories, products, pageOptions, placementView, viewRows, benefitOptions, abTests] = await Promise.all([
     getAdminBenefitById(id),
     getAdminAdvertisers(),
     getAdminCategories(),
@@ -40,6 +42,7 @@ export default async function EditBenefitPage({ params }: Props) {
     getAdminWebPlacement(id),
     getAdminBenefitViewOverrides(id),
     getBenefitOptions(),
+    getAdminBenefitAbTests(id),
   ])
   if (!benefit) notFound()
 
@@ -89,6 +92,18 @@ export default async function EditBenefitPage({ params }: Props) {
           badgeText: benefit.badgeText,
         }}
         rows={viewRows}
+      />
+      <BenefitAbTestsSection
+        benefitId={benefit.id}
+        core={{
+          title: benefit.title,
+          shortDescription: benefit.shortDescription,
+          imageUrl: benefit.imageUrl,
+          imageAlt: benefit.imageAlt,
+          badgeText: benefit.badgeText,
+        }}
+        tests={abTests.tests}
+        variantViews={abTests.variantViews}
       />
       <BenefitChannelsSection
         benefitId={benefit.id}

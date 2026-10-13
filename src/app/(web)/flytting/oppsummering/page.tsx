@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: 'Oppsummering' }
 export default async function FlowSummaryPage() {
   const session = await getOrCreateSession()
   const person = await getCurrentPerson()
-  const pages = await getWebFlow(session)
+  const pages = await getWebFlow(session, new Date(), session?.personId ?? null)
   const firstPageId = getFirstPageId(pages)
   if (!firstPageId) return <FlowEmpty />
   return (

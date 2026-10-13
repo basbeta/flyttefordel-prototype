@@ -16,6 +16,15 @@ DECIDED BY: human | Claude | both
 
 ## Decisions
 
+DATE: 2026-10-13
+DECISION: A/B-lag som generisk tildeling + register av testtyper (CR-030)
+CONTEXT: Bruker: «mange ting skal kunne A/B testes, det må være enkelt å endre på senere». Første steg er innholdstest på kort, men format, plassering og struktur (docs/10 §5) kommer.
+DECISION: Tildeling er en ren funksjon av person-ID og test-ID (SHA-256, vektet, ingenting lagres) og kjenner ikke testtypen. Hva en test gjelder ligger i `kind` + `scope` (JSON) + `scope_key` i én tabell `ab_tests`, validert av et register `TEST_KINDS`. Ny testtype = én oppføring i registeret. Admin-API er generisk.
+ALTERNATIVES CONSIDERED: Egne kolonner (benefit_id, format) på testen (enklere nå, migrasjon per ny type). Lagre tildelingen per person (sporbart, men krever skriving og synk mellom kanaler). Delvis unik indeks for «ett running per scope» (utelatt: Prisma kan ikke uttrykke den uten drift).
+RATIONALE: Matcher docs/10 §5 (samme variant i alle kanaler uten lagring) og kravet om enkel utvidelse.
+CONSEQUENCES: Hashen er en kontrakt (frosset i snapshot-test). «Ett running per scope» håndheves i kode (liten race-risiko). Klient-sendt testId i /api/track kan forfalskes (eksisterende design). Rapportering v2 er neste steg.
+DECIDED BY: both
+
 DATE: 2026-08-27
 DECISION: Rekonsiliert session-filer etter en avbrutt økt; committed CR-017 separat fra dokumentasjonsoppdateringen
 CONTEXT: Session-oppstart (steg 1-5) avdekket at `sessions/CURRENT-STATE.md` var vesentlig utdatert i forhold til faktisk repo-tilstand: CR-017 (skrive-sperre mot ugyldig Aktiv/Planlagt-status) lå ferdig implementert, testet og delvis staged i arbeidskatalogen — men CR-017.md, testfiler og en ny `vitest.config.mts` var untracked, og ingen session-fil nevnte CR-017 i det hele tatt. Samtidig var CR-018 (Next.js 16-major-oppgradering) allerede committed OG pushet til `origin/master` (e7cc47c) uten at noen session-fil reflekterte det — CURRENT-STATE.md beskrev fortsatt ISSUE-009 som kun "delvis løst". En tidligere økt ble tydelig avbrutt før `/end-session` ble kjørt.

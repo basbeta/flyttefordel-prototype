@@ -14,6 +14,38 @@ paths:
   # base er /api.
   # CR-025: admin-ruter for web-løpet. Alle krever admin-cookie (JWT), sjekket i hver rute
   # (middleware beskytter ikke /api/admin). 401 uten innlogging, 404 ved ukjent id.
+  /api/admin/ab-tests:
+    get:
+      operationId: listAbTests
+      summary: "List A/B-tester (CR-030), valgfritt filtrert på benefitId"
+      responses:
+        "200": { description: "OK" }
+        "401": { description: "Ikke autentisert" }
+    post:
+      operationId: createAbTest
+      summary: "Opprett A/B-test som draft (CR-030)"
+      description: >
+        Body: name, kind, scope, variants [{key, weight}], primaryGoal?, startsAt?, endsAt?.
+        scope og variants valideres av testtypen i registeret (content: scope {benefitId, format},
+        standard må være en variant, vekter heltall >= 1, minst to varianter).
+      responses:
+        "201": { description: "Opprettet" }
+        "400": { description: "Ugyldig input eller ukjent kind" }
+        "401": { description: "Ikke autentisert" }
+  /api/admin/ab-tests/{id}:
+    put:
+      operationId: updateAbTest
+      summary: "Endre eller sette status på A/B-test (CR-030)"
+      description: >
+        Endrer navn, mål og periode. Varianter og vekter kan bare endres når status ikke er
+        running (409). Status draft til running til ended. Å starte krever at ingen annen test
+        kjører på samme scope (409) og at alle varianter har en BenefitView-rad.
+      responses:
+        "200": { description: "OK" }
+        "400": { description: "Ugyldig input" }
+        "401": { description: "Ikke autentisert" }
+        "404": { description: "Ikke funnet" }
+        "409": { description: "Konflikt" }
   /api/admin/flow-pages:
     get: { operationId: listFlowPages, summary: "Liste sider (ikke slettet)", responses: { "200": { description: "OK" }, "401": { description: "Ikke autentisert" } } }
     post:
@@ -89,7 +121,7 @@ paths:
       operationId: setBenefitViewOverrides
       summary: "Sett innholdsoverstyringer for en fordel på en flate (CR-027)"
       description: >
-        Setter overstyringene for (fordel, format, variant standard). Alle felt erstatter
+        Setter overstyringene for (fordel, format, variant). Variant er valgfri i body (CR-030) og er standard hvis den mangler. Alle felt erstatter
         eksisterende verdier, manglende eller tomme felt blir null (arv fra fordelen). Oppretter
         raden om den mangler. Rører aldri plassering (page_id, sort_order). format må være i
         format-registeret (app_card, web_card), ellers 404.
