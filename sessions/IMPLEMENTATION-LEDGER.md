@@ -130,3 +130,4 @@
 | 2026-10-13 | Session-20 | Session-oppstart | Gjenopptok etter avbrutt Session-19. Git matchet CURRENT-STATE (CR-027 uncommitted). Re-kjørte tsc, vitest 394/394, lint 0 feil selv | CR-027 | tsc ✓ vitest ✓ lint ✓ |
 | 2026-10-13 | Session-20 | /review CR-027 | Leste rute, zod-skjema, BenefitViewsSection, withAppCardView og savedQueries. Ingen avvik. Overstyrings-ruten rører bare innholdsfelt. Bruker sa «jeg hadde sjekket noe så det går nok greit» (ikke eksplisitt full manuell test) | CR-027 | PASSED |
 | 2026-10-13 | Session-20 | git | CR-027 committed lokalt, ikke pushet (push avventer bruker, trigger Coolify-deploy, ingen migrasjon) | CR-027 | — |
+| 2026-10-13 | Session-20 | CR-027 | Pushet (b74b606..9b46140), bruker testet og meldte «Fungerer». CR-027 markert Done | CR-027 | brukertest ✓ |

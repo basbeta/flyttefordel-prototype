@@ -3,7 +3,7 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-**CR-027 (innholdsoverstyring per flate i admin) er implementert 2026-10-12, /review PASSED og committed lokalt 2026-10-13 (Session-20, ikke pushet), IKKE Done: venter på brukerens manuelle test (bruker sa bare «det går nok greit»).** Opprinnelig status: implementert men UNCOMMITTED, uten /review. Ny seksjon «Visninger» på rediger fordel (App-kort og Web-kort: tittel, tekst, bilde, merketekst, tomt = arv, forhåndsvisning, tilbakestill), ny rute PUT /api/admin/benefits/[id]/views/[format] som bare rører innholdsfelt (ikke plassering), og lagret-siden bruker nå samme kortinnhold som listen (withAppCardView). Ingen migrasjon. tsc OK, lint 0 feil, vitest 394/394, build OK. Admin-UI ikke sett i nettleser. Se CR-027 Implementation Notes.
+**CR-027 (innholdsoverstyring per flate i admin) er DONE (9b46140, pushet, /review PASSED, bruker testet 2026-10-13 og meldte at det fungerer).** Opprinnelig status: implementert men UNCOMMITTED, uten /review. Ny seksjon «Visninger» på rediger fordel (App-kort og Web-kort: tittel, tekst, bilde, merketekst, tomt = arv, forhåndsvisning, tilbakestill), ny rute PUT /api/admin/benefits/[id]/views/[format] som bare rører innholdsfelt (ikke plassering), og lagret-siden bruker nå samme kortinnhold som listen (withAppCardView). Ingen migrasjon. tsc OK, lint 0 feil, vitest 394/394, build OK. Admin-UI ikke sett i nettleser. Se CR-027 Implementation Notes.
 
 **CR-026 (konsekvente lagreknapper i admin) er DONE (2978248, pushet, /review PASSED, bruker testet 2026-10-12 og meldte at det virker).** Brukerens tilbakemelding: knapper skal bare vises når det finnes endringer, så erstattes de av «Lagret». Ny ren getSaveActionsState og felles InlineSaveActions; produkter og kanaler (CR-025-seksjonene) bruker useDirtyTracking. Hovedskjemaene og FormSaveBar er uendret. tsc OK, lint 0 feil, vitest 364/364, build OK. UI ikke sett i nettleser. Innholdsoverstyringer per flate, forhåndsvisning og lagret-siden er nå CR-027.
 
@@ -199,7 +199,7 @@ fra bruker (se Next Recommended Actions).
 - CR-017: Sperre mot ugyldig Aktiv/Planlagt status (Status: Done — committed 3ec4625, pushet 4a30c11, 2026-08-27)
 - CR-018: Next.js major-oppgradering 14.2.35→16.3.1 (Status: Implementert, committed+pushet e7cc47c, LIVE i prod, IKKE Done — venter på prod-smoke-test)
 - CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Implementert, committed 12b49e6, IKKE Done — venter på manuell nettleserverifisering)
-- CR-027: Innholdsoverstyring per flate i admin (Status: Implementert, UNCOMMITTED, ikke /review, UI ikke sett, IKKE Done)
+- CR-027: Innholdsoverstyring per flate i admin (Status: Done, committed 9b46140, pushet, bruker testet 2026-10-13)
 - CR-026: Konsekvente lagreknapper i admin (Status: Done, committed 2978248, pushet, bruker testet 2026-10-12)
 - CR-025: Admin for sider, produkter og web-plassering (Status: Done, committed 08f7bc6, pushet, bruker testet 2026-10-12)
 - CR-024: Bestilling i web-løpet (Status: Done, committed 8bbbea2, pushet, /review PASSED, bruker klikket gjennom 2026-10-12)

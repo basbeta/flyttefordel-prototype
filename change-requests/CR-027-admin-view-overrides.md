@@ -1,6 +1,6 @@
 # CR-027: Innholdsoverstyring per flate i admin
 
-Status: Implementert, /review PASSED (2026-10-13), committed. Bruker har sjekket admin-UI ("det går nok greit"), men ikke eksplisitt bekreftet alle punktene i den manuelle testen. Ikke Done før bruker bekrefter.
+Status: Done (committed 9b46140, pushet, /review PASSED, bruker testet i prod 2026-10-13 og meldte at det fungerer)
 Created: 2026-10-12
 Approved: 2026-10-12
 
