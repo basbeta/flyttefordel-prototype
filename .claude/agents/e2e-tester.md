@@ -46,7 +46,8 @@ Admin-delen krever `QA_ADMIN_EMAIL` og `QA_ADMIN_PASSWORD` (miljøvariabler elle
   (forfalsket header, feil token), men aldri forsøke å bryte seg inn på noe.
 - Persondata: testpersoner og e-poster skal være åpenbart fiktive (`...@example.test`). Ikke
   gjengi kundedata, ekte e-poster, priser eller avtalevilkår i rapporten.
-- Rate limits (per IP): personinnlogging 30 per 15 min (en kjøring bruker ca. 8), ny testperson
+- **Redis/rate limiting er bevisst utsatt til helt på slutten (bruker, 2026-10-13).** Grensene er ikke i kraft i prod. Ikke rapporter manglende 429 som funn, og ikke bruk tid på å teste at grensene slår inn.
+- Rate limits (per IP): personinnlogging 30 per 15 min (en kjøring bruker ca. 8, men grensene håndheves ikke i prod nå), ny testperson
   10 per time, bestilling 10 per time (en kjøring bruker 2). Treffer du 429, vent, ikke gjenta i løkke.
 - Slett ikke data du ikke har opprettet selv. Det finnes ingen DB-tilgang og du skal ikke ha det.
 

@@ -3,7 +3,7 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-**CR-028 (simulert Vipps-innlogging og person-ID) er DONE (c6ccaee + d01a2c9, pushet, /review PASSED, e2e mot prod 105/105, bruker markerte Done 2026-10-13).** Åpent: rate limiting virker ikke i prod (ISSUE-013), testdata fra e2e-kjøringer bør ryddes i DB, UI ikke sett visuelt av Claude. Innlogging er påkrevd for hele forbrukerappen og web-løpet (`/logg-inn`, signert `person_token`, middleware). 5 seedede testpersoner i databasen (`npm run db:seed-persons`), QA fyller inn test-e-post ved innlogging, ny testperson kan opprettes, «Bytt person» i app og web. `ADMIN_JWT_SECRET` gjenbrukes, derfor sjekker admin-vakten nå `role === 'admin'`. Ordre og hendelser får person-ID. Profilsiden er skrivebeskyttet. tsc OK, lint 0 feil, vitest 502/502, build OK. Migrasjon `20261013000000_cr028_persons` og seed IKKE kjørt mot DB, UI ikke sett i nettleser. Se CR-028 Implementation Notes.
+**CR-028 (simulert Vipps-innlogging og person-ID) er DONE (c6ccaee + d01a2c9, pushet, /review PASSED, e2e mot prod 105/105, bruker markerte Done 2026-10-13).** Åpent: rate limiting virker ikke i prod (ISSUE-013, bevisst utsatt til helt på slutten), testdata fra e2e-kjøringer bør ryddes i DB, UI ikke sett visuelt av Claude. Innlogging er påkrevd for hele forbrukerappen og web-løpet (`/logg-inn`, signert `person_token`, middleware). 5 seedede testpersoner i databasen (`npm run db:seed-persons`), QA fyller inn test-e-post ved innlogging, ny testperson kan opprettes, «Bytt person» i app og web. `ADMIN_JWT_SECRET` gjenbrukes, derfor sjekker admin-vakten nå `role === 'admin'`. Ordre og hendelser får person-ID. Profilsiden er skrivebeskyttet. tsc OK, lint 0 feil, vitest 502/502, build OK. Migrasjon `20261013000000_cr028_persons` og seed IKKE kjørt mot DB, UI ikke sett i nettleser. Se CR-028 Implementation Notes.
 
 **CR-027 (innholdsoverstyring per flate i admin) er DONE (9b46140, pushet, /review PASSED, bruker testet 2026-10-13 og meldte at det fungerer).** Opprinnelig status: implementert men UNCOMMITTED, uten /review. Ny seksjon «Visninger» på rediger fordel (App-kort og Web-kort: tittel, tekst, bilde, merketekst, tomt = arv, forhåndsvisning, tilbakestill), ny rute PUT /api/admin/benefits/[id]/views/[format] som bare rører innholdsfelt (ikke plassering), og lagret-siden bruker nå samme kortinnhold som listen (withAppCardView). Ingen migrasjon. tsc OK, lint 0 feil, vitest 394/394, build OK. Admin-UI ikke sett i nettleser. Se CR-027 Implementation Notes.
 
@@ -366,7 +366,7 @@ fra bruker (se Next Recommended Actions).
   DECISIONS.md 2026-08-06/2026-05-22 for begrunnelse.
 
 ## Next Recommended Actions
-0000. **ISSUE-013 (høy):** rate limiting virker ikke i prod, trolig REDIS_URL/Redis mangler i Coolify (CR-014 infra). Admin-login (5 per 15 min) er trolig også uten vern. Når Redis er på plass: kjør e2e-tester på nytt og verifiser 429. Rydd også e2e-testdata i prod-DB (testpersoner «Test QA-…», bl.a. én med XSS-navn, og 4 bestillinger)
+0000. **Redis/rate limiting (ISSUE-013, CR-014 infra) er bevisst utsatt til HELT på slutten (bruker, 2026-10-13).** Ikke foreslå det som neste steg og ikke rapporter manglende 429 som funn før da. Husk den manuelle ryddingen av e2e-testdata i prod-DB (testpersoner «Test QA-…», bl.a. én med XSS-navn, og 4 bestillinger) hvis brukeren vil. Neste funksjonelle steg: A/B-tildeling fra person-ID, eller lead-eksport med kontaktfelt (krever avklaring av persondata og samtykke)
 000. **Lead-eksport med kontaktfelt** (ny CR): admin viser ikke Lead.formData, så bestillinger fra web-løpet kan ikke leveres til kunder. Må vurderes mot persondata-reglene som mangler (sletting, lagringstid) og juridisk avklaring av samtykketekster før ekte brukere
 00x. Neste steg mot målbildet: person-ID og simulert Vipps (egen gren), admin-UI for sider/produkter/visninger (inkl. lagret-siden og kanalpresens), og A/B-tildeling
 00. Admin-UI for visninger/sider/produkter må også dekke lagret-siden og avklare kanalpresens (web eksplisitt, app implisitt)
@@ -384,7 +384,7 @@ fra bruker (se Next Recommended Actions).
    → badge borte). Når bekreftet: Claude committer med CR-019-referanse
    (kun CR-019-filene + sessions/specs, IKKE tsconfig.json/docs/09–12) og
    markerer Done
-5. **CR-014 Infra-checklist (bruker-oppgave i Coolify, ikke noe Claude kan utføre):**
+5. **CR-014 Infra-checklist (UTSATT til helt på slutten, bruker 2026-10-13; bruker-oppgave i Coolify, ikke noe Claude kan utføre):**
    a. Provisjonér en Redis-ressurs i Coolify (samme prosjekt som appen og Postgres)
    b. Sett `REDIS_URL` som miljøvariabel på app-ressursen
    c. Bekreft at Coolify/Traefik faktisk videresender ekte klient-IP via

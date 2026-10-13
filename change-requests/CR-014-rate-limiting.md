@@ -206,3 +206,6 @@ stå urørt eller slettes uavhengig av kodereversering.
 - Avhenger av brukers Redis-provisjonering (se Infra-checklist) før
   faktisk testing mot ekte Redis kan skje — unit-tester med mocket
   klient kan skrives uavhengig av dette.
+
+## Utsatt (2026-10-13)
+Bruker: vi forholder oss ikke til Redis før HELT på slutten. Infra-checklisten (Redis i Coolify, REDIS_URL, x-forwarded-for, smoke-test av 429) gjøres da. E2E-testen 2026-10-13 viste at grensene ikke er i kraft i prod i dag (ISSUE-013). CR-en forblir Implementert, ikke Done.

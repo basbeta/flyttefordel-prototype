@@ -168,3 +168,12 @@ ALTERNATIVES CONSIDERED: Bare nettleserstyring via Chrome-utvidelsen (avhenger a
 RATIONALE: Deterministisk skript gir samme sjekker hver gang og lav kostnad, agenten utforsker det som er nytt. Innlogging via API med legitimasjon fra miljøet omgår ikke autentisering og holder passordet ute av samtalen.
 CONSEQUENCES: Testen skriver testdata i prod-databasen (testpersoner, bestillinger, leads) siden det ikke finnes testmiljø. Det finnes ingen sletting, så data hoper seg opp inntil videre. Rate limits (per IP) begrenser hvor ofte suiten kan kjøres. En grønn suite beviser bare det suiten sjekker, UI er fortsatt ikke sett visuelt. Admin-del er av til brukeren har lagt inn `.env.qa`. Observasjon utenfor scope: `validateAdminCredentials` faller tilbake til et hardkodet standardpassord hvis `ADMIN_PASSWORD` ikke er satt (src/lib/admin/auth.ts), bør vurderes i egen CR.
 DECIDED BY: both (bruker ba om agenten og ga rammene, Claude utformet løsningen)
+
+DATE: 2026-10-13
+DECISION: Redis og rate limiting utsettes til helt på slutten av prototypen
+CONTEXT: E2E-testen av CR-028 viste at rate limiting ikke virker i prod (ISSUE-013): REDIS_URL/Redis er trolig aldri satt opp i Coolify, så CR-014 sin Infra-checklist er ufullført. Koden er fail-open, så appen virker, men grensene (admin-innlogging 5 per 15 min, personinnlogging, opprettelse av testperson, bestilling, claim-code) er ikke i kraft.
+DECISION: Bruker bestemte at vi ikke forholder oss til Redis før HELT på slutten. CR-014 blir stående som Implementert (ikke Done) og ISSUE-013 som Open, men utsatt og lav prioritet. Ikke ta det opp som anbefalt neste steg, og e2e-testeren skal ikke rapportere manglende 429 som funn.
+ALTERNATIVES CONSIDERED: Sette opp Redis i Coolify nå (løser både ISSUE-013 og CR-014, men er infra-arbeid brukeren ikke vil prioritere i prototypefasen). Bytte til Traefik-middleware (avvist tidligere, se 2026-08-07).
+RATIONALE: Prototype uten ekte brukerdata. Brukeren vil ha fokus på funksjonalitet, og det er ufarlig at testdata og innlogginger er ubegrensede.
+CONSEQUENCES: Admin-innlogging har ikke vern mot gjetting, og kombinert med standardpassord-fallbacken i validateAdminCredentials (src/lib/admin/auth.ts) er admin så sterk som ADMIN_PASSWORD alene. Offentlige ruter (ny testperson, innlogging) kan fylles med støy. Må gjøres før noe annet enn en prototype med fiktive data, og før ekte brukere eller ekte annonsørdata.
+DECIDED BY: human
