@@ -142,3 +142,4 @@
 | 2026-10-13 | Session-20 | e2e prod | Etter deploy av d01a2c9: smoke-suite 105/105 mot prod inkl. admin-innlogging og dato-fiks. Admin-innlogging ga først 401 til passordet i Coolify ble oppdatert av bruker | CR-028 | smoke 105/105 ✓ |
 | 2026-10-13 | Session-20 | CR-028 | Bruker markerte CR-028 Done. Åpent: ISSUE-013 (rate limit), rydding av testdata i prod, UI ikke sett visuelt | CR-028 | e2e 105/105 ✓ |
 | 2026-10-13 | Session-20 | sessions/, CR-014, e2e-tester | Bruker: vi forholder oss ikke til Redis før HELT på slutten. ISSUE-013 satt til utsatt/lav, CR-014 notert utsatt, decision logget, e2e-tester instruert til ikke å rapportere manglende 429 | CR-014 | — |
+| 2026-10-13 | Session-20 | change-requests/CR-029 | Opprettet CR-029-utkast (utvelgelsesfunksjon: isQualified/explainSelection, nye regeldimensjoner dager siden flytting, boligtype, kryssalg, hideIfChosen, én inngang for alle flater). Draft, 6 åpne punkter, ikke godkjent | CR-029 | — |
