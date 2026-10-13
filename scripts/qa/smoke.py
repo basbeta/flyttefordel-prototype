@@ -182,6 +182,112 @@ def benefit_count(client, path="/benefits"):
     return s, len(set(re.findall(r'href="/benefits/([a-z0-9-]+)"', html)))
 
 
+def expected_variant(test_id, person_id, weights):
+    """Mirror of assignVariant in src/lib/abtest/assign.ts (the hash is a contract)."""
+    import hashlib
+
+    keys = sorted(weights)
+    total = sum(weights[k] for k in keys)
+    point = int.from_bytes(hashlib.sha256(f"{test_id}:{person_id}".encode()).digest()[:4], "big") % total
+    for k in keys:
+        if point < weights[k]:
+            return k
+        point -= weights[k]
+    return None
+
+
+def run_ab_test(admin, names):
+    """Creates a content test on one benefit, checks that every seeded person sees exactly the
+    variant the contract says, that it is stable, locked while running and gone after it ends.
+    Leaves an ended test and a variant row behind (harmless, the variant is only shown while running)."""
+    probe = Client()
+    ids = [p for _, p in [(n, names[n]) for n in SEEDED if n in names]]
+    if not ids:
+        skipped.append("A/B (ingen seedede testpersoner)")
+        return
+    login(probe, ids[0], "qa-agent+ab@example.test")
+    _, listing, _ = probe.request("GET", "/benefits")
+    slugs = set(re.findall(r'href="/benefits/([a-z0-9-]+)"', listing))
+    _, admin_list, _ = admin.request("GET", "/admin/benefits")
+    candidates = list(dict.fromkeys(re.findall(r"/admin/benefits/(" + UUID_RE + ")", admin_list)))
+    benefit_id, bslug = None, None
+    for cid in candidates:
+        _, page, _ = admin.request("GET", f"/admin/benefits/{cid}")
+        hit = [sl for sl in slugs if f'value="{sl}"' in page]
+        if hit:
+            benefit_id, bslug = cid, hit[0]
+            break
+    if not benefit_id:
+        skipped.append("A/B (fant ingen fordel som både er synlig i appen og i admin)")
+        return
+
+    marker = "QA-AB-B-" + uuid.uuid4().hex[:8]
+    s, body, _ = admin.request(
+        "POST", "/api/admin/ab-tests",
+        {"name": "QA A/B " + marker, "kind": "content", "scope": {"benefitId": benefit_id, "format": "app_card"},
+         "variants": [{"key": "standard", "weight": 50}, {"key": "b", "weight": 50}]},
+    )
+    check("opprette test gir 201 (draft)", s == 201, f"{s} {body[:120]}")
+    if s != 201:
+        return
+    test_id = json.loads(body)["test"]["id"]
+    weights = {"standard": 50, "b": 50}
+
+    s, _, _ = admin.request("PUT", f"/api/admin/ab-tests/{test_id}", {"status": "running"})
+    check("start uten innhold i variant B avvises (400)", s == 400, str(s))
+    s, _, _ = admin.request("PUT", f"/api/admin/benefits/{benefit_id}/views/app_card", {"title": marker, "variant": "b"})
+    check("innhold i variant B lagres", s == 200, str(s))
+    s, body, _ = admin.request("PUT", f"/api/admin/ab-tests/{test_id}", {"status": "running"})
+    check("start gir 200", s == 200, f"{s} {body[:120]}")
+    s, body2, _ = admin.request(
+        "POST", "/api/admin/ab-tests",
+        {"name": "QA A/B dublett", "kind": "content", "scope": {"benefitId": benefit_id, "format": "app_card"},
+         "variants": [{"key": "standard", "weight": 1}, {"key": "b", "weight": 1}]},
+    )
+    if s == 201:
+        dup = json.loads(body2)["test"]["id"]
+        s, _, _ = admin.request("PUT", f"/api/admin/ab-tests/{dup}", {"status": "running"})
+        check("en test til på samme scope kan ikke startes (409)", s == 409, str(s))
+        admin.request("PUT", f"/api/admin/ab-tests/{dup}", {"status": "ended"})
+    s2, _, _ = admin.request("PUT", f"/api/admin/ab-tests/{test_id}", {"variants": [{"key": "standard", "weight": 1}, {"key": "b", "weight": 9}]})
+    check("varianter og vekter er låst mens testen kjører (409)", s2 == 409, str(s2))
+
+    seen = {}
+    for n in SEEDED:
+        if n not in names:
+            continue
+        c = Client()
+        login(c, names[n], "qa-agent+ab@example.test")
+        _, html, _ = c.request("GET", "/benefits")
+        _, html2, _ = c.request("GET", "/benefits")
+        visible = f'href="/benefits/{bslug}"' in html
+        has_b = marker in html
+        want_b = expected_variant(test_id, names[n], weights) == "b"
+        seen[n] = (has_b, want_b)
+        check(f"{n}: samme variant ved gjentatt kall", (marker in html2) == has_b)
+        if has_b:
+            check(f"{n}: variant B vises bare når kontrakten sier B", want_b, "fikk B, forventet standard")
+        elif want_b and visible:
+            check(f"{n}: forventet B for synlig fordel, men fikk standard", False, "mangler B-innhold")
+    check("minst én person fikk B (ellers ble ingen testet; fordelen kan være utenfor alles utvalg)",
+          any(h for h, _ in seen.values()) or not any(w for _, w in seen.values()),
+          str(seen))
+
+    s, _, _ = admin.request("PUT", f"/api/admin/ab-tests/{test_id}", {"status": "ended"})
+    check("avslutt gir 200", s == 200, str(s))
+    s, _, _ = admin.request("PUT", f"/api/admin/ab-tests/{test_id}", {"status": "running"})
+    check("avsluttet test kan ikke startes igjen (409)", s == 409, str(s))
+    leaks = 0
+    for n in SEEDED:
+        if n not in names:
+            continue
+        c = Client()
+        login(c, names[n], "qa-agent+ab@example.test")
+        _, html, _ = c.request("GET", "/benefits")
+        leaks += marker in html
+    check("etter avslutning vises ingen variant B lenger", leaks == 0, f"{leaks} personer")
+
+
 def main():
     args = set(sys.argv[1:])
     print(f"QA smoke against {BASE}")
@@ -462,6 +568,10 @@ def main():
             check("admin-token alene gir IKKE forbrukerappen (krever person-innlogging)", s == 307 and location_path(h).startswith("/logg-inn"), str(s))
             s, _, _ = a.request("PUT", "/api/admin/benefits/00000000-0000-4000-8000-000000000000/views/app_card", {})
             check("admin-API med admin-cookie slipper forbi auth (404 ukjent fordel)", s == 404, str(s))
+
+            # -------------------------------------------------------------- 7b. A/B-tildeling (CR-030)
+            start("A/B-tildeling (CR-030): innholdstest på app-kortet")
+            run_ab_test(a, names)
 
     # ------------------------------------------------------------------ summary
     failed = [r for r in results if not r[2]]

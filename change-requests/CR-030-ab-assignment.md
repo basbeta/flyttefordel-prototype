@@ -1,6 +1,6 @@
 # CR-030: A/B-tildeling fra person-ID (første steg av A/B-laget)
 
-Status: Implementert 2026-10-13, /review PASSED, committed lokalt, IKKE pushet, migrasjon IKKE kjørt mot DB, IKKE Done
+Status: Implementert 2026-10-13, /review PASSED, pushet (ceb27a1), deployet og migrert, e2e mot prod 145/145, IKKE Done (venter på at brukeren tester admin-UI)
 Approved: 2026-10-13 («anbefalt på alle», pluss krav om enkel utvidbarhet)
 Created: 2026-10-13
 
@@ -135,3 +135,8 @@ Advarsler (akseptert for prototypen):
 - `/api/track` tar `testId`/`variant`/`viewId` fra klienten (eksisterende design fra CR-020). Kan forfalskes av en innlogget bruker og forurense rapportering. Serverhendelser regnes på serveren.
 - Hendelser fra før en test har ingen variant, rapporteringen (egen CR) må ekskludere dem.
 - e2e mot prod ikke skrevet ennå: krever deploy og migrasjon først. Neste: legg A/B-seksjon i `scripts/qa/smoke.py` (opprett test, variant B-innhold, start, kryss-sjekk at hver testperson får variant lik `assignVariant`, avslutt).
+
+## E2E mot prod (2026-10-13, etter deploy av ceb27a1)
+smoke.py 145/145 (ny seksjon «A/B-tildeling», 16 sjekker: tildeling lik SHA-256-kontrakten for alle seedede personer, stabil, låst mens running, 409 på andre test på samme scope, B borte etter avslutning). Agenten utforsket i tillegg 97 sjekker: auth (401 for anonym og persontoken), validering (24 ugyldige POST-varianter), statusflyt, `variant` i views-PUT, admin-sider 200, ingen lekkasje av testId/viewId/variant i HTML. Ingen funn.
+Ikke testet: admin-UI visuelt, hendelsesmerking i DB, web_card-variant i web-løpet mens en test kjører, tidsstyring med startsAt/endsAt. Kjent svakhet i smoke.py: «minst én person fikk B» kan gi falsk grønn hvis fordelen er utenfor alles utvalg (var reell denne gangen).
+Testdata i prod: avsluttede tester «QA A/B …», «QA val …», «QA flyt …» og variantrader (b, qa-x) på én fordel. Variantradene vises bare mens en test kjører.

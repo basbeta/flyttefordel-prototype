@@ -156,3 +156,4 @@
 | 2026-10-13 | Session-21 | benefitQueries, savedQueries, flowQueries, session, orders, order/save/claim-code/lead-ruter, benefits/[slug] | Variantvalg i app-liste, lagret og web-løp, SessionData.personId, hendelser merkes med test/variant/viewId | CR-030 | tsc ✓ vitest 664/664 ✓ |
 | 2026-10-13 | Session-21 | src/app/api/admin/ab-tests, views-PUT, BenefitAbTestsSection, adminQueries | Generisk admin-API, valgfri variant i views-PUT, seksjon «A/B-test» på rediger fordel. UI ikke sett | CR-030 | lint ✓ build ✓ |
 | 2026-10-13 | Session-21 | /review CR-030 | Funn fikset: gjentatt avslutt ga 409. Advarsler: ett-running bare i kode, klient-sendt testId i /api/track | CR-030 | PASSED |
+| 2026-10-13 | Session-21 | prod CR-030 | Pushet (f0f5f66..ceb27a1), migrasjon kjørt av containeren (`migrate deploy`), A/B-seksjon i smoke.py, e2e-agent: 145/145 + 97 utforskende sjekker, ingen funn | CR-030 | smoke 145/145 ✓ |

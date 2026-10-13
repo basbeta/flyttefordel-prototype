@@ -3,7 +3,7 @@
 > Updated at the end of every session. Read by Claude at startup.
 
 ## Current Phase
-**CR-030 (A/B-tildeling fra person-ID) er implementert 2026-10-13, /review PASSED, committed lokalt, IKKE pushet, IKKE Done.** Migrasjon `20261013200000_cr030_ab_tests` er IKKE kjørt mot DB (admin-siden «Rediger fordel» leser `ab_tests`, så migrasjon må kjøres FØR deploy). Tildelingen regnes fra person-ID og test-ID uten lagring (`src/lib/abtest`), testtyper er et register (nå bare `content`, én ny oppføring per ny type), kortvariant velges i app-liste, lagret og web-løp, hendelser merkes med test/variant/viewId, og admin har en seksjon «A/B-test» på rediger fordel. tsc OK, lint 0 feil, vitest 664/664, build OK. UI ikke sett, e2e ikke skrevet (krever deploy). Se CR-030 Implementation Notes.
+**CR-030 (A/B-tildeling fra person-ID) er implementert 2026-10-13, /review PASSED, pushet (ceb27a1), deployet (migrasjon kjørt av containeren), e2e mot prod 145/145, IKKE Done (venter på at brukeren tester «A/B-test»-seksjonen).** Tildelingen regnes fra person-ID og test-ID uten lagring (`src/lib/abtest`), testtyper er et register (nå bare `content`, én ny oppføring per ny type), kortvariant velges i app-liste, lagret og web-løp, hendelser merkes med test/variant/viewId, og admin har en seksjon «A/B-test» på rediger fordel. tsc OK, lint 0 feil, vitest 664/664, build OK. UI ikke sett visuelt. Se CR-030 Implementation Notes.
 
 **CR-029 (utvelgelsesfunksjon) er DONE (b2fe45d + 9000616, bruker markerte Done 2026-10-13).**
 
@@ -207,7 +207,7 @@ fra bruker (se Next Recommended Actions).
 - CR-017: Sperre mot ugyldig Aktiv/Planlagt status (Status: Done — committed 3ec4625, pushet 4a30c11, 2026-08-27)
 - CR-018: Next.js major-oppgradering 14.2.35→16.3.1 (Status: Implementert, committed+pushet e7cc47c, LIVE i prod, IKKE Done — venter på prod-smoke-test)
 - CR-019: Fiks React Hooks-lint-feil i 4 admin-skjemaer (Status: Implementert, committed 12b49e6, IKKE Done — venter på manuell nettleserverifisering)
-- CR-030: A/B-tildeling fra person-ID (Status: Implementert, committed lokalt, IKKE pushet, migrasjon ikke kjørt, IKKE Done)
+- CR-030: A/B-tildeling fra person-ID (Status: Implementert, pushet ceb27a1, deployet, e2e 145/145, IKKE Done: venter på bruker)
 - CR-029: Utvelgelsesfunksjon (Status: Done, b2fe45d + 9000616, pushet, e2e 124/124, bruker markerte Done 2026-10-13)
 - CR-028: Simulert Vipps-innlogging og person-ID (Status: Done, c6ccaee + d01a2c9, pushet, e2e 105/105, 2026-10-13)
 - CR-027: Innholdsoverstyring per flate i admin (Status: Done, committed 9b46140, pushet, bruker testet 2026-10-13)
@@ -375,7 +375,7 @@ fra bruker (se Next Recommended Actions).
   DECISIONS.md 2026-08-06/2026-05-22 for begrunnelse.
 
 ## Next Recommended Actions
-000000. **CR-030:** (1) kjør migrasjonen mot prod-DB, (2) push, (3) kjør e2e-agenten og legg A/B-seksjon i `scripts/qa/smoke.py`, (4) bruker tester «A/B-test»-seksjonen på rediger fordel og markerer Done. Neste mot målbildet: rapportering v2 (resultat per variant, signifikans, utelat hendelser uten variant), så flere testtyper (format, plassering, struktur) som nye oppføringer i `TEST_KINDS`.
+000000. **CR-030:** deployet og e2e-testet (145/145). Bruker tester «A/B-test»-seksjonen på rediger fordel og markerer Done. Rydd evt. testdata fra e2e (avsluttede «QA …»-tester og variantrader). Neste mot målbildet: rapportering v2 (resultat per variant, signifikans, utelat hendelser uten variant), så flere testtyper (format, plassering, struktur) som nye oppføringer i `TEST_KINDS`.
 00000. **CR-029:** Done (2026-10-13). Åpne småting fra e2e: PATCH /api/admin/benefits/<ikke-uuid> gir 500 (eksisterende), ukjente targeting-nøkler ignoreres stille. Testpersonenes flyttedatoer eldes (kjør db:seed-persons på nytt etter 20 dager). Deretter: A/B-tildeling fra person-ID, app-intro eller e-post (docs/10 §10)
 0000. **Redis/rate limiting (ISSUE-013, CR-014 infra) er bevisst utsatt til HELT på slutten (bruker, 2026-10-13).** Ikke foreslå det som neste steg og ikke rapporter manglende 429 som funn før da. Husk den manuelle ryddingen av e2e-testdata i prod-DB (testpersoner «Test QA-…», bl.a. én med XSS-navn, og 4 bestillinger) hvis brukeren vil. Neste funksjonelle steg: A/B-tildeling fra person-ID, eller lead-eksport med kontaktfelt (krever avklaring av persondata og samtykke)
 000. **Lead-eksport med kontaktfelt** (ny CR): admin viser ikke Lead.formData, så bestillinger fra web-løpet kan ikke leveres til kunder. Må vurderes mot persondata-reglene som mangler (sletting, lagringstid) og juridisk avklaring av samtykketekster før ekte brukere
